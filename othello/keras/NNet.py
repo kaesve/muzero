@@ -14,7 +14,7 @@ import argparse
 
 from .OthelloNNet import OthelloNNet as onnet
 
-args = dotdict({
+args = DotDict({
     'lr': 0.001,
     'dropout': 0.3,
     'epochs': 10,

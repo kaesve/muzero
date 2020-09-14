@@ -16,11 +16,12 @@ function and the `learn' function calls in order to load in a previous checkpoin
 # TENSORFLOW GPU CONFIGURATION
 import os
 
+
 os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # Edit to select GPU!
 # TENSORFLOW GPU CONFIGURATION
 
-
+from utils.storage import DotDict
 from Coach import Coach
 from hex.HexGame import HexGame as Game
 from hex.model.NNet import NNetWrapper as nn
@@ -52,7 +53,7 @@ session = InteractiveSession(config=config)
 # Bugfxing TF2?
 
 
-args = dotdict({
+args = DotDict({
     'numIters': 300,  # (1000)
     'numEps': 100,              # Number of complete self-play games to simulate during a new iteration.  (100)
     'tempThreshold': 15,        #
@@ -69,7 +70,7 @@ args = dotdict({
 
 })
 
-net_args = dotdict({
+net_args = DotDict({
     'lr': 0.001,
     'dropout': 0.3,
     'epochs': 10,
@@ -145,7 +146,7 @@ def learn_net2net():
 
     # START shallow
     # Override default arguments.
-    shallow_args = dotdict(net_args.copy())
+    shallow_args = DotDict(net_args.copy())
     shallow_args.default = False
     shallow_args.transfer = 0
     shallow_args.num_channels = 256
@@ -163,7 +164,7 @@ def learn_net2net():
     c.learn()
 
     # START medium
-    medium_args = dotdict(shallow_args.copy())
+    medium_args = DotDict(shallow_args.copy())
     medium_args.transfer += 1
     medium_nnet = nn(g, medium_args)
 
@@ -184,7 +185,7 @@ def learn_net2net():
     c.learn()
 
     # START DEEP
-    deep_args = dotdict(medium_args.copy())
+    deep_args = DotDict(medium_args.copy())
     deep_args.transfer += 1
     deep_nnet = nn(g, deep_args)
 
@@ -290,7 +291,7 @@ def progression_tournament():  # TODO run.
 
         for f, id in zip(files, ids):
             config_args = args.copy()
-            config_net_args = dotdict(net_args.copy())
+            config_net_args = DotDict(net_args.copy())
 
             config_args['load_folder_file'] = (config['path'], f)
 
@@ -360,9 +361,9 @@ def simple_tournament():
     resolution = 12
 
     # Define configuration to correctly load in the players to be tested!
-    shallow_args_1_net_args = dotdict(net_args.copy())
-    shallow_args_2_net_args = dotdict(net_args.copy())
-    alphazero_general_net_args = dotdict(net_args.copy())
+    shallow_args_1_net_args = DotDict(net_args.copy())
+    shallow_args_2_net_args = DotDict(net_args.copy())
+    alphazero_general_net_args = DotDict(net_args.copy())
 
     shallow_args_1_net_args.default = False
     shallow_args_1_net_args.num_channels = 256
@@ -432,11 +433,11 @@ def final_tournament():
     resolution = 12
 
     # Define configuration to correctly load in the players to be tested!
-    shallow_args_net_args = dotdict(net_args.copy())
-    medium_args_net_args = dotdict(net_args.copy())
-    deep_args_net_args = dotdict(net_args.copy())
-    net2net_net_args = dotdict(net_args.copy())
-    alphazero_general_net_args = dotdict(net_args.copy())
+    shallow_args_net_args = DotDict(net_args.copy())
+    medium_args_net_args = DotDict(net_args.copy())
+    deep_args_net_args = DotDict(net_args.copy())
+    net2net_net_args = DotDict(net_args.copy())
+    alphazero_general_net_args = DotDict(net_args.copy())
 
     shallow_args_net_args.default = medium_args_net_args.default = \
         deep_args_net_args.default = net2net_net_args.default = False
