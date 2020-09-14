@@ -6,6 +6,9 @@ import random
 import numpy as np
 import math
 import sys
+
+from utils.storage import DotDict
+
 sys.path.append('../..')
 from utils import *
 from NeuralNet import NeuralNet

@@ -1,14 +1,12 @@
 import os
-import time
+# import time
 import numpy as np
 import sys
 
-sys.path.append('../..')
-from utils import *
 from NeuralNet import NeuralNet
-
-# from .HexNNet import HexNNet as onnet
 from .HexNNet import HexNNet as onnet
+
+sys.path.append('../..')
 
 
 # Refactored args dotdict to class attribute.
@@ -16,6 +14,7 @@ from .HexNNet import HexNNet as onnet
 
 class NNetWrapper(NeuralNet):
     def __init__(self, game, net_args):
+        super().__init__(game)
         self.net_args = net_args
         self.nnet = onnet(game, net_args)
         self.board_x, self.board_y = game.getBoardSize()
@@ -29,14 +28,15 @@ class NNetWrapper(NeuralNet):
         input_boards = np.asarray(input_boards)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x=input_boards, y=[target_pis, target_vs], batch_size=self.net_args.batch_size, epochs=self.net_args.epochs)
+        self.nnet.model.fit(x=input_boards, y=[target_pis, target_vs], batch_size=self.net_args.batch_size,
+                            epochs=self.net_args.epochs)
 
     def predict(self, board):
         """
         board: np array with board
         """
         # timing
-        start = time.time()
+        # start = time.time()
 
         # preparing input
         board = board[np.newaxis, :, :]
