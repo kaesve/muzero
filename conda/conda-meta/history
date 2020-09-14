@@ -1,0 +1,16 @@
+==> 2020-09-14 12:50:31 <==
+# cmd: C:\Users\joery\Anaconda3\Scripts\conda-script.py create -p C:\Users\joery\Anaconda3\envs\muzero -y python=3.8
+# conda version: 4.8.2
++defaults/noarch::wheel-0.35.1-py_0
++defaults/win-64::ca-certificates-2020.7.22-0
++defaults/win-64::certifi-2020.6.20-py38_0
++defaults/win-64::openssl-1.1.1g-he774522_1
++defaults/win-64::pip-20.2.2-py38_0
++defaults/win-64::python-3.8.5-h5fd99cc_1
++defaults/win-64::setuptools-49.6.0-py38_0
++defaults/win-64::sqlite-3.33.0-h2a8f88b_0
++defaults/win-64::vc-14.1-h0510ff6_4
++defaults/win-64::vs2015_runtime-14.16.27012-hf0eaf9b_3
++defaults/win-64::wincertstore-0.2-py38_0
++defaults/win-64::zlib-1.2.11-h62dcd97_4
+# update specs: ['python=3.8']
