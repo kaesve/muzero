@@ -22,9 +22,8 @@ from ast import literal_eval
 
 import numpy as np
 
-from alphazero.hex.HexGame import HexGame
-from alphazero.MCTS import MCTS
-from alphazero.utils import dotdict
+from MCTS import MCTS
+from hex.HexGame import HexGame
 
 from .hex_search import MinimaxSearcher, MCTSSearcher
 from .hex_utils import available_moves

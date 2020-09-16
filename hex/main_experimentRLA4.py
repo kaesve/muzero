@@ -5,7 +5,7 @@ on the game of Hex.
 To perform all steps described in the report, paths to models have to be edited manually.
 It was not feasible to automate this due to frequent system crashes (LIACS Lab).
 
-Due to the crashes, it may also be neccesary to manually edit the code for the `learn_net2net'
+Due to the crashes, it may also be necessary to manually edit the code for the `learn_net2net'
 function and the `learn' function calls in order to load in a previous checkpoint.
 
 :version: FINAL
@@ -26,12 +26,8 @@ from Coach import Coach
 from hex.HexGame import HexGame as Game
 from hex.model.NNet import NNetWrapper as nn
 from hex.model.net2net import shallow_to_medium, medium_to_deep
-from utils import *
 
 from hex.src_joery.hex_policies import *
-from hex.src_joery.hex_player import *
-from hex.src_joery.hex_utils import *
-from hex.src_joery.hex_heuristics import *
 from hex.src_joery.experimenter import *
 
 import time
@@ -54,13 +50,13 @@ session = InteractiveSession(config=config)
 
 
 args = DotDict({
-    'numIters': 300,  # (1000)
-    'numEps': 100,              # Number of complete self-play games to simulate during a new iteration.  (100)
+    'numIters': 3,  # (1000)
+    'numEps': 10,              # Number of complete self-play games to simulate during a new iteration.  (100)
     'tempThreshold': 15,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
     'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
     'numMCTSSims': 25,          # Number of games moves for MCTS to simulate.
-    'arenaCompare': 40,         # Number of games to play during arena play to determine if new net will be accepted. (40)
+    'arenaCompare': 2,         # Number of games to play during arena play to determine if new net will be accepted. (40)
     'cpuct': 1,
 
     'checkpoint': './temp/',
@@ -82,7 +78,7 @@ net_args = DotDict({
 })
 
 
-BOARD_SIZE = 7
+BOARD_SIZE = 5
 
 
 def learn(manual=True, model=0, debug=False):
