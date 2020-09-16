@@ -15,7 +15,7 @@ ALPHAZERO_DEFAULTS = "Experimenter/Configs/SmallModel_AlphaZeroHex.json"
 BOARD_SIZE = 5
 
 
-def unpack_json(file):
+def unpack_json(file: str):
     with open(file) as f:
         content = DotDict(json.load(f))
         name = content.name
