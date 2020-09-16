@@ -272,7 +272,7 @@ class AlphaZeroPolicy(Policy):
         to initialize the MCTS backend of AlphaZero.
         :param exploration: float The exploration parameter of PUCT (c_puct).
         :param budget: int The amount of MCTS simulations to perform (N).
-        :param model: keras.Model A keras backend model that guides MCTS's search
+        :param model: AlphaZeroModel.Model A AlphaZeroModel backend AlphaZeroModel that guides MCTS's search
         :param boardsize: int Size of the game board in order to initialize MCTS.
         :param temperature: int Governs the degree of exploration. (0 = greedy)
         """
@@ -297,7 +297,7 @@ class AlphaZeroPolicy(Policy):
         if self.perspective is None:
             raise Exception("No search/ player perspective given.")
 
-        # The neural network model only learns in an uniform player perspective.
+        # The neural network AlphaZeroModel only learns in an uniform player perspective.
         # Hence we first alter the symmetry of the board according to the current player.
         # The returned move is of course transformed to the perspective of the
         # board that was provided in the function's argument.

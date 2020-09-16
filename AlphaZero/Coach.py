@@ -107,7 +107,7 @@ class Coach:
                       " => remove the oldest trainExamples")
                 self.trainExamplesHistory.pop(0)
             # backup history to a file
-            # NB! the examples were collected using the model from the previous iteration, so (i-1)  
+            # NB! the examples were collected using the AlphaZeroModel from the previous iteration, so (i-1)
             self.saveTrainExamples(i - 1)
 
             # shuffle examples before training
@@ -161,5 +161,5 @@ class Coach:
             print("File with trainExamples found. Read it.")
             with open(examplesFile, "rb") as f:
                 self.trainExamplesHistory = Unpickler(f).load()
-            # examples based on the model were already collected (loaded)
+            # examples based on the AlphaZeroModel were already collected (loaded)
             self.skipFirstSelfPlay = True

@@ -1,22 +1,34 @@
+import argparse
 import os
-# import time
+import shutil
+import time
+import random
 import numpy as np
+import math
 import sys
 
-from NeuralNet import NeuralNet
-from .HexNNet import HexNNet as onnet
+from utils.storage import DotDict
 
 sys.path.append('../..')
+from utils import *
+from NeuralNet import NeuralNet
 
+import argparse
 
-# Refactored args dotdict to class attribute.
+from .OthelloNNet import OthelloNNet as onnet
 
+args = DotDict({
+    'lr': 0.001,
+    'dropout': 0.3,
+    'epochs': 10,
+    'batch_size': 64,
+    'cuda': False,
+    'num_channels': 512,
+})
 
 class NNetWrapper(NeuralNet):
-    def __init__(self, game, net_args):
-        super().__init__(game)
-        self.net_args = net_args
-        self.nnet = onnet(game, net_args)
+    def __init__(self, game):
+        self.nnet = onnet(game, args)
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
 
@@ -28,15 +40,14 @@ class NNetWrapper(NeuralNet):
         input_boards = np.asarray(input_boards)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        self.nnet.model.fit(x=input_boards, y=[target_pis, target_vs], batch_size=self.net_args.batch_size,
-                            epochs=self.net_args.epochs)
+        self.nnet.model.fit(x = input_boards, y = [target_pis, target_vs], batch_size = args.batch_size, epochs = args.epochs)
 
     def predict(self, board):
         """
         board: np array with board
         """
         # timing
-        # start = time.time()
+        start = time.time()
 
         # preparing input
         board = board[np.newaxis, :, :]
@@ -44,7 +55,7 @@ class NNetWrapper(NeuralNet):
         # run
         pi, v = self.nnet.model.predict(board)
 
-        # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
+        #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return pi[0], v[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
@@ -57,7 +68,8 @@ class NNetWrapper(NeuralNet):
         self.nnet.model.save_weights(filepath)
 
     def load_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
+        # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L98
         filepath = os.path.join(folder, filename)
         if not os.path.exists(filepath):
-            raise ("No model in path {}".format(filepath))
+            raise("No AlphaZeroModel in path {}".format(filepath))
         self.nnet.model.load_weights(filepath)

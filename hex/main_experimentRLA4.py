@@ -24,8 +24,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # Edit to select GPU!
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
 from hex.HexGame import HexGame as Game
-from hex.model.NNet import NNetWrapper as nn
-from hex.model.net2net import shallow_to_medium, medium_to_deep
+from hex.AlphaZeroModel.NNet import NNetWrapper as nn
 
 from hex.src_joery.hex_policies import *
 from hex.src_joery.experimenter import *
@@ -73,8 +72,7 @@ net_args = DotDict({
     'batch_size': 64,
     'cuda': False,
     'num_channels': 256,  # Default 512. DownScaled 256.
-    'default': True,     # True: Use large alpha-zero-general model. False use other models specified by transfer
-    'transfer': 0         # 0: shallow model 1: medium model 2: deep model  << alpha-zero-general model
+    'choice': 0
 })
 
 
@@ -126,83 +124,6 @@ def learn(manual=True, model=0, debug=False):
     c.learn()
 
 
-def learn_net2net():
-    """
-    Train the Net2Net agent on the game of Hex.
-
-    The agent is trained for 100 iterations using the small model.
-    100 iterations using the medium model.
-    and 100 iterations using the deep model.
-
-    The backend is based on:
-    https://keras.io/examples/mnist_net2net/
-    """
-    g = Game(BOARD_SIZE)
-    verbose_net2net = True
-
-    # START shallow
-    # Override default arguments.
-    shallow_args = DotDict(net_args.copy())
-    shallow_args.default = False
-    shallow_args.transfer = 0
-    shallow_args.num_channels = 256
-    shallow_nnet = nn(g, shallow_args)
-
-    # Coach for shallow model
-    args.numIters = 100
-    args.checkpoint = './temp/hex/transfer/shallow/'
-    args.load_folder_file = ('./temp/hex/transfer/shallow/', 'best.pth.tar')
-    shallow_nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
-
-    c = Coach(g, shallow_nnet, args)
-
-    # Learn Shallow
-    c.learn()
-
-    # START medium
-    medium_args = DotDict(shallow_args.copy())
-    medium_args.transfer += 1
-    medium_nnet = nn(g, medium_args)
-
-    # net2net
-    boards = [[entry[0] for entry in episode_data] for episode_data in c.trainExamplesHistory]
-    boards = np.vstack([np.array(board).reshape((-1, BOARD_SIZE, BOARD_SIZE)) for board in boards])
-    shallow_to_medium(shallow_nnet.playerNet.model, medium_nnet.playerNet.model, boards, verbose_net2net)
-
-    # Coach for the medium model
-    args.numIters = 100
-    args.checkpoint = './temp/hex/transfer/medium/'
-    args.load_folder_file = ('./temp/hex/transfer/medium/', 'best.pth.tar')
-    medium_nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
-
-    c = Coach(g, medium_nnet, args)
-
-    # Learn medium
-    c.learn()
-
-    # START DEEP
-    deep_args = DotDict(medium_args.copy())
-    deep_args.transfer += 1
-    deep_nnet = nn(g, deep_args)
-
-    # net2net
-    boards = [[entry[0] for entry in episode_data] for episode_data in c.trainExamplesHistory]
-    boards = np.vstack([np.array(board).reshape((-1, BOARD_SIZE, BOARD_SIZE)) for board in boards])
-    medium_to_deep(medium_nnet.playerNet.model, deep_nnet.playerNet.model, boards, verbose_net2net)
-
-    # Coach for the deep model
-    args.numIters = 100
-    args.checkpoint = './temp/hex/transfer/deep/'
-    args.load_folder_file = ('./temp/hex/transfer/deep/', 'best.pth.tar')
-    deep_nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
-
-    c = Coach(g, deep_nnet, args)
-
-    # Learn deep
-    c.learn()
-    # Done
-
-
 def progression_tournament():  # TODO run.
     """
 
@@ -223,7 +144,7 @@ def progression_tournament():  # TODO run.
         'net2net_deep': {
             'path': '/data/jdevries/models/transfer/deep/',
             'net_default': False,
-            'net_id': 2,  # Final net2net agent is a deep model.
+            'net_id': 2,  # Final net2net agent is a deep AlphaZeroModel.
             'checkpoints': {},
             'checkpoint_ratings': {}
         },
@@ -241,7 +162,7 @@ def progression_tournament():  # TODO run.
             'checkpoints': {},
             'checkpoint_ratings': {}
         },
-        'shallow': {  # second shallow model
+        'shallow': {  # second shallow AlphaZeroModel
             'path': '/data/jdevries/models/small/',
             'net_default': False,
             'net_id': 0,
@@ -345,7 +266,7 @@ def progression_tournament():  # TODO run.
 def simple_tournament():
     """
     Performs the tournament between two equivalently trained shallow models
-    the AlphaZero General model, an MCTS agent, and an IDTT agent.
+    the AlphaZero General AlphaZeroModel, an MCTS agent, and an IDTT agent.
 
     The agents were trained for 100 iterations in this tournament.
 
@@ -513,10 +434,10 @@ def plot_history(history, labels, filename):
 
 if __name__ == "__main__":
     learn(True, model=0, debug=False)  # Train the Shallow Model
-    # learn(True, model=1, debug=False)  # Train the Medium Model
-    # learn(True, model=2, debug=False)  # Train the Deep Model
-    # learn(False)                       # Train the Baseline Alpha0General model
-    # learn_net2net()                    # Train the Net2Net model (shallow -> medium -> deep)
+    # learn(True, AlphaZeroModel=1, debug=False)  # Train the Medium Model
+    # learn(True, AlphaZeroModel=2, debug=False)  # Train the Deep Model
+    # learn(False)                       # Train the Baseline Alpha0General AlphaZeroModel
+    # learn_net2net()                    # Train the Net2Net AlphaZeroModel (shallow -> medium -> deep)
     # simple_tournament()                # Perform the interim tourney
     # final_tournament()                 # Perform the final tourney
     # progression_tournament()           # Perform the learning curve estimation tourney

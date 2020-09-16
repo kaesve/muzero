@@ -1,0 +1,29 @@
+{
+  "name": "SmallModel_AlphaZeroHex",
+  
+  "args": {
+    "numIters": 3,
+    "numEps": 10,
+    "tempThreshold": 15,
+    "updateThreshold": 0.6,
+    "maxlenOfQueue": 200000,
+    "numMCTSSims": 25,
+    "arenaCompare": 2,
+    "cpuct": 1,
+
+    "checkpoint": "./temp/",
+    "load_model": false,
+    "load_folder_file": ["./temp/", "best.pth.tar"],
+    "numItersForTrainExamplesHistory": 20
+  },
+  
+  "net_args": {
+    "lr": 0.001,
+    "dropout": 0.3,
+    "epochs": 10,
+    "batch_size": 64,
+    "cuda": false,
+    "num_channels": 256,
+    "choice": 0
+  }
+}
