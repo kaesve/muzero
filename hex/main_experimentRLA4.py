@@ -22,7 +22,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # Edit to select GPU!
 # TENSORFLOW GPU CONFIGURATION
 
 from utils.storage import DotDict
-from Coach import Coach
+from AlphaZero.Coach import Coach
 from hex.HexGame import HexGame as Game
 from hex.model.NNet import NNetWrapper as nn
 from hex.model.net2net import shallow_to_medium, medium_to_deep
@@ -207,7 +207,6 @@ def progression_tournament():  # TODO run.
     """
 
     """
-    from tensorflow.keras import backend as K
 
     # Every configuration will play against 'resolution' uniformly random opponents.
     # This prevents combinatorial growth in the amount of games that need to be played.

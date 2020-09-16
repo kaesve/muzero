@@ -49,10 +49,8 @@ class Arena:
             valids = self.game.getValidMoves(self.game.getCanonicalForm(board, curPlayer), 1)
 
             if valids[action] == 0:
-                print(players[curPlayer + 1])
-                print(valids)
-                print(action)
-                assert valids[action] > 0
+                assert valids[action] > 0  # TODO MuZero Invalid action handling (no error, but a loss)
+
             board, curPlayer = self.game.getNextState(board, curPlayer, action)
         if verbose:
             assert (self.display)

@@ -8,7 +8,7 @@ from random import shuffle
 import numpy as np
 
 from Arena import Arena
-from MCTS import MCTS
+from AlphaZero.MCTS import MCTS
 from utils import Bar, AverageMeter
 
 
