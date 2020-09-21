@@ -3,7 +3,7 @@ import os
 import numpy as np
 import sys
 
-from NeuralNet import NeuralNet
+from AlphaZero.NeuralNet import NeuralNet
 from .HexNNet import HexNNet as onnet
 
 sys.path.append('../..')

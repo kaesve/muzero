@@ -1,19 +1,12 @@
-import argparse
 import os
-import shutil
 import time
-import random
 import numpy as np
-import math
 import sys
 
 from utils.storage import DotDict
 
 sys.path.append('../..')
-from utils import *
-from NeuralNet import NeuralNet
-
-import argparse
+from AlphaZero.NeuralNet import NeuralNet
 
 from .OthelloNNet import OthelloNNet as onnet
 
