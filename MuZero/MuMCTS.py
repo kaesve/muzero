@@ -131,7 +131,7 @@ class MuZeroMCTS:
             self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + gk) / (self.Nsa[(s, a)] + 1)
             self.minmax.update(self.Qsa[(s, a)])
         else:
-            self.Qsa[(s, a)] = v
+            self.Qsa[(s, a)] = gk
 
         self.Nsa[(s, a)] = 1
         self.Ns[s] += 1
