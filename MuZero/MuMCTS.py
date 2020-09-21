@@ -127,12 +127,12 @@ class MuZeroMCTS:
         v = self.search(self.Ssa[(s, a)], count + 1)
         gk = self.Rsa[(s, a)] + self.args.gamma * v
 
+        ### BACKUP
         if (s, a) in self.Qsa:
             self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + gk) / (self.Nsa[(s, a)] + 1)
-            self.minmax.update(self.Qsa[(s, a)])
-        else:
+            else
             self.Qsa[(s, a)] = gk
-
+        self.minmax.update(self.Qsa[(s, a)])
         self.Nsa[(s, a)] = 1
         self.Ns[s] += 1
 
