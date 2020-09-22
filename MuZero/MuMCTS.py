@@ -2,6 +2,7 @@ import numpy as np
 
 EPS = 1e-8
 
+
 class MuZeroMCTS:
     """
     This class handles the MCTS tree.
@@ -47,8 +48,7 @@ class MuZeroMCTS:
 
     def compute_upper_confidence_bound(self, s, a, exploration_factor):
         ucb = self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)]) * exploration_factor  # Exploration
-        ucb += self.minmax.normalize(self.Rsa[(s, a)] + self.args.gamma * self.Qsa[(s, a)]
-                                     if (s, a) in self.Qsa else 0)                               # Exploitation
+        ucb += self.minmax.normalize(self.Qsa[(s, a)] if (s, a) in self.Qsa else 0)              # Exploitation
         return ucb
 
     def getActionProb(self, observations, temp=1):
@@ -125,12 +125,12 @@ class MuZeroMCTS:
             self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
 
         v = self.search(self.Ssa[(s, a)], count + 1)
-        gk = self.Rsa[(s, a)] + self.args.gamma * v
+        gk = self.Rsa[(s, a)] + self.args.gamma * v  # (Discounted) Value of the current node
 
         ### BACKUP
         if (s, a) in self.Qsa:
             self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + gk) / (self.Nsa[(s, a)] + 1)
-            else
+        else:
             self.Qsa[(s, a)] = gk
         self.minmax.update(self.Qsa[(s, a)])
         self.Nsa[(s, a)] = 1
