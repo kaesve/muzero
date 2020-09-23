@@ -1,0 +1,35 @@
+{
+  "name": "default",
+
+  "args": {
+    "numIters": 100,
+    "numEps": 100,
+    "tempThreshold": 15,
+    "dirichlet_alpha": "(double) Alpha parameter of the dirichlet distribution to sample noise from for exploration",
+    "exploration_fraction": "(double: [0, 1]) Fraction to sample based on noise of the dirichlet for exploration vs the network prior",
+    "updateThreshold": 0.6,
+    "maxlenOfQueue": 200000,
+    "numMCTSSims": 25,
+    "arenaCompare": 40,
+    "c1": 1.25,
+    "c2": 19652,
+
+    "zerosum": true,
+    "minimum_reward": -1,
+    "maximum_reward": 1,
+
+    "checkpoint": "./MuZeroOut/",
+    "load_model": false,
+    "load_folder_file": ["./MuZeroOut/", "best.pth.tar"],
+    "numItersForTrainExamplesHistory": 20
+  },
+
+  "net_args": {
+    "lr": 0.001,
+    "dropout": 0.3,
+    "epochs": 10,
+    "batch_size": 64,
+    "cuda": false,
+    "num_channels": 256
+  }
+}

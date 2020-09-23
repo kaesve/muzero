@@ -11,8 +11,12 @@ class MuZeroMCTS:
     class MinMaxStats(object):
         """A class that holds the min-max values of the tree."""
         def __init__(self, minimum_reward=None, maximum_reward=None):
-            self.maximum = maximum_reward if maximum_reward is not None else -np.inf
-            self.minimum = minimum_reward if minimum_reward is not None else np.inf
+            self.default_max = self.maximum = maximum_reward if maximum_reward is not None else -np.inf
+            self.default_min = self.minimum = minimum_reward if minimum_reward is not None else np.inf
+
+        def refresh(self):
+            self.maximum = self.default_max
+            self.minimum = self.default_min
 
         def update(self, value):
             self.maximum = max(self.maximum, value)
@@ -29,7 +33,8 @@ class MuZeroMCTS:
         self.neural_net = neural_net
         self.args = args
 
-        self.minmax = self.MinMaxStats(args.minimum_reward, args.maximum_reward)
+        # Gets reinitialized at every search
+        self.minmax = self.MinMaxStats(self.args.minimum_reward, self.args.maximum_reward)
 
         self.Qsa = {}  # stores Q values for s,a (as defined in the paper)
         self.Ssa = {}  # stores latent state transition for s_k, a
@@ -61,12 +66,15 @@ class MuZeroMCTS:
             move_probabilities: a policy vector where the probability of the ith action is
                    proportional to Nsa[(s,a)]**(1./temp)
         """
-        s_0 = self.neural_net.encode(observations)
-        s = s_0.tostring()
+        latent_state = self.neural_net.encode(observations)
+        s = latent_state.tostring()  # Hashable representation
 
-        self.search(s_0, add_exploration_noise=True)  # Add noise on the first search
+        # Refresh value bounds in the tree
+        self.minmax.refresh()
+
+        self.search(latent_state, add_exploration_noise=True)  # Add noise on the first search
         for i in range(self.args.numMCTSSims - 1):
-            self.search(s_0)
+            self.search(latent_state)
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
