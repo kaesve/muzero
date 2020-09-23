@@ -14,6 +14,7 @@ session = InteractiveSession(config=config)
 # Bugfxing TF2?
 
 import json
+from collections import deque
 
 import numpy as np
 
@@ -71,17 +72,28 @@ def learnM0():
 
     b = g.getInitBoard()
     g.display(b)
-    obs = np.stack([b] * net_args.observation_length, axis=-1)
-    encoded = hex_net.encode(obs)
-    print(encoded.shape)
-    v, pi = hex_net.predict(encoded)
 
-    r, latent_next = hex_net.forward(encoded, 2)
-    print(r, latent_next.shape)
-
+    history = deque([b] * net_args.observation_length, maxlen=net_args.observation_length)
     mcts = MuZeroMCTS(g, hex_net, args)
-    pi_visit = mcts.getActionProb(obs, 1)
-    print(pi_visit)
+
+    player = 1
+    for i in range(10):
+        canon = g.getCanonicalForm(b, player)
+        if player == 1:
+            obs = np.stack(history * net_args.observation_length, axis=-1)
+
+            pi_visit = mcts.getActionProb(obs, temp=1)
+            a = np.random.choice(len(pi_visit), p=pi_visit)
+
+            if g.getLegalMoves(canon, player)[a] == 0:
+                print('illegal move')
+                a = np.argmax(g.getLegalMoves(canon, 1))
+        else:
+            a = np.argmax(g.getLegalMoves(canon, 1))
+
+        b, player = g.getNextState(b, player, a)
+        history.append(b)
+        g.display(b)
 
 
 if __name__ == "__main__":
