@@ -2,7 +2,20 @@
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
 
+# Bugfxing TF2?
+# Prevent TF2 from hogging all the available VRAM when initializing?
+# @url: https://github.com/tensorflow/tensorflow/issues/24496#issuecomment-464909727
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
+# Bugfxing TF2?
+
 import json
+
+import numpy as np
 
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
@@ -55,7 +68,14 @@ def learnM0():
     if args.load_model:
         hex_net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    print('here')
+    b = g.getInitBoard()
+    g.display(b)
+    encoded = hex_net.encode(np.stack([b] * net_args.observation_length, axis=-1))
+    print(encoded.shape)
+    v, pi = hex_net.predict(encoded)
+
+    r, latent_next = hex_net.forward(encoded, 2)
+    print(r, latent_next.shape)
 
 
 if __name__ == "__main__":

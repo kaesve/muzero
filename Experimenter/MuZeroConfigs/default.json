@@ -30,7 +30,9 @@
     "epochs": 10,
     "batch_size": 64,
     "cuda": false,
-    "num_channels": 256,
-    "support_size": 1
+    "num_channels": 2,
+    "num_towers": 1,
+    "support_size": 1,
+    "observation_length": 5
   }
 }

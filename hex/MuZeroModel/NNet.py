@@ -22,20 +22,26 @@ class NNetWrapper(MuZeroNeuralNet):
         pass
 
     def encode(self, observations):
-        return self.neural_net.encoder(observations)[0]
+        observations = observations[np.newaxis, ...]
+        print(observations.shape)
+        return self.neural_net.encoder.predict(observations)[0]
 
     def forward(self, latent_state, action):
-        a_plane = np.zeros((self.board_y * self.board_y))
+        a_plane = np.zeros((self.board_x, self.board_y))
         a_plane[action // self.board_x][action % self.board_y] = 1
 
-        r, s_next = self.neural_net.dynamics(latent_state, a_plane)
+        latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
+        a_plane = a_plane.reshape((-1, self.board_x, self.board_y))
+
+        r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
         return r[0], s_next[0]
 
     def predict(self, latent_state):
         """
         board: np array with board
         """
-        pi, v = self.neural_net.predictor(latent_state)
+        latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
+        pi, v = self.neural_net.predictor.predict(latent_state)
         return pi[0], v[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
