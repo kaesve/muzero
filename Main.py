@@ -98,4 +98,5 @@ def learnM0():
 
 if __name__ == "__main__":
     # learnA0()
-    learnM0()
+    for _ in range(10):
+        learnM0()

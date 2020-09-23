@@ -19,8 +19,8 @@ class MuZeroMCTS:
             self.minimum = self.default_min
 
         def update(self, value):
-            self.maximum = max(self.maximum, value)
-            self.minimum = min(self.minimum, value)
+            self.maximum = np.max([self.maximum, value])
+            self.minimum = np.min([self.minimum, value])
 
         def normalize(self, value):
             if self.maximum > self.minimum:
@@ -78,7 +78,6 @@ class MuZeroMCTS:
         self.search(latent_state, add_exploration_noise=True)  # Add noise on the first search
         for i in range(self.args.numMCTSSims - 1):
             self.search(latent_state)
-            print(i)
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
@@ -124,7 +123,7 @@ class MuZeroMCTS:
 
             self.Ps[s] /= np.sum(self.Ps[s])
             self.Ns[s] = 0
-            return self.turn_indicator(count) * v
+            return self.turn_indicator(count) * v[0]
 
         ### SELECTION
         # pick the action with the highest upper confidence bound
@@ -135,7 +134,8 @@ class MuZeroMCTS:
         ### EXPANSION
         # Perform a forward pass using the dynamics function (unless already known in the transition table)
         if (s, a) not in self.Ssa:
-            self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
+            r, self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
+            self.Rsa[(s, a)] = r[0]
 
         v = self.search(self.Ssa[(s, a)], count + 1)  # 1-step look ahead state value
         gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
