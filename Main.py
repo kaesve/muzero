@@ -22,6 +22,7 @@ from AlphaZero.Coach import Coach
 from hex.HexGame import HexGame as Game
 from hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 from hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
+from MuZero.MuMCTS import MuZeroMCTS
 
 ALPHAZERO_DEFAULTS = "Experimenter/Configs/SmallModel_AlphaZeroHex.json"
 MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/default.json"
@@ -70,12 +71,17 @@ def learnM0():
 
     b = g.getInitBoard()
     g.display(b)
-    encoded = hex_net.encode(np.stack([b] * net_args.observation_length, axis=-1))
+    obs = np.stack([b] * net_args.observation_length, axis=-1)
+    encoded = hex_net.encode(obs)
     print(encoded.shape)
     v, pi = hex_net.predict(encoded)
 
     r, latent_next = hex_net.forward(encoded, 2)
     print(r, latent_next.shape)
+
+    mcts = MuZeroMCTS(g, hex_net, args)
+    pi_visit = mcts.getActionProb(obs, 1)
+    print(pi_visit)
 
 
 if __name__ == "__main__":

@@ -53,8 +53,11 @@ class MuZeroMCTS:
         self.Ps[s] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * self.Ps[s]
 
     def compute_ucb(self, s, a, exploration_factor):
-        ucb = self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)]) * exploration_factor  # Exploration
-        ucb += self.minmax.normalize(self.Qsa[(s, a)] if (s, a) in self.Qsa else 0)              # Exploitation
+        visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
+        q_value = self.Qsa[(s, a)] if (s, a) in self.Qsa else 0
+
+        ucb = self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + visit_count) * exploration_factor  # Exploration
+        ucb += self.minmax.normalize(q_value)                                               # Exploitation
         return ucb
 
     def getActionProb(self, observations, temp=1):
@@ -75,6 +78,7 @@ class MuZeroMCTS:
         self.search(latent_state, add_exploration_noise=True)  # Add noise on the first search
         for i in range(self.args.numMCTSSims - 1):
             self.search(latent_state)
+            print(i)
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
@@ -125,7 +129,7 @@ class MuZeroMCTS:
         ### SELECTION
         # pick the action with the highest upper confidence bound
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
-        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize())]
+        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
         a = np.argmax(confidence_bounds)
 
         ### EXPANSION

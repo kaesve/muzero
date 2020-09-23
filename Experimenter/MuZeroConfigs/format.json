@@ -13,6 +13,7 @@
     "arenaCompare": "(int) Number of games to play during arena play to determine if new net will be accepted",
     "c1": "(double) First exploration constant for MuZero in the PUCT formula",
     "c2": "(double) Second exploration constant for MuZero in the PUCT formula",
+    "gamma": "(double: [0, 1]) MDP Discounting factor for future rewards",
 
     "zerosum": "(bool) Whether the game being played is a zero-sum game (otherwise a general MDP)",
     "minimum_reward": "(double) Lower bound on the cumulative reward of the environment (null if not known)",
