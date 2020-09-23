@@ -6,6 +6,15 @@ EPS = 1e-8
 class MuZeroMCTS:
     """
     This class handles the MCTS tree.
+
+    TODO: update args data for added hyperparameters:
+        - exploration_fraction (float in [0, 1])
+        - dirichtlet_alpha (float)
+        - minimum_reward (float)
+        - maximum_reward (float)
+        - c1 (float)
+        - c2 (float)
+        - zerosum (bool)
     """
 
     class MinMaxStats(object):
@@ -44,9 +53,10 @@ class MuZeroMCTS:
         return 1
 
     def add_exploration_noise(self, s):
-        prior = self.Ps[s]
+        noise = np.random.dirichlet([self.args.dirichtlet_alpha] * len(self.Ps[s]))
+        self.Ps[s] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * self.Ps[s]
 
-    def compute_upper_confidence_bound(self, s, a, exploration_factor):
+    def compute_ucb(self, s, a, exploration_factor):
         ucb = self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)]) * exploration_factor  # Exploration
         ucb += self.minmax.normalize(self.Qsa[(s, a)] if (s, a) in self.Qsa else 0)              # Exploitation
         return ucb
@@ -63,8 +73,8 @@ class MuZeroMCTS:
         s_0 = self.neural_net.encode(observations)
         s = s_0.tostring()
 
-        # TODO: Add slight Dirichlet noise to the prior of the nodes during training.
-        for i in range(self.args.numMCTSSims):
+        self.search(s_0, add_exploration_noise=True)  # Add noise on the first search
+        for i in range(self.args.numMCTSSims - 1):
             self.search(s_0)
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
@@ -80,7 +90,7 @@ class MuZeroMCTS:
         move_probabilities = counts / np.sum(counts)
         return move_probabilities
 
-    def search(self, latent_state, count=0):
+    def search(self, latent_state, count=0, add_exploration_noise=False):
         """ TODO: Edit documentation
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
@@ -99,13 +109,14 @@ class MuZeroMCTS:
         Returns:
             v: the negative of the value of the current canonicalBoard
         """
-        s = latent_state.tostring()
+        s = latent_state.tostring()  # Hashable representation.
 
+        ### ROLLOUT
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.neural_net.predict(latent_state)
 
-            if len(self.Ps) == 0:  # Add Dirichlet noise to the root prior.
+            if add_exploration_noise:  # Add Dirichlet noise to the root prior.
                 self.add_exploration_noise(s)
 
             self.Ps[s] /= np.sum(self.Ps[s])
@@ -115,17 +126,16 @@ class MuZeroMCTS:
         ### SELECTION
         # pick the action with the highest upper confidence bound
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
-        confidence_bounds = [self.compute_upper_confidence_bound(s, a, exploration_factor)
-                             for a in range(self.game.getActionSize())]
+        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize())]
         a = np.argmax(confidence_bounds)
 
-        ### Expansion/ tree traversal
+        ### EXPANSION
         # Perform a forward pass using the dynamics function (unless already known in the transition table)
         if (s, a) not in self.Ssa:
             self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
 
-        v = self.search(self.Ssa[(s, a)], count + 1)
-        gk = self.Rsa[(s, a)] + self.args.gamma * v  # (Discounted) Value of the current node
+        v = self.search(self.Ssa[(s, a)], count + 1)  # 1-step look ahead state value
+        gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
 
         ### BACKUP
         if (s, a) in self.Qsa:
