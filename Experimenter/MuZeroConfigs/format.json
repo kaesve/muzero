@@ -1,0 +1,36 @@
+{
+  "name": "format",
+
+  "args": {
+    "numIters": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",
+    "numEps": "(int) Number of episodes to perform self play for collecting training examples",
+    "tempThreshold": "(double) A boundary for the exploration temperature when exponentiating visit counts in MCTS",
+    "dirichlet_alpha": "(double) Alpha parameter of the dirichlet distribution to sample noise from for exploration",
+    "exploration_fraction": "(double: [0, 1]) Fraction to sample based on noise of the dirichlet for exploration vs the network prior",
+    "updateThreshold": "(double: [0, 1]) Pitting: new neural net will be accepted if win ratio exceeds this threshold",
+    "maxlenOfQueue": "(int) Maximum number of game examples to train the neural networks on",
+    "numMCTSSims": "(int) Number of planning moves for MCTS to simulate",
+    "arenaCompare": "(int) Number of games to play during arena play to determine if new net will be accepted",
+    "c1": "(double) First exploration constant for MuZero in the PUCT formula",
+    "c2": "(double) Second exploration constant for MuZero in the PUCT formula",
+
+    "zerosum": "(bool) Whether the game being played is a zero-sum game (otherwise a general MDP)",
+    "minimum_reward": "(double) Lower bound on the cumulative reward of the environment (null if not known)",
+    "maximum_reward": "(double) Upper bound on the cumulative reward of the environment (null if not known)",
+
+    "checkpoint": "(path: string) Directory to store sampled experiences and fitted parameters in",
+    "load_model": "(bool) Whether to load in a previously trained model from the checkpoint directory",
+    "load_folder_file": "(Array, ['directory', 'file']) Specify which model to load in",
+    "numItersForTrainExamplesHistory": "(int) Maximum number of self play iterations kept in the deque"
+  },
+
+  "net_args": {
+    "lr": "(double) Learning rate for the neural network's optimizer",
+    "dropout": "(double) DropOut regularization rate for the neural network",
+    "epochs": "(int) Amount of weight updates to perform per self play iteration",
+    "batch_size": "(int) Stochastic gradient descent batch size",
+    "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",
+    "num_channels": "(int) Number of feature maps in the convolutional network",
+    "choice": "(int: [0-3]) Choice between a small (0) or a large (3) neural network"
+  }
+}

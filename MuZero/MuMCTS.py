@@ -6,15 +6,6 @@ EPS = 1e-8
 class MuZeroMCTS:
     """
     This class handles the MCTS tree.
-
-    TODO: update args data for added hyperparameters:
-        - exploration_fraction (float in [0, 1])
-        - dirichtlet_alpha (float)
-        - minimum_reward (float)
-        - maximum_reward (float)
-        - c1 (float)
-        - c2 (float)
-        - zerosum (bool)
     """
 
     class MinMaxStats(object):
@@ -53,7 +44,7 @@ class MuZeroMCTS:
         return 1
 
     def add_exploration_noise(self, s):
-        noise = np.random.dirichlet([self.args.dirichtlet_alpha] * len(self.Ps[s]))
+        noise = np.random.dirichlet([self.args.dirichlet_alpha] * len(self.Ps[s]))
         self.Ps[s] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * self.Ps[s]
 
     def compute_ucb(self, s, a, exploration_factor):
