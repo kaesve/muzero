@@ -10,7 +10,7 @@ from hex.HexGame import HexGame as Game
 from hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 
 ALPHAZERO_DEFAULTS = "Experimenter/Configs/SmallModel_AlphaZeroHex.json"
-
+MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/defaults.json"
 
 BOARD_SIZE = 5
 
@@ -44,8 +44,15 @@ def learnA0():
 
 
 def learnM0():
+    name, net_args, args = unpack_json(ALPHAZERO_DEFAULTS)
+
+    print("Testing:", name)
+
     g = Game(BOARD_SIZE)
 
 
+
+
 if __name__ == "__main__":
-    learnA0()
+    # learnA0()
+    learnM0()

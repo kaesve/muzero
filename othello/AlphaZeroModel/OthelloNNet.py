@@ -10,7 +10,7 @@ from keras.optimizers import *
 class OthelloNNet():
     def __init__(self, game, args):
         # game params
-        self.board_x, self.board_y = game.getBoardSize()
+        self.board_x, self.board_y = game.getDimensions()
         self.action_size = game.getActionSize()
         self.args = args
 

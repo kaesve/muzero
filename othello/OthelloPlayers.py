@@ -7,7 +7,7 @@ class RandomPlayer():
 
     def play(self, board):
         a = np.random.randint(self.game.getActionSize())
-        valids = self.game.getValidMoves(board, 1)
+        valids = self.game.getLegalMoves(board, 1)
         while valids[a]!=1:
             a = np.random.randint(self.game.getActionSize())
         return a
@@ -19,7 +19,7 @@ class HumanOthelloPlayer():
 
     def play(self, board):
         # display(board)
-        valid = self.game.getValidMoves(board, 1)
+        valid = self.game.getLegalMoves(board, 1)
         for i in range(len(valid)):
             if valid[i]:
                 print("[", int(i/self.game.n), int(i%self.game.n), end="] ")
@@ -46,7 +46,7 @@ class GreedyOthelloPlayer():
         self.game = game
 
     def play(self, board):
-        valids = self.game.getValidMoves(board, 1)
+        valids = self.game.getLegalMoves(board, 1)
         candidates = []
         for a in range(self.game.getActionSize()):
             if valids[a]==0:

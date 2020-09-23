@@ -24,7 +24,7 @@ class OthelloGame(Game):
         b = Board(self.n)
         return np.array(b.pieces)
 
-    def getBoardSize(self):
+    def getDimensions(self):
         # (a,b) tuple
         return (self.n, self.n)
 
@@ -32,22 +32,22 @@ class OthelloGame(Game):
         # return number of actions
         return self.n*self.n + 1
 
-    def getNextState(self, board, player, action):
+    def getNextState(self, state, player, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n*self.n:
-            return (board, -player)
+            return (state, -player)
         b = Board(self.n)
-        b.pieces = np.copy(board)
+        b.pieces = np.copy(state)
         move = (int(action/self.n), action%self.n)
         b.execute_move(move, player)
         return (b.pieces, -player)
 
-    def getValidMoves(self, board, player):
+    def getLegalMoves(self, state, player):
         # return a fixed size binary vector
         valids = [0]*self.getActionSize()
         b = Board(self.n)
-        b.pieces = np.copy(board)
+        b.pieces = np.copy(state)
         legalMoves =  b.get_legal_moves(player)
         if len(legalMoves)==0:
             valids[-1]=1
@@ -56,11 +56,11 @@ class OthelloGame(Game):
             valids[self.n*x+y]=1
         return np.array(valids)
 
-    def getGameEnded(self, board, player):
+    def getGameEnded(self, state, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = Board(self.n)
-        b.pieces = np.copy(board)
+        b.pieces = np.copy(state)
         if b.has_legal_moves(player):
             return 0
         if b.has_legal_moves(-player):
@@ -69,9 +69,9 @@ class OthelloGame(Game):
             return 1
         return -1
 
-    def getCanonicalForm(self, board, player):
+    def getCanonicalForm(self, state, player):
         # return state if player==1, else return -state if player==-1
-        return player*board
+        return player * state
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
@@ -89,8 +89,8 @@ class OthelloGame(Game):
                 l += [(newB, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-    def stringRepresentation(self, board):
-        return board.tostring()
+    def stringRepresentation(self, state):
+        return state.tostring()
 
     def stringRepresentationReadable(self, board):
         board_s = "".join(self.square_content[square] for row in board for square in row)

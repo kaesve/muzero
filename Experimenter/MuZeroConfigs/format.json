@@ -30,6 +30,7 @@
     "epochs": "(int) Amount of weight updates to perform per self play iteration",
     "batch_size": "(int) Stochastic gradient descent batch size",
     "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",
-    "num_channels": "(int) Number of feature maps in the convolutional network"
+    "num_channels": "(int) Number of feature maps in the convolutional network",
+    "support_size": "(int) Number of bins for the reward distribution"
   }
 }

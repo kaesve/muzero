@@ -36,7 +36,7 @@ class HexGame(Game):
         b = HexBoard(self.n)
         return b.board
 
-    def getBoardSize(self):
+    def getDimensions(self):
         # (a,b) tuple
         return (self.n, self.n)
 
@@ -44,13 +44,13 @@ class HexGame(Game):
         # return number of actions
         return self.n*self.n + 1
 
-    def getNextState(self, board, player, action):
+    def getNextState(self, state, player, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n*self.n:
-            return (board, -player)
+            return (state, -player)
         b = HexBoard(self.n)
-        b.board = np.copy(board)
+        b.board = np.copy(state)
 
         move = (action//self.n, action%self.n)
         if player == -1:  # Make the move on the transposed board
@@ -62,10 +62,10 @@ class HexGame(Game):
 
         return (b.board, -player)
 
-    def getValidMoves(self, board, player):
+    def getLegalMoves(self, state, player):
         # return a fixed size binary vector
         b = HexBoard(self.n)
-        b.board = np.copy(board)
+        b.board = np.copy(state)
 
         # Order of raveling is done in normal order C or in tranposed order F depending on the player.
         valids = np.append(1 - np.abs(b.board.ravel(order='C' if player == 1 else 'F')), 0)
@@ -77,11 +77,11 @@ class HexGame(Game):
 
         return valids
 
-    def getGameEnded(self, board, player):
+    def getGameEnded(self, state, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = HexBoard(self.n)
-        b.board = np.copy(board)
+        b.board = np.copy(state)
 
         if b.check_win(1):
             return 1 if player == 1 else -1
@@ -91,8 +91,8 @@ class HexGame(Game):
 
         return 0
 
-    def getCanonicalForm(self, board, player):
-        return board if player == 1 else -board.T
+    def getCanonicalForm(self, state, player):
+        return state if player == 1 else -state.T
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
@@ -113,8 +113,8 @@ class HexGame(Game):
 
         return syms
 
-    def stringRepresentation(self, board):
-        return board.tostring()
+    def stringRepresentation(self, state):
+        return state.tostring()
 
     def stringRepresentationReadable(self, board):
         board_s = "".join(self.square_content[square] for row in board for square in row)

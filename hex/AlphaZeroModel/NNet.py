@@ -9,15 +9,12 @@ from .HexNNet import HexNNet as onnet
 sys.path.append('../..')
 
 
-# Refactored args dotdict to class attribute.
-
-
 class NNetWrapper(NeuralNet):
     def __init__(self, game, net_args):
         super().__init__(game)
         self.net_args = net_args
         self.nnet = onnet(game, net_args)
-        self.board_x, self.board_y = game.getBoardSize()
+        self.board_x, self.board_y = game.getDimensions()
         self.action_size = game.getActionSize()
 
     def train(self, examples):
