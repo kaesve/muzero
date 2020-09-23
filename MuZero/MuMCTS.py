@@ -81,13 +81,13 @@ class MuZeroMCTS:
         if temp == 0:
             best_actions = np.array(np.argwhere(counts == np.max(counts))).flatten()
             sample = np.random.choice(best_actions)
-            move_probabilities = np.zeros(len(counts))
+            move_probabilities = [0] * len(counts)
             move_probabilities[sample] = 1
             return move_probabilities
 
         counts = np.power(counts, 1. / temp)
         move_probabilities = counts / np.sum(counts)
-        return move_probabilities
+        return move_probabilities.tolist()
 
     def search(self, latent_state, count=0, add_exploration_noise=False):
         """ TODO: Edit documentation
