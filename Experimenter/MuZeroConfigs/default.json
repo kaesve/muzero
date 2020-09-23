@@ -31,6 +31,6 @@
     "batch_size": 64,
     "cuda": false,
     "num_channels": 256,
-    "support_size": 601
+    "support_size": 1
   }
 }
