@@ -127,7 +127,6 @@ class MuZeroMCTS:
 
         ### SELECTION
         # pick the action with the highest upper confidence bound
-        print(count)
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
         confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
         a = np.argmax(confidence_bounds)
