@@ -59,9 +59,7 @@ class MuZeroCoach:
             temp = int(episode_step < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(canonical_board, temp=temp)
-            sym = self.game.getSymmetries(canonical_board, pi)
-            for b, p in sym:
-                train_examples.append([b, self.current_player, p, None])
+            train_examples.append([canonical_board, self.current_player, pi, None])  # TODO: Change to trajectory
 
             action = np.random.choice(len(pi), p=pi)
             board, self.current_player = self.game.getNextState(board, self.current_player, action)  # flip

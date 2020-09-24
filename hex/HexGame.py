@@ -11,14 +11,13 @@ For documentation we refer to the game-logic class and the parent-class:
 
 from __future__ import print_function
 import sys
-sys.path.append('..')
+import numpy as np
 
 from Game import Game
-
 from .src_joery.hex_skeleton import HexBoard
 from .src_joery.hex_utils import available_moves, make_move
 
-import numpy as np
+sys.path.append('..')
 
 
 class HexGame(Game):
@@ -29,30 +28,33 @@ class HexGame(Game):
     }
 
     def __init__(self, n):
+        super().__init__()
         self.n = n
 
     def getInitBoard(self):
+        super().getInitBoard()
         # return initial board (numpy board)
         b = HexBoard(self.n)
         return b.board
 
     def getDimensions(self):
         # (a,b) tuple
-        return (self.n, self.n)
+        return self.n, self.n
 
     def getActionSize(self):
         # return number of actions
-        return self.n*self.n + 1
+        return self.n * self.n + 1
 
     def getNextState(self, state, player, action):
+        super().getNextState(state, player, action)
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        if action == self.n*self.n:
-            return (state, -player)
+        if action == self.n * self.n:
+            return state, -player
         b = HexBoard(self.n)
         b.board = np.copy(state)
 
-        move = (action//self.n, action%self.n)
+        move = (action // self.n, action % self.n)
         if player == -1:  # Make the move on the transposed board
             move = move[::-1]
 
@@ -60,7 +62,7 @@ class HexGame(Game):
 
         make_move(b, move, player)
 
-        return (b.board, -player)
+        return b.board, -player
 
     def getLegalMoves(self, state, player):
         # return a fixed size binary vector
@@ -96,7 +98,7 @@ class HexGame(Game):
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
-        assert(len(pi) == self.n**2+1)  # 1 for pass
+        assert (len(pi) == self.n ** 2 + 1)  # 1 for pass
         pi_board = np.reshape(pi[:-1], (self.n, self.n))
         syms = []
 

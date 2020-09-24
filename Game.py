@@ -6,11 +6,30 @@ class Game:
 
     Use 1 for player1 and -1 for player2 (if |players| > 1).
 
-    See othello/OthelloGame.py for an example implementation.
+    See hex/HexGame.py for an example implementation.
+
+    Call the necessary super() methods to be able to utilize the GameHistory.
     """
 
+    class GameHistory:
+
+        def __init__(self):
+            self.state_history = list()
+            self.player_history = list()
+            self.action_history = list()
+
+        def capture(self, state, player, action):
+            self.state_history.append(state)
+            self.player_history.append(player)
+            self.action_history.append(action)
+
+        def refresh(self):
+            self.state_history = list()
+            self.player_history = list()
+            self.action_history = list()
+
     def __init__(self):
-        pass
+        self.history = Game.GameHistory()
 
     def getInitBoard(self):
         """
@@ -18,7 +37,7 @@ class Game:
             startState: a representation of the initial state (ideally this is the form
                         that will be the input to your neural network)
         """
-        pass
+        self.history.refresh()
 
     def getDimensions(self):
         """
@@ -45,7 +64,7 @@ class Game:
             nextBoard: board after applying action
             nextPlayer: player who plays in the next turn
         """
-        pass
+        self.history.capture(state, player, action)
 
     def getLegalMoves(self, state, player):
         """

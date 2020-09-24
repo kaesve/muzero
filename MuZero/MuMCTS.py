@@ -123,7 +123,7 @@ class MuZeroMCTS:
 
             self.Ps[s] /= np.sum(self.Ps[s])
             self.Ns[s] = 0
-            return self.turn_indicator(count) * v[0]
+            return self.turn_indicator(count) * v[0]  # TODO: Remove [0] as v should be a scalar.
 
         ### SELECTION
         # pick the action with the highest upper confidence bound

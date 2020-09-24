@@ -23,7 +23,6 @@ class NNetWrapper(MuZeroNeuralNet):
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]
-        print(observations.shape)
         return self.neural_net.encoder.predict(observations)[0]
 
     def forward(self, latent_state, action):
@@ -42,19 +41,36 @@ class NNetWrapper(MuZeroNeuralNet):
         """
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
         pi, v = self.neural_net.predictor.predict(latent_state)
+
+        # TODO: v from support to scalar.
+
         return pi[0], v[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
-        filepath = os.path.join(folder, filename)
+        representation_path = os.path.join(folder, 'r_'+filename)
+        dynamics_path = os.path.join(folder, 'd_'+filename)
+        predictor_path = os.path.join(folder, 'p_'+filename)
         if not os.path.exists(folder):
             print("Checkpoint Directory does not exist! Making directory {}".format(folder))
             os.mkdir(folder)
         else:
             print("Checkpoint Directory exists! ")
-        self.neural_net.model.save_weights(filepath)
+        self.neural_net.encoder.save_weights(representation_path)
+        self.neural_net.dynamics.save_weights(dynamics_path)
+        self.neural_net.predictor.save_weights(predictor_path)
 
     def load_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
-        filepath = os.path.join(folder, filename)
-        if not os.path.exists(filepath):
-            raise ("No AlphaZeroModel in path {}".format(filepath))
-        self.neural_net.model.load_weights(filepath)
+        representation_path = os.path.join(folder, 'r_' + filename)
+        dynamics_path = os.path.join(folder, 'd_' + filename)
+        predictor_path = os.path.join(folder, 'p_' + filename)
+
+        if not os.path.exists(representation_path):
+            raise FileNotFoundError("No AlphaZeroModel in path {}".format(representation_path))
+        if not os.path.exists(dynamics_path):
+            raise FileNotFoundError("No AlphaZeroModel in path {}".format(dynamics_path))
+        if not os.path.exists(predictor_path):
+            raise FileNotFoundError("No AlphaZeroModel in path {}".format(predictor_path))
+
+        self.neural_net.encoder.load_weights(representation_path)
+        self.neural_net.dynamics.load_weights(dynamics_path)
+        self.neural_net.predictor.load_weights(predictor_path)
