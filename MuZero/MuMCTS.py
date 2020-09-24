@@ -137,6 +137,9 @@ class MuZeroMCTS:
 
         v = self.search(self.Ssa[(s, a)], max_depth, count=(count+1))  # 1-step look ahead state value
         gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
+        #
+        # print(gk)
+        # print(self.minmax.maximum, self.minmax.minimum)
 
         ### BACKUP
         if (s, a) in self.Qsa:

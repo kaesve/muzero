@@ -6,9 +6,9 @@ def atari_reward_transform(x, var_eps=0.001):
     return np.sign(x) * (np.sqrt(np.abs(x) + 1) - 1) + var_eps * x
 
 
-def inverse_atari_reward_transform(y, var_eps=0.001):
+def inverse_atari_reward_transform(x, var_eps=0.001):
     # See https://arxiv.org/pdf/1805.11593.pdf
-    return np.sign(y) * (((np.sqrt(1 + 4 * var_eps * (np.abs(y) + 1 + var_eps))) / (2 * var_eps)) ** 2 - 1)
+    return np.sign(x) * (((np.sqrt(1 + 4 * var_eps * (np.abs(x) + 1 + var_eps)) - 1) / (2 * var_eps)) ** 2 - 1)
 
 
 def support_to_scalar(logits, support_size, reward_transformer=inverse_atari_reward_transform, **kwargs):
@@ -19,6 +19,7 @@ def support_to_scalar(logits, support_size, reward_transformer=inverse_atari_rew
     y = bins.dot(logits)
 
     value = reward_transformer(y, **kwargs)
+
     return value
 
 
