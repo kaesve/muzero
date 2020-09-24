@@ -75,9 +75,8 @@ class MuZeroMCTS:
         # Refresh value bounds in the tree
         self.minmax.refresh()
 
-        self.search(latent_state, max_depth=0, add_exploration_noise=True)  # Add noise on the first search
-        for i in range(self.args.numMCTSSims - 1):
-            self.search(latent_state, max_depth=(i+1))
+        for i in range(self.args.numMCTSSims):
+            self.search(latent_state, max_depth=i, add_exploration_noise=(i == 0))  # Add noise only on the first search
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
