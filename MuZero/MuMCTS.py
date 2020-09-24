@@ -75,9 +75,9 @@ class MuZeroMCTS:
         # Refresh value bounds in the tree
         self.minmax.refresh()
 
-        self.search(latent_state, add_exploration_noise=True)  # Add noise on the first search
+        self.search(latent_state, max_depth=0, add_exploration_noise=True)  # Add noise on the first search
         for i in range(self.args.numMCTSSims - 1):
-            self.search(latent_state)
+            self.search(latent_state, max_depth=(i+1))
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
@@ -92,7 +92,7 @@ class MuZeroMCTS:
         move_probabilities = counts / np.sum(counts)
         return move_probabilities.tolist()
 
-    def search(self, latent_state, count=0, add_exploration_noise=False):
+    def search(self, latent_state, max_depth, count=0, add_exploration_noise=False):
         """ TODO: Edit documentation
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
@@ -114,7 +114,7 @@ class MuZeroMCTS:
         s = latent_state.tostring()  # Hashable representation.
 
         ### ROLLOUT
-        if s not in self.Ps:
+        if s not in self.Ps or count == max_depth:
             # leaf node
             self.Ps[s], v = self.neural_net.predict(latent_state)
 
@@ -123,10 +123,11 @@ class MuZeroMCTS:
 
             self.Ps[s] /= np.sum(self.Ps[s])
             self.Ns[s] = 0
-            return self.turn_indicator(count) * v[0]  # TODO: Remove [0] as v should be a scalar.
+            return self.turn_indicator(count) * v
 
         ### SELECTION
         # pick the action with the highest upper confidence bound
+        print(count)
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
         confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
         a = np.argmax(confidence_bounds)
@@ -134,10 +135,9 @@ class MuZeroMCTS:
         ### EXPANSION
         # Perform a forward pass using the dynamics function (unless already known in the transition table)
         if (s, a) not in self.Ssa:
-            r, self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
-            self.Rsa[(s, a)] = r[0]
+            self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
 
-        v = self.search(self.Ssa[(s, a)], count + 1)  # 1-step look ahead state value
+        v = self.search(self.Ssa[(s, a)], max_depth, count=(count+1))  # 1-step look ahead state value
         gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
 
         ### BACKUP

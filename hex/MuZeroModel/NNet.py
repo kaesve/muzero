@@ -2,6 +2,7 @@ import os
 import numpy as np
 import sys
 
+from MuZero.Utils import support_to_scalar, scalar_to_support
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .HexNNet import HexNNet as NetBuilder
 
@@ -33,7 +34,10 @@ class NNetWrapper(MuZeroNeuralNet):
         a_plane = a_plane.reshape((-1, self.board_x, self.board_y))
 
         r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
-        return r[0], s_next[0]
+
+        r_real = support_to_scalar(r[0], self.net_args.support_size)
+
+        return r_real, s_next[0]
 
     def predict(self, latent_state):
         """
@@ -42,9 +46,9 @@ class NNetWrapper(MuZeroNeuralNet):
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
         pi, v = self.neural_net.predictor.predict(latent_state)
 
-        # TODO: v from support to scalar.
+        v_real = support_to_scalar(v[0], self.net_args.support_size)
 
-        return pi[0], v[0]
+        return pi[0], v_real
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
         representation_path = os.path.join(folder, 'r_'+filename)

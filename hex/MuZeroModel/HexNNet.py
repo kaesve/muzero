@@ -57,12 +57,16 @@ class HexNNet:
         stacked = Concatenate(axis=-1)([encoded_state, action_plane])
         reshaped = Reshape((self.board_x, self.board_y, -1))(stacked)
         h_conv2 = self.block(self.args.num_towers, reshaped)
-        latent_state = Activation('relu')(BatchNormalization()(Conv2D(1, 3, padding='same', use_bias=False, name='s_next')(h_conv2)))
+        latent_state = Activation('relu')(
+            BatchNormalization()(Conv2D(1, 3, padding='same', use_bias=False, name='s_next')(h_conv2)))
 
         flattened = Flatten()(latent_state)
-        reward = Dense(self.args.support_size, activation='softmax', name='r')(flattened)
 
-        return reward, latent_state
+        r = Dense(1, activation='linear', name='r')(flattened) \
+            if self.args.support_size == 0 else \
+            Dense(self.args.support_size * 2 + 1, activation='softmax', name='r')(flattened)
+
+        return r, latent_state
 
     def predictor(self, latent_state):
         h_conv2 = self.block(self.args.num_towers, latent_state)
@@ -70,6 +74,8 @@ class HexNNet:
         s_fc1 = Dropout(self.args.dropout)(Activation('relu')(Dense(256)(h_conv2_flat)))
 
         pi = Dense(self.action_size, activation='softmax', name='pi')(s_fc1)
-        v = Dense(1, activation='tanh', name='v')(s_fc1)
+        v = Dense(1, activation='tanh', name='v')(s_fc1) \
+            if self.args.support_size == 0 else \
+            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(s_fc1)
 
         return pi, v

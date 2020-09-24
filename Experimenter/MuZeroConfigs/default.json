@@ -33,7 +33,7 @@
     "cuda": false,
     "num_channels": 2,
     "num_towers": 1,
-    "support_size": 1,
+    "support_size": 0,
     "observation_length": 5
   }
 }
