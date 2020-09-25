@@ -72,21 +72,22 @@ def learnM0():
 
     b = g.getInitBoard()
     g.display(b)
-
-    history = deque([b] * net_args.observation_length, maxlen=net_args.observation_length)
+    # TODO: Important! Pad initial observations with a little noise to prevent a latent-state collapse to 0.
+    history = deque([np.random.randn(*b.shape) * 1e-8] * (net_args.observation_length - 1) + [b], maxlen=net_args.observation_length)
     mcts = MuZeroMCTS(g, hex_net, args)
 
     player = 1
     for i in range(10):
         canon = g.getCanonicalForm(b, player)
         if player == 1:
-            obs = np.stack(history * net_args.observation_length, axis=-1)
+            obs = np.array(history)
 
             pi_visit = mcts.getActionProb(obs, temp=1)
             a = np.random.choice(len(pi_visit), p=pi_visit)
 
             if g.getLegalMoves(canon, player)[a] == 0:
                 print('illegal move')
+                raise Exception("illegal move")
                 a = np.argmax(g.getLegalMoves(canon, 1))
         else:
             a = np.argmax(g.getLegalMoves(canon, 1))
@@ -98,5 +99,5 @@ def learnM0():
 
 if __name__ == "__main__":
     # learnA0()
-    for _ in range(10):
+    for _ in range(100):
         learnM0()
