@@ -32,6 +32,10 @@ class MuZeroCoach:
     def getCheckpointFile(iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'
 
+    def build_trajectory(self, history, o_t):
+
+        return o_t
+
     def executeEpisode(self):
         """
         This function executes one episode of self-play, starting with player 1.
@@ -62,7 +66,8 @@ class MuZeroCoach:
             # Turns to greedy selection after exceeding step threshold
             temp = int(episode_step < self.args.tempThreshold)
 
-            pi = self.mcts.getActionProb(canonical_state, temp=temp)
+            trajectory = self.build_trajectory(train_examples, canonical_state)
+            pi = self.mcts.getActionProb(trajectory, temp=temp)
             action = np.random.choice(len(pi), p=pi)
 
             s_next, r, self.current_player = self.game.getNextState(s, action, self.current_player)  # flip
@@ -73,6 +78,29 @@ class MuZeroCoach:
 
         return [(x[0], x[2], +x[3], +z) if x[1] == self.current_player else  # +reward and +(n-step return)
                 (x[0], x[2], -x[3], -z) for x in train_examples]             # -reward and -(n-step return)
+
+    def selfPlay(self):
+        iteration_train_examples = deque([], maxlen=self.args.maxlenOfQueue)
+
+        eps_time = AverageMeter()
+        bar = Bar('Self Play', max=self.args.numEps)
+        end = time.time()
+
+        for eps in range(self.args.numEps):
+            self.mcts = MCTS(self.game, self.neural_net, self.args)  # reset search tree
+            iteration_train_examples += self.executeEpisode()
+
+            # bookkeeping + plot progress
+            eps_time.update(time.time() - end)
+            end = time.time()
+            bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
+                eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
+                total=bar.elapsed_td, eta=bar.eta_td)
+            bar.next()
+        bar.finish()
+
+        # save the iteration examples to the history
+        self.trainExamplesHistory.append(iteration_train_examples)
 
     def learn(self):
         """
@@ -86,31 +114,10 @@ class MuZeroCoach:
         #   - Prioritized sampling for non zerosum games.
         #   - Constructing observation array (o_1, ..., o_t) from history
         for i in range(1, self.args.numIters + 1):
-            # bookkeeping
             print('------ITER ' + str(i) + '------')
-            # examples of the iteration
+
             if not self.skipFirstSelfPlay or i > 1:
-                iteration_train_examples = deque([], maxlen=self.args.maxlenOfQueue)
-
-                eps_time = AverageMeter()
-                bar = Bar('Self Play', max=self.args.numEps)
-                end = time.time()
-
-                for eps in range(self.args.numEps):
-                    self.mcts = MCTS(self.game, self.neural_net, self.args)  # reset search tree
-                    iteration_train_examples += self.executeEpisode()
-
-                    # bookkeeping + plot progress
-                    eps_time.update(time.time() - end)
-                    end = time.time()
-                    bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                        eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
-                        total=bar.elapsed_td, eta=bar.eta_td)
-                    bar.next()
-                bar.finish()
-
-                # save the iteration examples to the history 
-                self.trainExamplesHistory.append(iteration_train_examples)
+                self.selfPlay()
 
             if len(self.trainExamplesHistory) > self.args.numItersForTrainExamplesHistory:
                 print("len(trainExamplesHistory) =", len(self.trainExamplesHistory),
