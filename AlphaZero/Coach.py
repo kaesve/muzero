@@ -59,7 +59,7 @@ class Coach:
                 trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
-            board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)  # FLip
+            board, reward, self.curPlayer = self.game.getNextState(board, action, self.curPlayer)  # FLip
 
             r = self.game.getGameEnded(board, self.curPlayer)
 

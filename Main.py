@@ -72,7 +72,7 @@ def learnM0():
 
     b = g.getInitBoard()
     g.display(b)
-    # TODO: Important! Pad initial observations with a little noise to prevent a latent-state collapse to 0.
+    # TODO: Important! Perturb sequences before the 0th observation with slight noise to prevent state collapse to 0.
     history = deque([np.random.randn(*b.shape) * 1e-8] * (net_args.observation_length - 1) + [b], maxlen=net_args.observation_length)
     mcts = MuZeroMCTS(g, hex_net, args)
 
@@ -81,14 +81,8 @@ def learnM0():
         canon = g.getCanonicalForm(b, player)
         if player == 1:
             obs = np.array(history)
-
             pi_visit = mcts.getActionProb(obs, temp=1)
             a = np.random.choice(len(pi_visit), p=pi_visit)
-
-            if g.getLegalMoves(canon, player)[a] == 0:
-                print('illegal move')
-                raise Exception("illegal move")
-                a = np.argmax(g.getLegalMoves(canon, 1))
         else:
             a = np.argmax(g.getLegalMoves(canon, 1))
 

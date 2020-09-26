@@ -33,7 +33,7 @@
     "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",
     "num_channels": "(int) Number of feature maps in the convolutional network",
     "num_towers": "(int) Number of convolutional towers to place in each network",
-    "support_size": "(int) Number of bins for the reward distribution (defaults to a Gaussian if set to 1)",
+    "support_size": "(int) Number of integers for the reward distribution (defaults to a Gaussian if set to 0)",
     "observation_length": "(int) Number of observations in the history to be passed into the encoder"
   }
 }

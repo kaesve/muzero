@@ -18,10 +18,10 @@ class Game:
             self.player_history = list()
             self.action_history = list()
 
-        def capture(self, state, player, action):
+        def capture(self, state, action, player):
             self.state_history.append(state)
-            self.player_history.append(player)
             self.action_history.append(action)
+            self.player_history.append(player)
 
         def refresh(self):
             self.state_history = list()
@@ -53,7 +53,7 @@ class Game:
         """
         pass
 
-    def getNextState(self, state, player, action):
+    def getNextState(self, state, action, player):
         """
         Input:
             state: current state
@@ -61,10 +61,11 @@ class Game:
             action: action taken by current player
 
         Returns:
-            nextBoard: board after applying action
+            nextState: State after applying action
+            reward: Immediate observed reward (default should be 0 for most boardgames)
             nextPlayer: player who plays in the next turn
         """
-        self.history.capture(state, player, action)
+        self.history.capture(state, action, player)
 
     def getLegalMoves(self, state, player):
         """

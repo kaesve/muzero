@@ -18,10 +18,10 @@ class MuZeroCoach:
     in Game and NeuralNet. args are specified in main.py.
     """
 
-    def __init__(self, game, nnet, args):
+    def __init__(self, game, neural_net, args):
         self.game = game
-        self.neural_net = nnet
-        self.opponent_net = self.neural_net.__class__(self.game, nnet.net_args)  # the competitor network
+        self.neural_net = neural_net
+        self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args)  # the competitor network
         self.args = args
         self.mcts = MCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = []  # history of examples from args.numItersForTrainExamplesHistory last iterations
@@ -44,30 +44,34 @@ class MuZeroCoach:
         uses temp=0.
 
         Returns:
-            train_examples: a list of examples of the form (canonical_board, currPlayer, pi,v)
+            train_examples: a list of examples of the form (canonical_state, currPlayer, pi,v)
                            pi is the MCTS informed policy vector, v is +1 if
                            the player eventually won the game, else -1.
         """
-        train_examples = []
-        board = self.game.getInitBoard()
+        train_examples = list()
+        s = self.game.getInitBoard()
         self.current_player = 1
         episode_step = 0
+        z = 0
 
-        while True:
+        while z == 0:
             episode_step += 1
-            canonical_board = self.game.getCanonicalForm(board, self.current_player)  # flip
+            canonical_state = self.game.getCanonicalForm(s, self.current_player)
+
+            # Turns to greedy selection after exceeding step threshold
             temp = int(episode_step < self.args.tempThreshold)
 
-            pi = self.mcts.getActionProb(canonical_board, temp=temp)
-            train_examples.append([canonical_board, self.current_player, pi, None])  # TODO: Change to trajectory
-
+            pi = self.mcts.getActionProb(canonical_state, temp=temp)
             action = np.random.choice(len(pi), p=pi)
-            board, self.current_player = self.game.getNextState(board, self.current_player, action)  # flip
 
-            r = self.game.getGameEnded(board, self.current_player)
+            s_next, r, self.current_player = self.game.getNextState(s, action, self.current_player)  # flip
+            train_examples.append([canonical_state, self.current_player, pi, r, None])
 
-            if r != 0:
-                return [(x[0], x[2], r * ((-1) ** (x[1] != self.current_player))) for x in train_examples]
+            z = self.game.getGameEnded(s_next, self.current_player)
+            s = s_next
+
+        return [(x[0], x[2], +x[3], +z) if x[1] == self.current_player else  # +reward and +(n-step return)
+                (x[0], x[2], -x[3], -z) for x in train_examples]             # -reward and -(n-step return)
 
     def learn(self):
         """
@@ -77,7 +81,9 @@ class MuZeroCoach:
         It then pits the new neural network against the old one and accepts it
         only if it wins >= updateThreshold fraction of games.
         """
-
+        # TODO:
+        #   - Prioritized sampling for non zerosum games.
+        #   - Constructing observation array (o_1, ..., o_t) from history
         for i in range(1, self.args.numIters + 1):
             # bookkeeping
             print('------ITER ' + str(i) + '------')
