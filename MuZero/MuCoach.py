@@ -44,9 +44,10 @@ class MuZeroCoach:
         uses temp=0.
 
         Returns:
-            train_examples: a list of examples of the form (canonical_state, currPlayer, pi,v)
-                           pi is the MCTS informed policy vector, v is +1 if
-                           the player eventually won the game, else -1.
+            train_examples: a list of examples of the form (canonical_state, currPlayer, pi, r, v)
+                           pi is the MCTS informed policy vector, r and v are the reward and
+                           n-step returns (game outcomes for boardgames). If the last player equals
+                           currPlayer, then r and v are positive, otherwise they are negated.
         """
         train_examples = list()
         s = self.game.getInitBoard()
