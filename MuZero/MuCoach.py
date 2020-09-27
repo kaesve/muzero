@@ -85,7 +85,7 @@ class MuZeroCoach:
         history_index_borders = np.cumsum(lengths)
         history_indices = [np.sum(i > history_index_borders) for i in indices]
 
-        # Of the form [(history_i, t), ...]
+        # Of the form [(history_i, t), ...] \equiv history_it
         samples = [(history_indices, history_index_borders[i] - indices[i]) for i in range(len(indices))]
         update_strength = update_strength[indices]
 
