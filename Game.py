@@ -7,29 +7,10 @@ class Game:
     Use 1 for player1 and -1 for player2 (if |players| > 1).
 
     See hex/HexGame.py for an example implementation.
-
-    Call the necessary super() methods to be able to utilize the GameHistory.
     """
 
-    class GameHistory:
-
-        def __init__(self):
-            self.state_history = list()
-            self.player_history = list()
-            self.action_history = list()
-
-        def capture(self, state, action, player):
-            self.state_history.append(state)
-            self.action_history.append(action)
-            self.player_history.append(player)
-
-        def refresh(self):
-            self.state_history = list()
-            self.player_history = list()
-            self.action_history = list()
-
     def __init__(self):
-        self.history = Game.GameHistory()
+        pass
 
     def getInitBoard(self):
         """
@@ -37,7 +18,7 @@ class Game:
             startState: a representation of the initial state (ideally this is the form
                         that will be the input to your neural network)
         """
-        self.history.refresh()
+        pass
 
     def getDimensions(self):
         """
@@ -65,7 +46,7 @@ class Game:
             reward: Immediate observed reward (default should be 0 for most boardgames)
             nextPlayer: player who plays in the next turn
         """
-        self.history.capture(state, action, player)
+        pass
 
     def getLegalMoves(self, state, player):
         """
@@ -106,6 +87,9 @@ class Game:
                             board as is. When the player is black, we can invert
                             the colors and return the board.
         """
+        pass
+
+    def buildTrajectory(self, history, ):
         pass
 
     def getSymmetries(self, state, pi):

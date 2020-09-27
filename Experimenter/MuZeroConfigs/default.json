@@ -7,10 +7,8 @@
     "tempThreshold": 15,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.25,
-    "updateThreshold": 0.6,
     "maxlenOfQueue": 200000,
     "numMCTSSims": 25,
-    "arenaCompare": 40,
     "prioritize": false,
     "prioritize_alpha": 1,
     "prioritize_beta": 1,
@@ -25,7 +23,7 @@
 
     "checkpoint": "./MuZeroOut/",
     "load_model": false,
-    "load_folder_file": ["./MuZeroOut/", "best.pth.tar"],
+    "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
     "numItersForTrainExamplesHistory": 20
   },
 

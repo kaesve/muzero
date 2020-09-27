@@ -3,11 +3,9 @@ import sys
 import time
 from collections import deque
 from pickle import Pickler, Unpickler
-from random import shuffle
 
 import numpy as np
 
-from Arena import Arena
 from AlphaZero.MCTS import MCTS
 from utils import Bar, AverageMeter
 
@@ -18,23 +16,36 @@ class MuZeroCoach:
     in Game and NeuralNet. args are specified in main.py.
     """
 
+    class GameHistory:
+
+        def __init__(self):
+            self.state_history = list()
+            self.player_history = list()
+            self.action_history = list()
+
+        def capture(self, state, action, player):
+            self.state_history.append(state)
+            self.action_history.append(action)
+            self.player_history.append(player)
+
+        def refresh(self):
+            self.state_history = list()
+            self.player_history = list()
+            self.action_history = list()
+
     def __init__(self, game, neural_net, args):
         self.game = game
         self.neural_net = neural_net
         self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args)  # the competitor network
         self.args = args
         self.mcts = MCTS(self.game, self.neural_net, self.args)
-        self.trainExamplesHistory = []  # history of examples from args.numItersForTrainExamplesHistory last iterations
+        self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
         self.skipFirstSelfPlay = False  # can be overridden in loadTrainExamples()
         self.current_player = 1
 
     @staticmethod
     def getCheckpointFile(iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'
-
-    def build_trajectory(self, history, o_t):
-
-        return o_t
 
     def executeEpisode(self):
         """
@@ -59,7 +70,7 @@ class MuZeroCoach:
         self.current_player = 1
         episode_step = 0
 
-        while self.game.getGameEnded(s, self.current_player):
+        while not self.game.getGameEnded(s, self.current_player):
             episode_step += 1
             observation = self.game.buildTrajectory(history)
             temp = int(episode_step < self.args.tempThreshold)
@@ -86,19 +97,18 @@ class MuZeroCoach:
         end = time.time()
 
         for eps in range(self.args.numEps):
-            self.mcts = MCTS(self.game, self.neural_net, self.args)  # reset search tree
+            self.mcts = MCTS(self.game, self.neural_net, self.args)  # Reset the search tree
             iteration_train_examples += self.executeEpisode()
 
-            # bookkeeping + plot progress
+            # Bookkeeping + plot progress
             eps_time.update(time.time() - end)
             end = time.time()
             bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
-                total=bar.elapsed_td, eta=bar.eta_td)
+                eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg, total=bar.elapsed_td, eta=bar.eta_td)
             bar.next()
         bar.finish()
 
-        # save the iteration examples to the history
+        # Store data from previous self-play iterations into the history
         self.trainExamplesHistory.append(iteration_train_examples)
 
     def learn(self):
@@ -109,50 +119,34 @@ class MuZeroCoach:
         It then pits the new neural network against the old one and accepts it
         only if it wins >= updateThreshold fraction of games.
         """
-        # TODO:
-        #   - Prioritized sampling for non zerosum games.
-        #   - Constructing observation array (o_1, ..., o_t) from history
         for i in range(1, self.args.numIters + 1):
-            print('------ITER ' + str(i) + '------')
+            print('------ITER {}------'.format(i))
 
             if not self.skipFirstSelfPlay or i > 1:
                 self.selfPlay()
 
-            if len(self.trainExamplesHistory) > self.args.numItersForTrainExamplesHistory:
-                print("len(trainExamplesHistory) =", len(self.trainExamplesHistory),
-                      " => remove the oldest train_examples")
-                self.trainExamplesHistory.pop(0)
-            # backup history to a file
-            # NB! the examples were collected using the AlphaZeroModel from the previous iteration, so (i-1)
+            n = len(self.trainExamplesHistory)
+            print("Replay buffer filled with data from {} self play iterations, at {} of maximum capacity.".format(
+                n, n / self.args.numItersForTrainExamplesHistory))
+
+            # Backup history to a file
             self.saveTrainExamples(i - 1)
 
-            # shuffle examples before training
-            train_examples = []
-            for e in self.trainExamplesHistory:
-                train_examples.extend(e)
-            shuffle(train_examples)
+            # Extract all and shuffle examples before training
+            complete_history = list()
+            for episode_history in self.trainExamplesHistory:
+                complete_history += episode_history
+            np.random.shuffle(complete_history)
 
-            # training new network, keeping a copy of the old one
-            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-            self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-            pmcts = MCTS(self.game, self.opponent_net, self.args)
+            # Backpropagation
+            self.neural_net.train(complete_history)  # TODO: Complete history or a batch? Also: Prioritized sampling.
 
-            self.neural_net.train(train_examples)
-            nmcts = MCTS(self.game, self.neural_net, self.args)
+            print('Storing a snapshot of the new model')
+            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
 
-            print('PITTING AGAINST PREVIOUS VERSION')
-            arena = Arena(lambda x: np.argmax(pmcts.getActionProb(x, temp=0)),
-                          lambda x: np.argmax(nmcts.getActionProb(x, temp=0)), self.game)
-            pwins, nwins, draws = arena.playGames(self.args.arenaCompare)
-
-            print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
-            if pwins + nwins == 0 or float(nwins) / (pwins + nwins) < self.args.updateThreshold:
-                print('REJECTING NEW MODEL')
-                self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-            else:
-                print('ACCEPTING NEW MODEL')
-                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
-                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+            # Make copy network for the opponent (TODO: Direct keras getweights/ setweights memory leak?)
+            self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
 
     def saveTrainExamples(self, iteration):
         folder = self.args.checkpoint
@@ -161,6 +155,11 @@ class MuZeroCoach:
         filename = os.path.join(folder, self.getCheckpointFile(iteration) + ".examples")
         with open(filename, "wb+") as f:
             Pickler(f).dump(self.trainExamplesHistory)
+
+        # Don't hog up storage space and clean up old (never to be used again) data.
+        old_checkpoint = os.path.join(folder, self.getCheckpointFile(iteration-1) + '.examples')
+        if os.path.isfile(old_checkpoint):
+            os.remove(old_checkpoint)
 
     def loadTrainExamples(self):
         model_file = os.path.join(self.args.load_folder_file[0], self.args.load_folder_file[1])
