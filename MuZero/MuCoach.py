@@ -17,6 +17,9 @@ class MuZeroCoach:
     """
 
     class GameHistory:
+        """
+        Data container for keeping track of games
+        """
 
         def __init__(self):
             self.states = list()
@@ -41,7 +44,7 @@ class MuZeroCoach:
 
         def refresh(self):
             self.states, self.players, self.actions, self.probabilities, \
-                self.rewards, self.predicted_returns, self.actual_returns = [[] for _ in range(7)]
+            self.rewards, self.predicted_returns, self.actual_returns = [[] for _ in range(7)]
 
     def __init__(self, game, neural_net, args):
         self.game = game
@@ -55,6 +58,40 @@ class MuZeroCoach:
     @staticmethod
     def getCheckpointFile(iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'
+
+    def sampleBatch(self, histories):
+        lengths = list(map(len, histories))
+        total_data_length = sum(lengths)
+        n = self.neural_net.net_args.batch_size
+
+        # Array of sampling probabilities over the range (0, total_data_length)
+        sampling_probability = None
+        update_strength = 1 / n  # == Uniform weight update strength over batch.
+
+        if self.args.prioritize:
+            errors = np.array([np.abs(h.predicted_returns[i] - h.actual_returns[i])
+                               for h in histories for i in range(len(h))])
+
+            mass = np.pow(errors, self.args.prioritize_alpha)  # un-normalized mass
+            sampling_probability = mass / np.sum(mass)
+
+            # Adjust weight update strength proportionally to IS-ratio to prevent sampling bias.
+            update_strength = np.power(n * sampling_probability, -self.args.prioritize_beta)
+
+        indices = np.random.choice(a=total_data_length, size=self.neural_net.net_args.batch_size,
+                                   replace=False, p=sampling_probability)
+
+        # Map the flat indices to the correct histories and history indices.
+        history_index_borders = np.cumsum(lengths)
+        history_indices = [np.sum(i > history_index_borders) for i in indices]
+
+        # Of the form [(history_i, t), ...]
+        samples = [(history_indices, history_index_borders[i] - indices[i]) for i in range(len(indices))]
+        update_strength = update_strength[indices]
+
+        # TODO: Constructing training batch.
+
+        return histories
 
     def computeReturns(self, history):  # TODO: Testing of this function.
         # Update the MCTS estimate v_t with the more accurate estimates z_t
@@ -74,19 +111,14 @@ class MuZeroCoach:
     def executeEpisode(self):
         """
         This function executes one episode of self-play, starting with player 1.
-        As the game is played, each turn is added as a training example to
-        training_statistics. The game is played till the game ends. After the game
-        ends, the outcome of the game is used to assign values to each example
-        in training_statistics.
 
         It uses a temp=1 if episode_step < tempThreshold, and thereafter
         uses temp=0.
 
         Returns:
-            training_statistics: a list of examples of the form (canonical_state, currPlayer, pi, r, v)
-                           pi is the MCTS informed policy vector, r and v are the reward and
-                           n-step returns (game outcomes for boardgames). If the last player equals
-                           currPlayer, then r and v are positive, otherwise they are negated.
+            history: A data structure containing all observed states and statistics
+                     from the perspective of the past current players.
+                     The structure is of the form (s_t, a_t, player_t, pi_t, r_t, v_t, z_t)
         """
         history = self.GameHistory()
         s = self.game.getInitialState()
@@ -98,7 +130,7 @@ class MuZeroCoach:
             temp = int(episode_step < self.args.tempThreshold)
 
             # Construct an observation array (o_1, ..., o_t).
-            observation_array = self.game.buildTrajectory(history, s)
+            observation_array = self.game.buildTrajectory(history, s, self.current_player)
 
             # Compute the move probability vector and state value using MCTS.
             pi, v = self.mcts.runMCTS(observation_array, temp=temp)
@@ -111,7 +143,7 @@ class MuZeroCoach:
             # Update state of control
             self.current_player = next_player
             episode_step += 1
-            s = s_next
+            s = self.game.getCanonicalForm(s_next, self.current_player)
 
         # Compute z_t for each observation. N-step returns for general MDPs or game outcomes for boardgames
         self.computeReturns(history)
@@ -163,14 +195,14 @@ class MuZeroCoach:
             # Backup history to a file
             self.saveTrainExamples(i - 1)
 
-            # Extract all and shuffle examples before training
+            # Flatten examples over self-play episodes and sample a training batch.
             complete_history = list()
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
-            np.random.shuffle(complete_history)
+            batch = self.sampleBatch(complete_history)
 
             # Backpropagation
-            self.neural_net.train(complete_history)  # TODO: Complete history or a batch? Also: Prioritized sampling.
+            self.neural_net.train(batch)
 
             print('Storing a snapshot of the new model')
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))

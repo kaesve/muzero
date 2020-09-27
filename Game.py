@@ -76,7 +76,7 @@ class Game:
     def getCanonicalForm(self, state, player):
         """
         Input:
-            board: current state
+            state: current state
             player: current player (1 or -1)
 
         Returns:
@@ -89,7 +89,19 @@ class Game:
         """
         pass
 
-    def buildTrajectory(self, history, current_state):
+    def buildTrajectory(self, history, current_state, current_player, t=None):
+        """
+        Input:
+            history: Some data structure that can be queried for past observations.
+            current_state: Current observation of the environment.
+            current_player: Current player (-1 or 1)
+            t: optional Specifies the index of current state within history (if present)
+
+        Returns:
+            trajectory: Game specific array of observed features over time.
+                        Feature planes are flattened over time, such that
+                        the number of planes = time x features.
+        """
         pass
 
     def getSymmetries(self, state, pi):

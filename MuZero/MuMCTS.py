@@ -72,7 +72,8 @@ class MuZeroMCTS:
     def runMCTS(self, observations, temp=1):
         """
         This function performs numMCTSSims simulations of MCTS starting from
-        a history (array) of past observations.
+        a history (array) of past observations. The current state observation must
+        be at the front of the observations array! observations[-1] == o_t
 
         Returns:
             move_probabilities: a policy vector where the probability of the ith action is
