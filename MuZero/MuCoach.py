@@ -48,6 +48,11 @@ class MuZeroCoach:
                            pi is the MCTS informed policy vector, v is +1 if
                            the player eventually won the game, else -1.
         """
+
+        board_history = []
+        action_history = []
+        player_history = []
+
         train_examples = []
         board = self.game.getInitBoard()
         self.current_player = 1
@@ -55,14 +60,18 @@ class MuZeroCoach:
 
         while True:
             episode_step += 1
-            canonical_board = self.game.getCanonicalForm(board, self.current_player)  # flip
+            observation = self.game.buildImage(board_history, action_history, player_history)  # flip
             temp = int(episode_step < self.args.tempThreshold)
 
-            pi = self.mcts.getActionProb(canonical_board, temp=temp)
-            train_examples.append([canonical_board, self.current_player, pi, None])  # TODO: Change to trajectory
+            pi = self.mcts.getActionProb(observation, temp=temp)
+            train_examples.append([observation, self.current_player, pi, None])  # TODO: Change to trajectory
 
-            action = np.random.choice(len(pi), p=pi)
+            action = self.mcts.selectAction(pi)
+            # action = np.random.choice(len(pi), p=pi)
             board, self.current_player = self.game.getNextState(board, self.current_player, action)  # flip
+            board_history.append(board)
+            action_history.append(action)
+            player_history.append(self.current_player)
 
             r = self.game.getGameEnded(board, self.current_player)
 

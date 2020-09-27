@@ -130,3 +130,6 @@ class Game:
                          Required by MCTS for hashing.
         """
         pass
+
+    def buildImage(self, state_history, action_history, player_history):
+        pass
