@@ -51,7 +51,7 @@ class Arena:
             if valids[action] == 0:
                 assert valids[action] > 0  # TODO MuZero Invalid action handling (no error, but a loss)
 
-            board, curPlayer = self.game.getNextState(board, curPlayer, action)
+            board, curPlayer = self.game.getNextState(board, action, curPlayer)
         if verbose:
             assert (self.display)
             print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))

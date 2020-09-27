@@ -18,10 +18,10 @@ class MuZeroCoach:
     in Game and NeuralNet. args are specified in main.py.
     """
 
-    def __init__(self, game, nnet, args):
+    def __init__(self, game, neural_net, args):
         self.game = game
-        self.neural_net = nnet
-        self.opponent_net = self.neural_net.__class__(self.game, nnet.net_args)  # the competitor network
+        self.neural_net = neural_net
+        self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args)  # the competitor network
         self.args = args
         self.mcts = MCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = []  # history of examples from args.numItersForTrainExamplesHistory last iterations
@@ -31,6 +31,10 @@ class MuZeroCoach:
     @staticmethod
     def getCheckpointFile(iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'
+
+    def build_trajectory(self, history, o_t):
+
+        return o_t
 
     def executeEpisode(self):
         """
@@ -44,39 +48,58 @@ class MuZeroCoach:
         uses temp=0.
 
         Returns:
-            train_examples: a list of examples of the form (canonical_board, currPlayer, pi,v)
-                           pi is the MCTS informed policy vector, v is +1 if
-                           the player eventually won the game, else -1.
+            train_examples: a list of examples of the form (canonical_state, currPlayer, pi, r, v)
+                           pi is the MCTS informed policy vector, r and v are the reward and
+                           n-step returns (game outcomes for boardgames). If the last player equals
+                           currPlayer, then r and v are positive, otherwise they are negated.
         """
 
-        board_history = []
-        action_history = []
-        player_history = []
-
-        train_examples = []
-        board = self.game.getInitBoard()
+        history, train_examples = list(), list()
+        s = self.game.getInitBoard()
         self.current_player = 1
         episode_step = 0
 
-        while True:
+        while self.game.getGameEnded(s, self.current_player):
             episode_step += 1
-            observation = self.game.buildImage(board_history, action_history, player_history)  # flip
+            observation = self.game.buildImage(board_history, action_history, player_history)
             temp = int(episode_step < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(observation, temp=temp)
-            train_examples.append([observation, self.current_player, pi, None])  # TODO: Change to trajectory
+            action = np.random.choice(len(pi), p=pi)
 
-            action = self.mcts.selectAction(pi)
-            # action = np.random.choice(len(pi), p=pi)
-            board, self.current_player = self.game.getNextState(board, self.current_player, action)  # flip
-            board_history.append(board)
-            action_history.append(action)
-            player_history.append(self.current_player)
+            s_next, r, self.current_player = self.game.getNextState(s, action, self.current_player)
+            
+            train_examples.append([canonical_state, self.current_player, pi, r, None])
+            history.append((s_next, action, self.current_player))
+            
+            s = s_next
 
-            r = self.game.getGameEnded(board, self.current_player)
+        # TODO: n step return computation
+        return [(x[0], x[2], +x[3], +1) if x[1] == self.current_player else  # +reward and +(n-step return)
+                (x[0], x[2], -x[3], -1) for x in train_examples]             # -reward and -(n-step return)
 
-            if r != 0:
-                return [(x[0], x[2], r * ((-1) ** (x[1] != self.current_player))) for x in train_examples]
+    def selfPlay(self):
+        iteration_train_examples = deque([], maxlen=self.args.maxlenOfQueue)
+
+        eps_time = AverageMeter()
+        bar = Bar('Self Play', max=self.args.numEps)
+        end = time.time()
+
+        for eps in range(self.args.numEps):
+            self.mcts = MCTS(self.game, self.neural_net, self.args)  # reset search tree
+            iteration_train_examples += self.executeEpisode()
+
+            # bookkeeping + plot progress
+            eps_time.update(time.time() - end)
+            end = time.time()
+            bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
+                eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
+                total=bar.elapsed_td, eta=bar.eta_td)
+            bar.next()
+        bar.finish()
+
+        # save the iteration examples to the history
+        self.trainExamplesHistory.append(iteration_train_examples)
 
     def learn(self):
         """
@@ -86,33 +109,14 @@ class MuZeroCoach:
         It then pits the new neural network against the old one and accepts it
         only if it wins >= updateThreshold fraction of games.
         """
-
+        # TODO:
+        #   - Prioritized sampling for non zerosum games.
+        #   - Constructing observation array (o_1, ..., o_t) from history
         for i in range(1, self.args.numIters + 1):
-            # bookkeeping
             print('------ITER ' + str(i) + '------')
-            # examples of the iteration
+
             if not self.skipFirstSelfPlay or i > 1:
-                iteration_train_examples = deque([], maxlen=self.args.maxlenOfQueue)
-
-                eps_time = AverageMeter()
-                bar = Bar('Self Play', max=self.args.numEps)
-                end = time.time()
-
-                for eps in range(self.args.numEps):
-                    self.mcts = MCTS(self.game, self.neural_net, self.args)  # reset search tree
-                    iteration_train_examples += self.executeEpisode()
-
-                    # bookkeeping + plot progress
-                    eps_time.update(time.time() - end)
-                    end = time.time()
-                    bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                        eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg,
-                        total=bar.elapsed_td, eta=bar.eta_td)
-                    bar.next()
-                bar.finish()
-
-                # save the iteration examples to the history 
-                self.trainExamplesHistory.append(iteration_train_examples)
+                self.selfPlay()
 
             if len(self.trainExamplesHistory) > self.args.numItersForTrainExamplesHistory:
                 print("len(trainExamplesHistory) =", len(self.trainExamplesHistory),

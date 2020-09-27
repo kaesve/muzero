@@ -45,8 +45,8 @@ class HexGame(Game):
         # return number of actions
         return self.n * self.n + 1
 
-    def getNextState(self, state, player, action):
-        super().getNextState(state, player, action)
+    def getNextState(self, state, action, player):
+        super().getNextState(state, action, player)
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n * self.n:
@@ -62,7 +62,7 @@ class HexGame(Game):
 
         make_move(b, move, player)
 
-        return b.board, -player
+        return b.board, 0, -player
 
     def getLegalMoves(self, state, player):
         # return a fixed size binary vector
