@@ -132,5 +132,5 @@ class Game:
         """
         pass
 
-    def buildImage(self, state_history, action_history, player_history):
+    def buildTrajectory(self, history):
         pass

@@ -61,7 +61,7 @@ class MuZeroCoach:
 
         while self.game.getGameEnded(s, self.current_player):
             episode_step += 1
-            observation = self.game.buildImage(board_history, action_history, player_history)
+            observation = self.game.buildTrajectory(history)
             temp = int(episode_step < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(observation, temp=temp)
