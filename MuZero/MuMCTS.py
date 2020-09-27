@@ -40,9 +40,12 @@ class MuZeroMCTS:
         self.Ssa = {}  # stores latent state transition for s_k, a
         self.Rsa = {}  # stores R values for s,a
         self.Nsa = {}  # stores #times edge s,a was visited
-        self.Ns = {}   # stores #times board s was visited
-        self.Ps = {}   # stores initial policy (returned by neural net)
-        self.Vs = {}   # stores valid moves at the ROOT node.
+        self.Ns = {}  # stores #times board s was visited
+        self.Ps = {}  # stores initial policy (returned by neural net)
+        self.Vs = {}  # stores valid moves at the ROOT node.
+
+    def clear_tree(self):
+        self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
     def turn_indicator(self, counter):
         if self.args.zerosum:
@@ -66,7 +69,7 @@ class MuZeroMCTS:
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
         return ucb
 
-    def getActionProb(self, observations, temp=1):
+    def runMCTS(self, observations, temp=1):
         """
         This function performs numMCTSSims simulations of MCTS starting from
         a history (array) of past observations.
@@ -74,6 +77,7 @@ class MuZeroMCTS:
         Returns:
             move_probabilities: a policy vector where the probability of the ith action is
                    proportional to Nsa[(s,a)]**(1./temp)
+            v: (float) Estimated value of the root state.
         """
         latent_state = self.neural_net.encode(observations)
         s = latent_state.tostring()  # Hashable representation
@@ -83,8 +87,11 @@ class MuZeroMCTS:
         # Initialize legal moves ONLY at the root.
         self.Vs[s] = self.game.getLegalMoves(state=observations[-1], player=1)
 
+        v_sum = 0
         for i in range(self.args.numMCTSSims):
-            self.search(latent_state, root=(i == 0))  # Add noise only on the first search
+            v_sum += self._search(latent_state, root=(i == 0))  # Add noise only on the first search
+
+        v = v_sum / self.args.numMCTSSims
 
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
@@ -97,9 +104,9 @@ class MuZeroMCTS:
 
         counts = np.power(counts, 1. / temp)
         move_probabilities = counts / np.sum(counts)
-        return move_probabilities.tolist()
+        return move_probabilities.tolist(), v
 
-    def search(self, latent_state, count=0, root=False):
+    def _search(self, latent_state, count=0, root=False):
         """ TODO: Edit documentation
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
@@ -150,7 +157,7 @@ class MuZeroMCTS:
         if (s, a) not in self.Ssa:
             self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
 
-        v = self.search(self.Ssa[(s, a)], count+1)  # 1-step look ahead state value
+        v = self._search(self.Ssa[(s, a)], count + 1)  # 1-step look ahead state value
         gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
 
         ### BACKUP

@@ -13,6 +13,7 @@
     "prioritize_alpha": 1,
     "prioritize_beta": 1,
     "K": 5,
+    "n_steps": 10,
     "c1": 1.25,
     "c2": 19652,
     "gamma": 0.997,

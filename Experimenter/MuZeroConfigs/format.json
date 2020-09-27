@@ -13,6 +13,7 @@
     "prioritize_alpha": "(double) Exponentiation factor for computing probabilities in prioritized replay",
     "prioritize_beta": "(double) Exponentiation factor for exponentiating the importance sampling ratio in prioritized replay",
     "K": "(int > 0) Number of 'hypothetical' steps to unroll the MuZero network for during backpropagation",
+    "n_steps": "(int > 0) Amount of steps to look ahead for rewards before bootstrapping (value function estimation)",
     "c1": "(double) First exploration constant for MuZero in the PUCT formula",
     "c2": "(double) Second exploration constant for MuZero in the PUCT formula",
     "gamma": "(double: [0, 1]) MDP Discounting factor for future rewards",

@@ -31,8 +31,8 @@ class HexGame(Game):
         super().__init__()
         self.n = n
 
-    def getInitBoard(self):
-        super().getInitBoard()
+    def getInitialState(self):
+        super().getInitialState()
         # return initial board (numpy board)
         b = HexBoard(self.n)
         return b.board

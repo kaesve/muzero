@@ -21,7 +21,7 @@ class OthelloGame(Game):
     def __init__(self, n):
         self.n = n
 
-    def getInitBoard(self):
+    def getInitialState(self):
         # return initial board (numpy board)
         b = Board(self.n)
         return np.array(b.pieces)

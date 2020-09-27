@@ -12,7 +12,7 @@ class Game:
     def __init__(self):
         pass
 
-    def getInitBoard(self):
+    def getInitialState(self):
         """
         Returns:
             startState: a representation of the initial state (ideally this is the form
@@ -89,7 +89,7 @@ class Game:
         """
         pass
 
-    def buildTrajectory(self, history, ):
+    def buildTrajectory(self, history, current_state):
         pass
 
     def getSymmetries(self, state, pi):
