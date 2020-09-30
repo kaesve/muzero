@@ -49,7 +49,6 @@ class MuZeroCoach:
     def __init__(self, game, neural_net, args):
         self.game = game
         self.neural_net = neural_net
-        self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args)  # the competitor network
         self.args = args
         self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
@@ -88,6 +87,8 @@ class MuZeroCoach:
         # Of the form [(history_i, t), ...] \equiv history_it
         samples = [(history_indices, history_index_borders[i] - indices[i]) for i in range(len(indices))]
         update_strength = update_strength[indices]
+
+        
 
         # TODO: Constructing training batch.
 
@@ -199,17 +200,16 @@ class MuZeroCoach:
             complete_history = list()
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
-            batch = self.sampleBatch(complete_history)
 
-            # Backpropagation
-            self.neural_net.train(batch)
+            for i in range(self.args.numTrainingSteps):
+                batch = self.sampleBatch(complete_history)
 
-            print('Storing a snapshot of the new model')
-            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
-            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
+                # Backpropagation
+                self.neural_net.train(batch)
 
-            # Make copy network for the opponent.
-            self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+                print('Storing a snapshot of the new model')
+                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
 
     def saveTrainExamples(self, iteration):
         folder = self.args.checkpoint
