@@ -124,7 +124,7 @@ def learn(manual=True, model=0, debug=False):
     c.learn()
 
 
-def progression_tournament():  # TODO run.
+def progression_tournament():
     """
 
     """

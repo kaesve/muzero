@@ -196,9 +196,8 @@ class MinimaxPolicy(Policy):
         if self.transpositions:
             searcher.initalize_transposition(hex_board.size)
 
-        # TODO Create process thread to run search concurrently. Terminate search after timespan.
         if self.itd:
-            if self.depth:  # TODO Implement a step parameter in the policy for IDTT.
+            if self.depth:
                 searcher.iterative_deepening(hex_board, self.budget, self.depth)
             else:
                 searcher.iterative_deepening(hex_board, self.budget)
@@ -250,7 +249,6 @@ class MCTSPolicy(Policy):
 
         searcher = MCTSSearcher(self.perspective, self.memorized_tree)
 
-        # TODO Create process thread to run search concurrently. Terminate search after timespan.
         searcher.search(hex_board, self.exploration, self.budget, self.monitor)
 
         if self.memorize:
