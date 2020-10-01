@@ -201,15 +201,15 @@ class MuZeroCoach:
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
 
-            for i in range(self.args.numTrainingSteps):
+            for _ in range(self.args.numTrainingSteps):
                 batch = self.sampleBatch(complete_history)
 
                 # Backpropagation
                 self.neural_net.train(batch)
 
-                print('Storing a snapshot of the new model')
-                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
-                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
+            print('Storing a snapshot of the new model')
+            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
 
     def saveTrainExamples(self, iteration):
         folder = self.args.checkpoint

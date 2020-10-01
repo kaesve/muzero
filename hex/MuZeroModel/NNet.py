@@ -43,7 +43,7 @@ class NNetWrapper(MuZeroNeuralNet):
             latent_state = self.encode(observations)
             value, policy_logits = self.predict(latent_state)
 
-            predictions = [ (1, value, 0, policy_logits) ]
+            predictions = [(1, value, 0, policy_logits)]
 
             # build predictions for k future steps
             for action in actions:
@@ -72,11 +72,11 @@ class NNetWrapper(MuZeroNeuralNet):
         self.optimizer.minimize(total_loss)
 
 
-    def encode(self, observations):
+    def encode(self, observations):  # TODO: Scaling of hidden activations
         observations = observations[np.newaxis, ...]
         return self.neural_net.encoder.predict(observations)[0]
 
-    def forward(self, latent_state, action):
+    def forward(self, latent_state, action):  # TODO: Scaling of hidden activations
         a_plane = np.zeros((self.board_x, self.board_y))
         a_plane[action // self.board_x][action % self.board_y] = 1
 
