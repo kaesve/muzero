@@ -9,6 +9,19 @@ from .HexNNet import HexNNet as NetBuilder
 sys.path.append('../..')
 
 
+import tensorflow as tf
+
+
+
+def scale_gradient(tensor, scale):
+  """Scales the gradient for the backward pass."""
+  return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
+
+
+def scalar_loss(prediction, target):
+    #TODO
+    pass
+
 class NNetWrapper(MuZeroNeuralNet):
     def __init__(self, game, net_args):
         super().__init__(game)
@@ -17,10 +30,47 @@ class NNetWrapper(MuZeroNeuralNet):
         self.board_x, self.board_y = game.getDimensions()
         self.action_size = game.getActionSize()
 
+        
+        self.optimizer = tf.train.MomentumOptimizer(net_args.lr, net_args.momentum)
+
     def train(self, examples):
         """
         """
-        pass
+
+        total_loss = 0
+
+        for observations, actions, targets in examples:
+            latent_state = self.encode(observations)
+            value, policy_logits = self.predict(latent_state)
+
+            predictions = [ (1, value, 0, policy_logits) ]
+
+            # build predictions for k future steps
+            for action in actions:
+                reward, latent_state = self.forward(latent_state, action)
+                value, policy_logits = self.predict(latent_state)
+
+                predictions.append((1/len(actions), value, reward, policy_logits))
+
+                latent_state = scale_gradient(latent_state)
+            
+            for prediction, target in zip(predictions, targets):
+                gradient_scale, value, reward, policy_logits = prediction
+                target_value, target_reward, target_policy = target
+
+                step_loss = (
+                    scalar_loss(value, target_value) +
+                    scalar_loss(reward, target_reward) +
+                    tf.nn.softmax_cross_entropy_with_logits(
+                        logits=policy_logits, labels=target_policy))
+
+                total_loss += scale_gradient(step_loss, gradient_scale)
+
+            for weights in self.neural_net.get_weights():
+                total_loss += weight_decay * tf.nn.l2_loss(weights)
+
+        self.optimizer.minimize(total_loss)
+
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]

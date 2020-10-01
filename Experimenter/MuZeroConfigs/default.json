@@ -4,6 +4,7 @@
   "args": {
     "numIters": 100,
     "numEps": 100,
+    "numTrainingSteps": 1,
     "tempThreshold": 15,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.25,
@@ -30,6 +31,7 @@
 
   "net_args": {
     "lr": 0.001,
+    "momentum": 0.9,
     "dropout": 0.3,
     "epochs": 10,
     "batch_size": 64,
