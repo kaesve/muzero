@@ -81,7 +81,7 @@ class MuZeroMCTS:
             v: (float) Estimated value of the root state.
         """
         latent_state = self.neural_net.encode(observations)
-        s = latent_state.tostring()  # Hashable representation
+        s = latent_state.numpy().tostring()  # Hashable representation
 
         # Refresh value bounds in the tree
         self.minmax.refresh()
@@ -129,7 +129,7 @@ class MuZeroMCTS:
         Returns:
             v: the negative of the value of the current canonicalBoard
         """
-        s = latent_state.tostring()  # Hashable representation.
+        s = latent_state.numpy().tostring()  # Hashable representation.
 
         ### ROLLOUT
         if s not in self.Ps:

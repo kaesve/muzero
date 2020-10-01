@@ -37,7 +37,8 @@ class NNetWrapper(MuZeroNeuralNet):
         self.action_size = game.getActionSize()
 
         
-        self.optimizer = tf.train.MomentumOptimizer(net_args.lr, net_args.momentum)
+        # self.optimizer = tf.train.MomentumOptimizer(net_args.lr, net_args.momentum)
+        self.optimizer = tf.optimizers.Adam(net_args.lr)
 
     def train(self, examples):
         """
@@ -87,8 +88,8 @@ class NNetWrapper(MuZeroNeuralNet):
         a_plane = np.zeros((self.board_x, self.board_y))
         a_plane[action // self.board_x][action % self.board_y] = 1
 
-        latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
-        a_plane = a_plane.reshape((-1, self.board_x, self.board_y))
+        latent_state = tf.reshape(latent_state, (-1, self.board_x, self.board_y))
+        a_plane = tf.reshape(a_plane, (-1, self.board_x, self.board_y))
 
         r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
 
@@ -100,7 +101,7 @@ class NNetWrapper(MuZeroNeuralNet):
         """
         board: np array with board
         """
-        latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
+        latent_state = tf.reshape(latent_state, (-1, self.board_x, self.board_y))
         pi, v = self.neural_net.predictor.predict(latent_state)
 
         v_real = support_to_scalar(v[0], self.net_args.support_size)

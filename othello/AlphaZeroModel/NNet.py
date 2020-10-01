@@ -6,7 +6,7 @@ import sys
 from utils.storage import DotDict
 
 sys.path.append('../..')
-from AlphaZero.NeuralNet import NeuralNet
+from MuZero.MuNeuralNet import NeuralNet
 
 from .OthelloNNet import OthelloNNet as onnet
 
