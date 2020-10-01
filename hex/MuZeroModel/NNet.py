@@ -19,8 +19,8 @@ def scale_gradient(tensor, scale):
 
 
 def scalar_loss(prediction, target):
-    #TODO
-    pass
+    #TODO: investigate
+    return (prediction - target)**2
 
 def scale_latent_state(latent_state):
     s_min = tf.reduce_min(latent_state)
@@ -81,7 +81,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]
-        latent_state = self.neural_net.encoder.predict(observations)[0]
+        latent_state = self.neural_net.encoder(observations)[0]
         return scale_latent_state(latent_state)
 
     def forward(self, latent_state, action):
@@ -91,7 +91,7 @@ class NNetWrapper(MuZeroNeuralNet):
         latent_state = tf.reshape(latent_state, (-1, self.board_x, self.board_y))
         a_plane = tf.reshape(a_plane, (-1, self.board_x, self.board_y))
 
-        r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
+        r, s_next = self.neural_net.dynamics([latent_state, a_plane])
 
         r_real = support_to_scalar(r[0], self.net_args.support_size)
 
@@ -102,7 +102,7 @@ class NNetWrapper(MuZeroNeuralNet):
         board: np array with board
         """
         latent_state = tf.reshape(latent_state, (-1, self.board_x, self.board_y))
-        pi, v = self.neural_net.predictor.predict(latent_state)
+        pi, v = self.neural_net.predictor(latent_state)
 
         v_real = support_to_scalar(v[0], self.net_args.support_size)
 
