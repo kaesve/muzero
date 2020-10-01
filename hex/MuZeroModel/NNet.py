@@ -22,6 +22,12 @@ def scalar_loss(prediction, target):
     #TODO
     pass
 
+def scale_latent_state(latent_state):
+    s_min = tf.reduce_min(latent_state)
+    s_max = tf.reduce_max(latent_state)
+    s_scale = s_max - s_min
+    return (latent_state - s_min) / s_scale
+
 class NNetWrapper(MuZeroNeuralNet):
     def __init__(self, game, net_args):
         super().__init__(game)
@@ -72,11 +78,12 @@ class NNetWrapper(MuZeroNeuralNet):
         self.optimizer.minimize(total_loss)
 
 
-    def encode(self, observations):  # TODO: Scaling of hidden activations
+    def encode(self, observations):
         observations = observations[np.newaxis, ...]
-        return self.neural_net.encoder.predict(observations)[0]
+        latent_state = self.neural_net.encoder.predict(observations)[0]
+        return scale_latent_state(latent_state)
 
-    def forward(self, latent_state, action):  # TODO: Scaling of hidden activations
+    def forward(self, latent_state, action):
         a_plane = np.zeros((self.board_x, self.board_y))
         a_plane[action // self.board_x][action % self.board_y] = 1
 
@@ -87,7 +94,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
         r_real = support_to_scalar(r[0], self.net_args.support_size)
 
-        return r_real, s_next[0]
+        return r_real, scale_latent_state(s_next[0])
 
     def predict(self, latent_state):
         """
