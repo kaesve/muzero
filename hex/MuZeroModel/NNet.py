@@ -2,7 +2,7 @@ import os
 import numpy as np
 import sys
 
-from MuZero.Utils import support_to_scalar, scalar_to_support
+from utils.loss_utils import support_to_scalar
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .HexNNet import HexNNet as NetBuilder
 
