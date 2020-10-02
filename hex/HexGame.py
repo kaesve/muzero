@@ -125,6 +125,15 @@ class HexGame(Game):
     def getScore(self, board, player):
         return len(available_moves(board))
 
+    def buildTrajectory(self, history):
+        trajectory = history.states[-8:]
+
+        prefix_len = 8 - len(trajectory)
+        if prefix_len > 0:
+            prefix = np.random.normal(size=(self.n, self.n, prefix_len))*0.1
+            trajectory = np.concatenate((prefix, trajectory))
+        return trajectory
+
     @staticmethod
     def display(board):
         board_cls = HexBoard(board.shape[0])
