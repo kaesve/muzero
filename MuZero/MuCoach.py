@@ -74,7 +74,7 @@ class MuZeroCoach:
             vs += [vs[-1] for _ in range(truncation)]
             rewards += [rewards[-1] for _ in range(truncation)]
 
-        return actions, (pis, vs, rewards)  # (Actions, Targets)
+        return actions, (vs, rewards, pis)  # (Actions, Targets)
 
     def sampleBatch(self, histories):
         lengths = list(map(len, histories))

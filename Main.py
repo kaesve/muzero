@@ -73,22 +73,25 @@ def learnM0():
     b = g.getInitialState()
     g.display(b)
     # TODO: Important! Perturb sequences before the 0th observation with slight noise to prevent state collapse to 0.
-    history = deque([np.random.randn(*b.shape) * 1e-8] * (net_args.observation_length - 1) + [b], maxlen=net_args.observation_length)
+    history = deque([np.random.randn(*b.shape) * 0] * (net_args.observation_length - 1) + [b], maxlen=net_args.observation_length)
     mcts = MuZeroMCTS(g, hex_net, args)
 
     player = 1
-    for i in range(10):
+    while g.getGameEnded(b, player) == 0:
         canon = g.getCanonicalForm(b, player)
         if player == 1:
             obs = np.array(history)
-            pi_visit = mcts.runMCTS(obs, temp=1)
+            pi_visit, _ = mcts.runMCTS(obs, temp=1)
             a = np.random.choice(len(pi_visit), p=pi_visit)
         else:
-            a = np.argmax(g.getLegalMoves(canon, 1))
+            moves = g.getLegalMoves(canon, 1)
+            a = np.random.choice(len(moves), p=moves/np.sum(moves))
 
-        b, player = g.getNextState(b, player, a)
+        b, _, player = g.getNextState(b, a, player)
         history.append(b)
         g.display(b)
+
+    print("MuZero won" if player == -1 else "Random player won")
 
 
 if __name__ == "__main__":

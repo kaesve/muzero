@@ -67,7 +67,7 @@ class MuZeroMCTS:
 
         ucb = self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + visit_count) * exploration_factor  # Exploration
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
-        return ucb
+        return ucb + np.random.normal(loc=0, scale=1e-4)  # Add slight Gaussian noise to break symmetry.
 
     def runMCTS(self, observations, temp=1):
         """
@@ -81,7 +81,7 @@ class MuZeroMCTS:
             v: (float) Estimated value of the root state.
         """
         latent_state = self.neural_net.encode(observations)
-        s = latent_state.numpy().tostring()  # Hashable representation
+        s = latent_state.tostring()  # Hashable representation
 
         # Refresh value bounds in the tree
         self.minmax.refresh()
@@ -129,18 +129,17 @@ class MuZeroMCTS:
         Returns:
             v: the negative of the value of the current canonicalBoard
         """
-        s = latent_state.numpy().tostring()  # Hashable representation.
+        s = latent_state.tostring()  # Hashable representation.
 
         ### ROLLOUT
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.neural_net.predict(latent_state)
+            self.Ns[s] = 1
 
             if root:  # Add Dirichlet noise to the root prior and mask illegal moves.
                 self.modify_root_prior(s)
 
-            self.Ps[s] /= np.sum(self.Ps[s])
-            self.Ns[s] = 0
             return self.turn_indicator(count) * v
 
         ### SELECTION
@@ -152,6 +151,11 @@ class MuZeroMCTS:
         if s in self.Vs:
             confidence_bounds = np.array(confidence_bounds) * self.Vs[s][:-1]  # Omit resignation.
         a = np.argmax(confidence_bounds)
+
+        if count > 25:
+            print(count)
+            print(confidence_bounds)
+            print(latent_state)
 
         ### EXPANSION
         # Perform a forward pass using the dynamics function (unless already known in the transition table)

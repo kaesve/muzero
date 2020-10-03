@@ -32,7 +32,6 @@ class HexGame(Game):
         self.n = n
 
     def getInitialState(self):
-        super().getInitialState()
         # return initial board (numpy board)
         b = HexBoard(self.n)
         return b.board
@@ -46,7 +45,6 @@ class HexGame(Game):
         return self.n * self.n + 1
 
     def getNextState(self, state, action, player):
-        super().getNextState(state, action, player)
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n * self.n:

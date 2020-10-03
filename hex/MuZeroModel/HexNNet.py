@@ -43,16 +43,17 @@ class HexNNet:
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v])
 
     def build_model(self, tensor_in):
-        def conv_block(n, x):  # Recursively build a convolutional tower of height n.
+        def conv_block(n, x):  # Recursively builds a convolutional tower of height n.
             if n > 0:
-                return self.conv_block(n - 1, Activation('relu')(BatchNormalization()(Conv2D(
+                return conv_block(n - 1, Activation('relu')(BatchNormalization()(Conv2D(
                     self.args.num_channels, 3, padding='same', use_bias=False)(x))))
             return x
 
-        def dense_sequence(n, x):  # Recursively build a Fully Connected sequence of length n.
+        def dense_sequence(n, x):  # Recursively builds a Fully Connected sequence of length n.
             if n > 0:
-                return self.dense_sequence(n - 1, Dropout(self.args.dropout)(Activation('relu')(
+                return dense_sequence(n - 1, Dropout(self.args.dropout)(Activation('relu')(
                     Dense(self.args.size_dense)(x))))
+            return x
 
         conv_block = conv_block(self.args.num_towers, tensor_in)
         flattened = Flatten()(conv_block)
