@@ -104,7 +104,7 @@ class HexGame(Game):
         # Get a trajectory of states of 'length' most recent observations until time-point t.
         trajectory = history.states[:t][-length:] + [s]
         if len(trajectory) < length:
-            prefix = [np.random.randn(*s.shape) * 1e-8 for _ in range(length - len(trajectory))]
+            prefix = [np.zeros_like(s) for _ in range(length - len(trajectory))]
             trajectory = prefix + trajectory
 
         trajectory = np.array(trajectory)  # TODO: Empirically check shape of trajectory

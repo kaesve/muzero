@@ -43,7 +43,7 @@ class NNetWrapper(MuZeroNeuralNet):
         total_loss = 0
 
         for observations, actions, targets in examples:
-            latent_state = self.encode(observations)
+            latent_state = self.neural_net.encoder.predict(observations)
             value, policy_logits = self.predict(latent_state)
 
             predictions = [(1, value, 0, policy_logits)]
@@ -70,7 +70,7 @@ class NNetWrapper(MuZeroNeuralNet):
                 total_loss += scale_gradient(step_loss, gradient_scale)
 
             for weights in self.neural_net.get_weights():
-                total_loss += weight_decay * tf.nn.l2_loss(weights)
+                total_loss += self.net_args.l2_penalty * tf.nn.l2_loss(weights)
 
         self.optimizer.minimize(total_loss)
 

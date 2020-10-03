@@ -64,8 +64,9 @@ class MuZeroMCTS:
     def compute_ucb(self, s, a, exploration_factor):
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
         q_value = self.Qsa[(s, a)] if (s, a) in self.Qsa else 0
+        c_children = np.max([self.Ns[s], 1e-8])  # Ensure that prior doesn't collapse to 0 if s is new.
 
-        ucb = self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + visit_count) * exploration_factor  # Exploration
+        ucb = self.Ps[s][a] * np.sqrt(c_children) / (1 + visit_count) * exploration_factor  # Exploration
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
         return ucb + np.random.normal(loc=0, scale=1e-4)  # Add slight Gaussian noise to break symmetry.
 
@@ -135,7 +136,7 @@ class MuZeroMCTS:
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.neural_net.predict(latent_state)
-            self.Ns[s] = 1
+            self.Ns[s] = 0  # TODO: 0 or 1. if 0 the exploration term in PUCT will collapse.
 
             if root:  # Add Dirichlet noise to the root prior and mask illegal moves.
                 self.modify_root_prior(s)

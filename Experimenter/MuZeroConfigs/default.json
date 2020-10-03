@@ -31,6 +31,7 @@
 
   "net_args": {
     "lr": 0.001,
+    "l2_penalty": 1e-4,
     "momentum": 0.9,
     "dropout": 0.3,
     "epochs": 10,
