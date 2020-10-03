@@ -60,19 +60,21 @@ class MuZeroCoach:
 
     @staticmethod
     def buildHypotheticalSteps(history, t, k):
-        end = np.min([len(history) - 1, t + k])
-        actions = history.actions[t:end]
+        start = t
+        end = t + k
+        actions = history.actions[start:end]
 
         # Targets
-        pis = history.probabilities[t:end]
-        vs = history.actual_returns[t:end]
-        rewards = history.rewards[t:end]
+        pis = history.probabilities[start:end]
+        vs = history.actual_returns[start:end]
+        rewards = history.rewards[start:end]
 
-        truncation = len(actions) - k
-        if truncation:  # Truncation > 0 due to terminal states. Treat last state as absorbing state
-            pis += [pis[-1] for _ in range(truncation)]
-            vs += [vs[-1] for _ in range(truncation)]
-            rewards += [rewards[-1] for _ in range(truncation)]
+        truncation = k - len(actions)
+        if truncation > 0:  # Truncation > 0 due to terminal states. Treat last state as absorbing state
+            actions += [actions[-1]] * truncation
+            pis += [pis[-1]] * truncation
+            vs += [vs[-1]] * truncation
+            rewards += [rewards[-1]] * truncation
 
         return actions, (vs, rewards, pis)  # (Actions, Targets)
 
@@ -98,17 +100,17 @@ class MuZeroCoach:
                                    replace=False, p=sampling_probability)
 
         # Map the flat indices to the correct histories and history indices.
-        history_index_borders = np.cumsum(lengths)
-        history_indices = [np.sum(i > history_index_borders) for i in indices]
+        history_index_borders = np.cumsum([0] + lengths)
+        history_indices = [(np.sum(i >= history_index_borders), i) for i in indices]
 
         # Of the form [(history_i, t), ...] \equiv history_it
-        sample_coordinates = [(history_indices, history_index_borders[i] - indices[i]) for i in range(len(indices))]
+        sample_coordinates = [(h_i - 1, i - history_index_borders[h_i-1]) for h_i, i in history_indices]
 
         # Construct training examples for MuZero of the form (input, action, (targets), loss_scalar)
         examples = [(
             self.game.buildTrajectory(histories[c[0]], None, None, self.neural_net.net_args.observation_length, t=c[1]),
             *self.buildHypotheticalSteps(histories[c[0]], c[1], k=self.args.K),
-            update_strength[c[0] * len(histories[c[0]]) + c[1]]
+            update_strength[lengths[c[0]] + c[1]]
         )
             for c in sample_coordinates
         ]
@@ -146,10 +148,12 @@ class MuZeroCoach:
         s = self.game.getInitialState()
         self.current_player = 1
         episode_step = 1
+        temp = 1
 
         while not self.game.getGameEnded(s, self.current_player):  # Boardgames: If loop ends => current player lost
-            # Turn action selection to greedy after exceeding the given threshold.
-            temp = int(episode_step < self.args.tempThreshold)
+            # Turn action selection to greedy as an episode progresses.
+            if episode_step % self.args.tempThreshold == 0:
+                temp /= 2
 
             # Construct an observation array (o_1, ..., o_t).
             observation_array = self.game.buildTrajectory(history, s=s, player=self.current_player,
@@ -164,9 +168,9 @@ class MuZeroCoach:
             history.capture(s, action, self.current_player, pi, r, v)
 
             # Update state of control
-            self.current_player = next_player
+            self.current_player = self.current_player if next_player == 1 else -self.current_player
             episode_step += 1
-            self.game.display(s)
+
             s = self.game.getCanonicalForm(s_next, self.current_player)
 
         # TODO: Check whether the very last observation s needs to be stored (no play statistics?)

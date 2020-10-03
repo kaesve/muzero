@@ -2,8 +2,8 @@
   "name": "default",
 
   "args": {
-    "numIters": 100,
-    "numEps": 100,
+    "numIters": 5,
+    "numEps": 5,
     "numTrainingSteps": 1,
     "tempThreshold": 15,
     "dirichlet_alpha": 0.3,
@@ -37,11 +37,11 @@
     "epochs": 10,
     "batch_size": 64,
     "cuda": false,
-    "num_channels": 2,
-    "num_towers": 1,
-    "len_dense": 1,
+    "num_channels": 512,
+    "num_towers": 2,
+    "len_dense": 2,
     "size_dense": 256,
-    "support_size": 10,
+    "support_size": 0,
     "observation_length": 5
   }
 }
