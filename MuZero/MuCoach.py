@@ -117,7 +117,7 @@ class MuZeroCoach:
 
     def computeReturns(self, history):  # TODO: Testing of this function.
         # Update the MCTS estimate v_t with the more accurate estimates z_t
-        if self.args.zerosum:
+        if self.args.boardgame:
             # Boardgames
             for i in range(len(history)):
                 history.actual_returns[i] = -1 if history.players[i] == self.current_player else 1

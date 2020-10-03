@@ -18,7 +18,7 @@
     "c2": "(double) Second exploration constant for MuZero in the PUCT formula",
     "gamma": "(double: [0, 1]) MDP Discounting factor for future rewards",
 
-    "zerosum": "(bool) Whether the game being played is a zero-sum game (otherwise a general MDP)",
+    "boardgame": "(bool) Whether the game being played is a board game (otherwise a general MDP)",
     "minimum_reward": "(double) Lower bound on the cumulative reward of the environment (null if not known)",
     "maximum_reward": "(double) Upper bound on the cumulative reward of the environment (null if not known)",
 
@@ -36,6 +36,8 @@
     "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",
     "num_channels": "(int) Number of feature maps in the convolutional network",
     "num_towers": "(int) Number of convolutional towers to place in each network",
+    "len_dense": "(int) Number of fully connected layers to use as the head of the CNN",
+    "size_dense": "(int) Number of hidden nodes to use in the fully connected layers",
     "support_size": "(int) Number of integers for the reward distribution (defaults to a Gaussian if set to 0)",
     "observation_length": "(int) Number of observations in the history to be passed into the encoder"
   }

@@ -19,7 +19,7 @@
     "c2": 19652,
     "gamma": 0.997,
 
-    "zerosum": true,
+    "boardgame": true,
     "minimum_reward": -1,
     "maximum_reward": 1,
 
@@ -38,6 +38,8 @@
     "cuda": false,
     "num_channels": 2,
     "num_towers": 1,
+    "len_dense": 1,
+    "size_dense": 256,
     "support_size": 10,
     "observation_length": 5
   }

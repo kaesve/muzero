@@ -48,7 +48,7 @@ class MuZeroMCTS:
         self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
     def turn_indicator(self, counter):
-        if self.args.zerosum:
+        if self.args.boardgame:
             return 1 if counter % 2 == 0 else -1
         return 1
 
