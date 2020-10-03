@@ -24,6 +24,7 @@ from hex.HexGame import HexGame as Game
 from hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 from hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
 from MuZero.MuMCTS import MuZeroMCTS
+from MuZero.MuCoach import MuZeroCoach
 
 ALPHAZERO_DEFAULTS = "Experimenter/Configs/SmallModel_AlphaZeroHex.json"
 MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/default.json"
@@ -69,29 +70,33 @@ def learnM0():
 
     if args.load_model:
         hex_net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
+    #
+    # b = g.getInitialState()
+    # g.display(b)
+    # # TODO: Important! Perturb sequences before the 0th observation with slight noise to prevent state collapse to 0.
+    # history = deque([np.random.randn(*b.shape) * 0] * (net_args.observation_length - 1) + [b], maxlen=net_args.observation_length)
+    # mcts = MuZeroMCTS(g, hex_net, args)
+    #
+    # player = 1
+    # while g.getGameEnded(b, player) == 0:
+    #     canon = g.getCanonicalForm(b, player)
+    #     if player == 1:
+    #         obs = np.array(history)
+    #         pi_visit, _ = mcts.runMCTS(obs, temp=1)
+    #         a = np.random.choice(len(pi_visit), p=pi_visit)
+    #     else:
+    #         moves = g.getLegalMoves(canon, 1)
+    #         a = np.random.choice(len(moves), p=moves/np.sum(moves))
+    #
+    #     b, _, player = g.getNextState(b, a, player)
+    #     history.append(b)
+    #     g.display(b)
+    #
+    # print("MuZero won" if player == -1 else "Random player won")
+    #
+    c = MuZeroCoach(g, hex_net, args)
 
-    b = g.getInitialState()
-    g.display(b)
-    # TODO: Important! Perturb sequences before the 0th observation with slight noise to prevent state collapse to 0.
-    history = deque([np.random.randn(*b.shape) * 0] * (net_args.observation_length - 1) + [b], maxlen=net_args.observation_length)
-    mcts = MuZeroMCTS(g, hex_net, args)
-
-    player = 1
-    while g.getGameEnded(b, player) == 0:
-        canon = g.getCanonicalForm(b, player)
-        if player == 1:
-            obs = np.array(history)
-            pi_visit, _ = mcts.runMCTS(obs, temp=1)
-            a = np.random.choice(len(pi_visit), p=pi_visit)
-        else:
-            moves = g.getLegalMoves(canon, 1)
-            a = np.random.choice(len(moves), p=moves/np.sum(moves))
-
-        b, _, player = g.getNextState(b, a, player)
-        history.append(b)
-        g.display(b)
-
-    print("MuZero won" if player == -1 else "Random player won")
+    c.learn()
 
 
 if __name__ == "__main__":

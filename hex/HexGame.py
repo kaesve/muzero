@@ -98,11 +98,13 @@ class HexGame(Game):
         if t is not None:
             s = history.states[t]
             player = history.players[t]  # TODO: Check whether trajectory should be in player's canonicalForm.
+            t -= 1
         else:
-            t = len(history) - 1
+            t = len(history)
 
         # Get a trajectory of states of 'length' most recent observations until time-point t.
-        trajectory = history.states[:t][-length:] + [s]
+        trajectory = history.states[:t][-(length - 1):] + [s]
+        print(len(trajectory))
         if len(trajectory) < length:
             prefix = [np.zeros_like(s) for _ in range(length - len(trajectory))]
             trajectory = prefix + trajectory

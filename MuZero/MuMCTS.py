@@ -64,11 +64,11 @@ class MuZeroMCTS:
     def compute_ucb(self, s, a, exploration_factor):
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
         q_value = self.Qsa[(s, a)] if (s, a) in self.Qsa else 0
-        c_children = np.max([self.Ns[s], 1e-8])  # Ensure that prior doesn't collapse to 0 if s is new.
+        c_children = np.max([self.Ns[s], 1e-4])  # Ensure that prior doesn't collapse to 0 if s is new.
 
         ucb = self.Ps[s][a] * np.sqrt(c_children) / (1 + visit_count) * exploration_factor  # Exploration
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
-        return ucb + np.random.normal(loc=0, scale=1e-4)  # Add slight Gaussian noise to break symmetry.
+        return ucb
 
     def runMCTS(self, observations, temp=1):
         """
@@ -102,7 +102,7 @@ class MuZeroMCTS:
             sample = np.random.choice(best_actions)
             move_probabilities = [0] * len(counts)
             move_probabilities[sample] = 1
-            return move_probabilities
+            return move_probabilities, v
 
         counts = np.power(counts, 1. / temp)
         move_probabilities = counts / np.sum(counts)
@@ -152,11 +152,6 @@ class MuZeroMCTS:
         if s in self.Vs:
             confidence_bounds = np.array(confidence_bounds) * self.Vs[s][:-1]  # Omit resignation.
         a = np.argmax(confidence_bounds)
-
-        if count > 25:
-            print(count)
-            print(confidence_bounds)
-            print(latent_state)
 
         ### EXPANSION
         # Perform a forward pass using the dynamics function (unless already known in the transition table)

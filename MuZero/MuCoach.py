@@ -159,13 +159,14 @@ class MuZeroCoach:
             pi, v = self.mcts.runMCTS(observation_array, temp=temp)
 
             # Take a step in the environment and observe the transition and store necessary statistics.
-            action = np.random.choice(len(pi), p=pi)
-            s_next, r, next_player = self.game.getNextState(s, action, self.current_player)
+            action = np.random.choice(len(pi), p=pi)  # TODO Check if action is in perspective of the canonicalForm
+            s_next, r, next_player = self.game.getNextState(s, action, 1)
             history.capture(s, action, self.current_player, pi, r, v)
 
             # Update state of control
             self.current_player = next_player
             episode_step += 1
+            self.game.display(s)
             s = self.game.getCanonicalForm(s_next, self.current_player)
 
         # TODO: Check whether the very last observation s needs to be stored (no play statistics?)
