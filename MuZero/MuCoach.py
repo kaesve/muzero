@@ -58,14 +58,31 @@ class MuZeroCoach:
     def getCheckpointFile(iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'
 
+    @staticmethod
+    def buildHypotheticalSteps(history, t, k):
+        end = np.min([len(history) - 1, t + k])
+        actions = history.actions[t:end]
+
+        # Targets
+        pis = history.probabilities[t:end]
+        vs = history.actual_returns[t:end]
+        rewards = history.rewards[t:end]
+
+        truncation = len(actions) - k
+        if truncation:  # Truncation > 0 due to terminal states. Treat last state as absorbing state
+            pis += [pis[-1] for _ in range(truncation)]
+            vs += [vs[-1] for _ in range(truncation)]
+            rewards += [rewards[-1] for _ in range(truncation)]
+
+        return actions, (pis, vs, rewards)  # (Actions, Targets)
+
     def sampleBatch(self, histories):
         lengths = list(map(len, histories))
-        total_data_length = sum(lengths)
         n = self.neural_net.net_args.batch_size
 
         # Array of sampling probabilities over the range (0, total_data_length)
         sampling_probability = None
-        update_strength = 1 / n  # == Uniform weight update strength over batch.
+        update_strength = np.ones(np.sum(lengths)) / n  # == Uniform weight update strength over batch.
 
         if self.args.prioritize:
             errors = np.array([np.abs(h.predicted_returns[i] - h.actual_returns[i])
@@ -77,7 +94,7 @@ class MuZeroCoach:
             # Adjust weight update strength proportionally to IS-ratio to prevent sampling bias.
             update_strength = np.power(n * sampling_probability, -self.args.prioritize_beta)
 
-        indices = np.random.choice(a=total_data_length, size=self.neural_net.net_args.batch_size,
+        indices = np.random.choice(a=np.sum(lengths), size=self.neural_net.net_args.batch_size,
                                    replace=False, p=sampling_probability)
 
         # Map the flat indices to the correct histories and history indices.
@@ -85,14 +102,18 @@ class MuZeroCoach:
         history_indices = [np.sum(i > history_index_borders) for i in indices]
 
         # Of the form [(history_i, t), ...] \equiv history_it
-        samples = [(history_indices, history_index_borders[i] - indices[i]) for i in range(len(indices))]
-        update_strength = update_strength[indices]
+        sample_coordinates = [(history_indices, history_index_borders[i] - indices[i]) for i in range(len(indices))]
 
-        
+        # Construct training examples for MuZero of the form (input, action, (targets), loss_scalar)
+        examples = [(
+            self.game.buildTrajectory(histories[c[0]], None, None, self.neural_net.net_args.observation_length, t=c[1]),
+            *self.buildHypotheticalSteps(histories[c[0]], c[1], k=self.args.K),
+            update_strength[c[0] * len(histories[c[0]]) + c[1]]
+        )
+            for c in sample_coordinates
+        ]
 
-        # TODO: Constructing training batch.
-
-        return histories
+        return examples
 
     def computeReturns(self, history):  # TODO: Testing of this function.
         # Update the MCTS estimate v_t with the more accurate estimates z_t
@@ -131,7 +152,8 @@ class MuZeroCoach:
             temp = int(episode_step < self.args.tempThreshold)
 
             # Construct an observation array (o_1, ..., o_t).
-            observation_array = self.game.buildTrajectory(history, s, self.current_player)
+            observation_array = self.game.buildTrajectory(history, s=s, player=self.current_player,
+                                                          length=self.neural_net.net_args.observation_length)
 
             # Compute the move probability vector and state value using MCTS.
             pi, v = self.mcts.runMCTS(observation_array, temp=temp)
@@ -145,6 +167,8 @@ class MuZeroCoach:
             self.current_player = next_player
             episode_step += 1
             s = self.game.getCanonicalForm(s_next, self.current_player)
+
+        # TODO: Check whether the very last observation s needs to be stored (no play statistics?)
 
         # Compute z_t for each observation. N-step returns for general MDPs or game outcomes for boardgames
         self.computeReturns(history)
@@ -168,7 +192,7 @@ class MuZeroCoach:
             eps_time.update(time.time() - end)
             end = time.time()
             bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                eps=eps+1, maxeps=self.args.numEps, et=eps_time.avg, total=bar.elapsed_td, eta=bar.eta_td)
+                eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg, total=bar.elapsed_td, eta=bar.eta_td)
             bar.next()
         bar.finish()
 
@@ -220,7 +244,7 @@ class MuZeroCoach:
             Pickler(f).dump(self.trainExamplesHistory)
 
         # Don't hog up storage space and clean up old (never to be used again) data.
-        old_checkpoint = os.path.join(folder, self.getCheckpointFile(iteration-1) + '.examples')
+        old_checkpoint = os.path.join(folder, self.getCheckpointFile(iteration - 1) + '.examples')
         if os.path.isfile(old_checkpoint):
             os.remove(old_checkpoint)
 

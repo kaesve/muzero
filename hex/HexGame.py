@@ -96,6 +96,23 @@ class HexGame(Game):
     def getCanonicalForm(self, state, player):
         return state if player == 1 else -state.T
 
+    def buildTrajectory(self, history, s, player, length, t=None):  # TODO: Functionality check
+        if t is not None:
+            s = history.states[t]
+            player = history.players[t]  # TODO: Check whether trajectory should be in player's canonicalForm.
+        else:
+            t = len(history) - 1
+
+        # Get a trajectory of states of 'length' most recent observations until time-point t.
+        trajectory = history.states[:t][-length:] + [s]
+        if len(trajectory) < length:
+            prefix = [np.random.randn(*s.shape) * 1e-8 for _ in range(length - len(trajectory))]
+            trajectory = prefix + trajectory
+
+        trajectory = np.array(trajectory)  # TODO: Empirically check shape of trajectory
+
+        return trajectory
+
     def getSymmetries(self, board, pi):
         # mirror, rotational
         assert (len(pi) == self.n ** 2 + 1)  # 1 for pass
@@ -124,15 +141,6 @@ class HexGame(Game):
 
     def getScore(self, board, player):
         return len(available_moves(board))
-
-    def buildTrajectory(self, history):
-        trajectory = history.states[-8:]
-
-        prefix_len = 8 - len(trajectory)
-        if prefix_len > 0:
-            prefix = np.random.normal(size=(self.n, self.n, prefix_len))*0.1
-            trajectory = np.concatenate((prefix, trajectory))
-        return trajectory
 
     @staticmethod
     def display(board):

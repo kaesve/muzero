@@ -6,27 +6,27 @@ from utils.loss_utils import support_to_scalar
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .HexNNet import HexNNet as NetBuilder
 
+import tensorflow as tf
+
 sys.path.append('../..')
 
 
-import tensorflow as tf
-
-
-
 def scale_gradient(tensor, scale):
-  """Scales the gradient for the backward pass."""
-  return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
+    """Scales the gradient for the backward pass."""
+    return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
 
 
 def scalar_loss(prediction, target):
-    #TODO: investigate
-    return (prediction - target)**2
+    # TODO: investigate
+    return (prediction - target) ** 2
+
 
 def scale_latent_state(latent_state):
     s_min = tf.reduce_min(latent_state)
     s_max = tf.reduce_max(latent_state)
     s_scale = s_max - s_min
     return (latent_state - s_min) / s_scale
+
 
 class NNetWrapper(MuZeroNeuralNet):
     def __init__(self, game, net_args):
@@ -36,7 +36,6 @@ class NNetWrapper(MuZeroNeuralNet):
         self.board_x, self.board_y = game.getDimensions()
         self.action_size = game.getActionSize()
 
-        
         # self.optimizer = tf.train.MomentumOptimizer(net_args.lr, net_args.momentum)
         self.optimizer = tf.optimizers.Adam(net_args.lr)
 
@@ -57,19 +56,19 @@ class NNetWrapper(MuZeroNeuralNet):
                 reward, latent_state = self.forward(latent_state, action)
                 value, policy_logits = self.predict(latent_state)
 
-                predictions.append((1/len(actions), value, reward, policy_logits))
+                predictions.append((1 / len(actions), value, reward, policy_logits))
 
                 latent_state = scale_gradient(latent_state)
-            
+
             for prediction, target in zip(predictions, targets):
                 gradient_scale, value, reward, policy_logits = prediction
                 target_value, target_reward, target_policy = target
 
                 step_loss = (
-                    scalar_loss(value, target_value) +
-                    scalar_loss(reward, target_reward) +
-                    tf.nn.softmax_cross_entropy_with_logits(
-                        logits=policy_logits, labels=target_policy))
+                        scalar_loss(value, target_value) +
+                        scalar_loss(reward, target_reward) +
+                        tf.nn.softmax_cross_entropy_with_logits(
+                            logits=policy_logits, labels=target_policy))
 
                 total_loss += scale_gradient(step_loss, gradient_scale)
 
@@ -77,7 +76,6 @@ class NNetWrapper(MuZeroNeuralNet):
                 total_loss += weight_decay * tf.nn.l2_loss(weights)
 
         self.optimizer.minimize(total_loss)
-
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]
@@ -109,9 +107,9 @@ class NNetWrapper(MuZeroNeuralNet):
         return pi[0], v_real
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
-        representation_path = os.path.join(folder, 'r_'+filename)
-        dynamics_path = os.path.join(folder, 'd_'+filename)
-        predictor_path = os.path.join(folder, 'p_'+filename)
+        representation_path = os.path.join(folder, 'r_' + filename)
+        dynamics_path = os.path.join(folder, 'd_' + filename)
+        predictor_path = os.path.join(folder, 'p_' + filename)
         if not os.path.exists(folder):
             print("Checkpoint Directory does not exist! Making directory {}".format(folder))
             os.mkdir(folder)

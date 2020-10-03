@@ -89,16 +89,17 @@ class Game:
         """
         pass
 
-    def buildTrajectory(self, history, current_state, current_player, t=None):
+    def buildTrajectory(self, history, current_state, current_player, length, t=None):
         """
         Input:
             history: Some data structure that can be queried for past observations.
-            current_state: Current observation of the environment.
-            current_player: Current player (-1 or 1)
+            current_state: Either the current observation of the environment or the integer index.
+            current_player: Current player (-1 or 1) TODO: Check if needed for canonicalForm trajectory.
+            length: The length of the trajectory.
             t: optional Specifies the index of current state within history (if present)
 
         Returns:
-            trajectory: Game specific array of observed features over time.
+            trajectory: Game specific array of observed features over time of len 'length'.
                         Feature planes are flattened over time, such that
                         the number of planes = time x features.
         """
@@ -126,7 +127,4 @@ class Game:
             stateString: a quick conversion of state to a string format.
                          Required by MCTS for hashing.
         """
-        pass
-
-    def buildTrajectory(self, history):
         pass
