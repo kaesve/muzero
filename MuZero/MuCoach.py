@@ -211,6 +211,25 @@ class MuZeroCoach:
         # Store data from previous self-play iterations into the history
         self.trainExamplesHistory.append(iteration_train_examples)
 
+    def backprop(self, history):  # TODO: Tidy duplicate code.
+        eps_time = AverageMeter()
+        bar = Bar('Backpropagation', max=self.args.numTrainingSteps)
+        end = time.time()
+
+        for epoch in range(self.args.numTrainingSteps):
+            batch = self.sampleBatch(history)
+
+            # Backpropagation
+            loss = self.neural_net.train(batch)
+
+            # Bookkeeping + plot progress
+            eps_time.update(time.time() - end)
+            end = time.time()
+            bar.suffix = '({}/{}) Eps Time: {:.3f}s | Total: {} | ETA: {} | loss: {:.4f}'.format(
+                epoch + 1, self.args.numTrainingSteps, eps_time.avg, bar.elapsed_td, bar.eta_td, loss)
+            bar.next()
+        bar.finish()
+
     def learn(self):
         """
         Performs numIters iterations with numEps episodes of self-play in each
@@ -237,14 +256,7 @@ class MuZeroCoach:
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
 
-            print("Performing Backpropagation...")
-            for epoch in range(self.args.numTrainingSteps):
-                batch = self.sampleBatch(complete_history)
-
-                # Backpropagation
-                loss = self.neural_net.train(batch)
-                print("Backpropagation progress {} / {} epochs. Current loss: {:5f}".format(
-                    epoch, self.args.numTrainingSteps, loss))
+            self.backprop(complete_history)
 
             print('Storing a snapshot of the new model')
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))

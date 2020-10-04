@@ -42,7 +42,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
         # Perform an optimization step.
         _ = self.optimizer.minimize(loss, self.get_variables)
-        return loss()
+        return loss()  # Returns loss contained within a tf.tensor
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]
