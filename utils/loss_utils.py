@@ -3,10 +3,10 @@ import tensorflow as tf
 
 
 def scalar_loss(prediction, target):
-    if np.prod(prediction.shape) == len(prediction):                    # Implies (batch_size, 1) --> Regression
-        return tf.losses.mse(prediction - target)                       # MSE
+    if np.prod(prediction.shape) == prediction.shape[0]:           # Implies (batch_size, 1) --> Regression
+        return tf.losses.mse(target, prediction)                   # MSE
 
-    return tf.reduce_sum(target * tf.math.log(prediction), axis=1)      # Default: Cross Entropy
+    return tf.losses.categorical_crossentropy(target, prediction)  # Default: Cross Entropy
 
 
 def atari_reward_transform(x, var_eps=0.001):

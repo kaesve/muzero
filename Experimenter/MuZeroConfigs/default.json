@@ -2,7 +2,7 @@
   "name": "default",
 
   "args": {
-    "numIters": 5,
+    "numIters": 100,
     "numEps": 5,
     "numTrainingSteps": 1,
     "tempThreshold": 15,

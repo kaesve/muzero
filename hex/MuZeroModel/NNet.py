@@ -8,6 +8,7 @@ from .HexNNet import HexNNet as NetBuilder
 
 
 import tensorflow as tf
+from tensorflow.python.ops import summary_ops_v2
 
 sys.path.append('../..')
 
@@ -37,20 +38,21 @@ class NNetWrapper(MuZeroNeuralNet):
             """Scales the gradient for the backward pass."""
             return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
 
+        @tf.function
         def loss():
-            total_loss = 0
+            total_loss = tf.constant(0, dtype=tf.float32)
 
             # Root inference
-            s = self.neural_net.encoder.predict_on_batch(np.array(observations))
-            pi_0, v_0 = self.neural_net.predictor.predict_on_batch(s[..., 0])
+            s = self.neural_net.encoder(observations)
+            pi_0, v_0 = self.neural_net.predictor(s[..., 0])
 
             # Collect predictions of the form: [w_i * 1 / K, v, r, pi] for each forward step k...K
-            predictions = [(loss_scale, v_0, None, pi_0)]
+            predictions = [(sample_weight, v_0, None, pi_0)]
             for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
-                r, s = self.neural_net.dynamics.predict_on_batch([s[..., 0], actions[:, t, :]])
-                pi, v = self.neural_net.predictor.predict_on_batch(s[..., 0])
+                r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
+                pi, v = self.neural_net.predictor(s[..., 0])
 
-                predictions.append((loss_scale / len(actions), v, r, pi))
+                predictions.append((sample_weight / len(actions), v, r, pi))
                 s = scale_gradient(s, 1 / 2)
 
             for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
@@ -62,14 +64,13 @@ class NNetWrapper(MuZeroNeuralNet):
                 pi_loss = scalar_loss(pis, t_pis)
 
                 step_loss = r_loss + v_loss + pi_loss
-
                 total_loss += tf.reduce_sum(scale_gradient(step_loss, gradient_scale))
 
             return total_loss
 
         # Unpack and transform data for loss computation.
-        observations, actions, targets, loss_scale = list(zip(*examples))
-        actions, loss_scale = np.array(actions), np.array(loss_scale)
+        observations, actions, targets, sample_weight = list(zip(*examples))
+        actions, sample_weight = np.array(actions), np.array(sample_weight)
 
         # Unpack and encode targets. All target shapes are of the form [time, batch_size, categories]
         target_vs, target_rs, target_pis = list(map(np.array, zip(*targets)))
@@ -80,12 +81,17 @@ class NNetWrapper(MuZeroNeuralNet):
 
         observations = tf.convert_to_tensor(observations, dtype=tf.float32)
         actions = tf.convert_to_tensor(actions, dtype=tf.float32)
-        loss_scale = tf.convert_to_tensor(loss_scale, dtype=tf.float32)
+        sample_weight = tf.convert_to_tensor(sample_weight, dtype=tf.float32)
         target_rs = tf.convert_to_tensor(target_rs, dtype=tf.float32)
         target_vs = tf.convert_to_tensor(target_vs, dtype=tf.float32)
         target_pis = tf.convert_to_tensor(target_pis, dtype=tf.float32)
 
+        l = loss()
+        print("before opt", l)
+
         self.optimizer.minimize(loss, self.get_variables)
+
+        print("after opt", loss())
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]

@@ -91,7 +91,7 @@ class MuZeroCoach:
 
         # Array of sampling probabilities over the range (0, total_data_length)
         sampling_probability = None
-        update_strength = np.ones(np.sum(lengths)) / n  # == Uniform weight update strength over batch.
+        sample_weight = np.ones(np.sum(lengths)) / n  # == Uniform weight update strength over batch.
 
         if self.args.prioritize:
             errors = np.array([np.abs(h.predicted_returns[i] - h.actual_returns[i])
@@ -101,7 +101,7 @@ class MuZeroCoach:
             sampling_probability = mass / np.sum(mass)
 
             # Adjust weight update strength proportionally to IS-ratio to prevent sampling bias.
-            update_strength = np.power(n * sampling_probability, -self.args.prioritize_beta)
+            sample_weight = np.power(n * sampling_probability, -self.args.prioritize_beta)
 
         indices = np.random.choice(a=np.sum(lengths), size=self.neural_net.net_args.batch_size,
                                    replace=False, p=sampling_probability)
@@ -117,7 +117,7 @@ class MuZeroCoach:
         examples = [(
             self.game.buildTrajectory(histories[c[0]], None, None, self.neural_net.net_args.observation_length, t=c[1]),
             *self.buildHypotheticalSteps(histories[c[0]], c[1], k=self.args.K),
-            update_strength[lengths[c[0]] + c[1]]
+            sample_weight[lengths[c[0]] + c[1]]
         )
             for c in sample_coordinates
         ]

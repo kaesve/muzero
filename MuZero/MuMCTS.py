@@ -136,7 +136,7 @@ class MuZeroMCTS:
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.neural_net.predict(latent_state)
-            self.Ns[s] = 0  # TODO: 0 or 1. if 0 the exploration term in PUCT will collapse.
+            self.Ns[s] = 0
 
             if root:  # Add Dirichlet noise to the root prior and mask illegal moves.
                 self.modify_root_prior(s)
@@ -147,6 +147,10 @@ class MuZeroMCTS:
         # pick the action with the highest upper confidence bound
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
         confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
+
+        if count > 25:
+            print(latent_state)
+            print(confidence_bounds)
 
         # Only the root node has access to the set of legal actions.
         if s in self.Vs:
