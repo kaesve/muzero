@@ -2,11 +2,20 @@ import numpy as np
 import tensorflow as tf
 
 
+def scale_gradient(tensor, scale):
+    """Scales the gradient for the backward pass."""
+    return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
+
+
 def scalar_loss(prediction, target):
     if np.prod(prediction.shape) == prediction.shape[0]:           # Implies (batch_size, 1) --> Regression
         return tf.losses.mse(target, prediction)                   # MSE
 
     return tf.losses.categorical_crossentropy(target, prediction)  # Default: Cross Entropy
+
+
+def cast(x):
+    return tf.convert_to_tensor(x, dtype=tf.keras.backend.floatx())
 
 
 def atari_reward_transform(x, var_eps=0.001):

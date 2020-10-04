@@ -1,3 +1,8 @@
+from utils.loss_utils import scalar_loss, scale_gradient
+
+import tensorflow as tf
+
+
 class MuZeroNeuralNet:
     """
     This class specifies the base NeuralNet class. To define your own neural
@@ -8,8 +13,44 @@ class MuZeroNeuralNet:
     See othello/NNet.py for an example implementation.
     """
 
-    def __init__(self, game):
-        pass
+    def __init__(self, game, net_args, builder):
+        self.net_args = net_args
+        self.neural_net = builder(game, net_args)
+
+        self.optimizer = tf.optimizers.Adam(self.net_args.lr)
+
+    def loss_function(self, observations, actions, target_vs, target_rs, target_pis, sample_weights):
+
+        @tf.function
+        def loss():
+            total_loss = tf.constant(0, dtype=tf.float32)
+
+            # Root inference
+            s = self.neural_net.encoder(observations)
+            pi_0, v_0 = self.neural_net.predictor(s[..., 0])
+
+            # Collect predictions of the form: [w_i * 1 / K, v, r, pi] for each forward step k...K
+            predictions = [(sample_weights, v_0, None, pi_0)]
+            for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
+                r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
+                pi, v = self.neural_net.predictor(s[..., 0])
+
+                predictions.append((sample_weights / len(actions), v, r, pi))
+                s = scale_gradient(s, 1 / 2)
+
+            for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
+                gradient_scale, vs, rs, pis = predictions[t]
+                t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
+
+                r_loss = scalar_loss(rs, t_rs) if t > 0 else 0
+                v_loss = scalar_loss(vs, t_vs)
+                pi_loss = scalar_loss(pis, t_pis)
+
+                step_loss = r_loss + v_loss + pi_loss
+                total_loss += tf.reduce_sum(scale_gradient(step_loss, gradient_scale))
+
+            return total_loss
+        return loss
 
     def train(self, examples):
         """
@@ -21,6 +62,15 @@ class MuZeroNeuralNet:
                       (board, pi, v). pi is the MCTS informed policy vector for
                       the given board, and v is its value. The examples has
                       board in its canonical form.
+        """
+        pass
+
+    def get_variables(self):
+        """
+        Yield a list of all trainable variables within the model
+
+        Returns:
+            variable_list: A list of all tf.Variables within the entire MuZero model.
         """
         pass
 
@@ -71,4 +121,3 @@ class MuZeroNeuralNet:
         Loads parameters of the neural network from folder/filename
         """
         pass
-

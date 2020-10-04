@@ -4,7 +4,7 @@
   "args": {
     "numIters": 100,
     "numEps": 5,
-    "numTrainingSteps": 1,
+    "numTrainingSteps": 5,
     "tempThreshold": 15,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.25,
@@ -30,7 +30,7 @@
   },
 
   "net_args": {
-    "lr": 0.001,
+    "lr": 0.0001,
     "l2_penalty": 1e-4,
     "momentum": 0.9,
     "dropout": 0.3,

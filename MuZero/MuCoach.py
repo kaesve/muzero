@@ -226,8 +226,8 @@ class MuZeroCoach:
             self.selfPlay()
 
             n = len(self.trainExamplesHistory)
-            print("Replay buffer filled with data from {} self play iterations, at {} of maximum capacity.".format(
-                n, n / self.args.numItersForTrainExamplesHistory))
+            print("Replay buffer filled with data from {} self play iterations, at {}% of maximum capacity.".format(
+                n, 100 * n / self.args.numItersForTrainExamplesHistory))
 
             # Backup history to a file
             self.saveTrainExamples(i - 1)
@@ -237,11 +237,14 @@ class MuZeroCoach:
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
 
-            for _ in range(self.args.numTrainingSteps):
+            print("Performing Backpropagation...")
+            for epoch in range(self.args.numTrainingSteps):
                 batch = self.sampleBatch(complete_history)
 
                 # Backpropagation
-                self.neural_net.train(batch)
+                loss = self.neural_net.train(batch)
+                print("Backpropagation progress {} / {} epochs. Current loss: {:5f}".format(
+                    epoch, self.args.numTrainingSteps, loss))
 
             print('Storing a snapshot of the new model')
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
