@@ -2,27 +2,14 @@ import os
 import numpy as np
 import sys
 
-from utils.loss_utils import support_to_scalar
+from utils.loss_utils import support_to_scalar, scalar_to_support, scalar_loss
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .HexNNet import HexNNet as NetBuilder
+
 
 import tensorflow as tf
 
 sys.path.append('../..')
-
-
-def scale_gradient(tensor, scale):
-    """Scales the gradient for the backward pass."""
-    return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
-
-
-def scalar_loss(prediction, target):
-    # TODO: investigate
-    return (prediction - target) ** 2
-
-
-def scale_latent_state(s):
-    return (s - s.min()) / (1 + s.max() - s.min()) + 1 / np.prod(s.shape)
 
 
 class NNetWrapper(MuZeroNeuralNet):
@@ -36,61 +23,87 @@ class NNetWrapper(MuZeroNeuralNet):
         # self.optimizer = tf.train.MomentumOptimizer(net_args.lr, net_args.momentum)
         self.optimizer = tf.optimizers.Adam(net_args.lr)
 
+    def get_variables(self):
+        parts = (self.neural_net.encoder, self.neural_net.predictor, self.neural_net.dynamics)
+        return [v for v_list in map(lambda n: n.weights, parts) for v in v_list]
+
     def train(self, examples):
         """
         """
+        def encode(x):
+            return scalar_to_support(x, self.net_args.support_size)
 
-        total_loss = 0
+        def scale_gradient(tensor, scale):
+            """Scales the gradient for the backward pass."""
+            return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
 
-        for observations, actions, targets in examples:
-            latent_state = self.neural_net.encoder.predict(observations)
-            value, policy_logits = self.predict(latent_state)
+        def loss():
+            total_loss = 0
 
-            predictions = [(1, value, 0, policy_logits)]
+            # Root inference
+            s = self.neural_net.encoder.predict_on_batch(np.array(observations))
+            pi_0, v_0 = self.neural_net.predictor.predict_on_batch(s[..., 0])
 
-            # build predictions for k future steps
-            for action in actions:
-                reward, latent_state = self.forward(latent_state, action)
-                value, policy_logits = self.predict(latent_state)
+            # Collect predictions of the form: [w_i * 1 / K, v, r, pi] for each forward step k...K
+            predictions = [(loss_scale, v_0, None, pi_0)]
+            for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
+                r, s = self.neural_net.dynamics.predict_on_batch([s[..., 0], actions[:, t, :]])
+                pi, v = self.neural_net.predictor.predict_on_batch(s[..., 0])
 
-                predictions.append((1 / len(actions), value, reward, policy_logits))
+                predictions.append((loss_scale / len(actions), v, r, pi))
+                s = scale_gradient(s, 1 / 2)
 
-                latent_state = scale_gradient(latent_state)
+            for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
+                gradient_scale, vs, rs, pis = predictions[t]
+                t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
 
-            for prediction, target in zip(predictions, targets):
-                gradient_scale, value, reward, policy_logits = prediction
-                target_value, target_reward, target_policy = target
+                r_loss = scalar_loss(rs, t_rs) if t > 0 else 0
+                v_loss = scalar_loss(vs, t_vs)
+                pi_loss = scalar_loss(pis, t_pis)
 
-                step_loss = (
-                        scalar_loss(value, target_value) +
-                        scalar_loss(reward, target_reward) +
-                        tf.nn.softmax_cross_entropy_with_logits(
-                            logits=policy_logits, labels=target_policy))
+                step_loss = r_loss + v_loss + pi_loss
 
-                total_loss += scale_gradient(step_loss, gradient_scale)
+                total_loss += tf.reduce_sum(scale_gradient(step_loss, gradient_scale))
 
-            for weights in self.neural_net.get_weights():
-                total_loss += self.net_args.l2_penalty * tf.nn.l2_loss(weights)
+            return total_loss
 
-        self.optimizer.minimize(total_loss)
+        # Unpack and transform data for loss computation.
+        observations, actions, targets, loss_scale = list(zip(*examples))
+        actions, loss_scale = np.array(actions), np.array(loss_scale)
+
+        # Unpack and encode targets. All target shapes are of the form [time, batch_size, categories]
+        target_vs, target_rs, target_pis = list(map(np.array, zip(*targets)))
+
+        target_vs = np.array([encode(target_vs[:, t]) for t in range(target_vs.shape[-1])])
+        target_rs = np.array([encode(target_rs[:, t]) for t in range(target_rs.shape[-1])])
+        target_pis = np.swapaxes(target_pis, 0, 1)
+
+        observations = tf.convert_to_tensor(observations, dtype=tf.float32)
+        actions = tf.convert_to_tensor(actions, dtype=tf.float32)
+        loss_scale = tf.convert_to_tensor(loss_scale, dtype=tf.float32)
+        target_rs = tf.convert_to_tensor(target_rs, dtype=tf.float32)
+        target_vs = tf.convert_to_tensor(target_vs, dtype=tf.float32)
+        target_pis = tf.convert_to_tensor(target_pis, dtype=tf.float32)
+
+        self.optimizer.minimize(loss, self.get_variables)
 
     def encode(self, observations):
         observations = observations[np.newaxis, ...]
         latent_state = self.neural_net.encoder.predict(observations)[0]
-        return scale_latent_state(latent_state)
+        return latent_state
 
     def forward(self, latent_state, action):
-        a_plane = np.zeros((self.board_x, self.board_y))
-        a_plane[action // self.board_x][action % self.board_y] = 1
+        a_plane = np.zeros(self.action_size)
+        a_plane[action] = 1
 
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
-        a_plane = a_plane.reshape((-1, self.board_x, self.board_y))
+        a_plane = a_plane[np.newaxis, ...]
 
         r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
 
-        r_real = support_to_scalar(r[0], self.net_args.support_size)
+        r_real = support_to_scalar(r, self.net_args.support_size)
 
-        return r_real, scale_latent_state(s_next[0])
+        return np.asscalar(r_real), s_next[0]
 
     def predict(self, latent_state):
         """
@@ -99,9 +112,9 @@ class NNetWrapper(MuZeroNeuralNet):
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
         pi, v = self.neural_net.predictor.predict(latent_state)
 
-        v_real = support_to_scalar(v[0], self.net_args.support_size)
+        v_real = support_to_scalar(v, self.net_args.support_size)
 
-        return pi[0], v_real
+        return pi[0], np.asscalar(v_real)
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
         representation_path = os.path.join(folder, 'r_' + filename)

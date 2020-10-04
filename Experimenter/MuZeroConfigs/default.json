@@ -41,7 +41,7 @@
     "num_towers": 2,
     "len_dense": 2,
     "size_dense": 256,
-    "support_size": 0,
+    "support_size": 10,
     "observation_length": 5
   }
 }

@@ -11,6 +11,8 @@ import sys
 from keras.models import *
 from keras.layers import *
 
+from utils.network_utils import MinMaxScaler
+
 sys.path.append('..')
 
 
@@ -24,13 +26,15 @@ class HexNNet:
 
         # s: batch_size x state_x x state_y x time
         self.observation_history = Input(shape=(self.board_x, self.board_y, self.args.observation_length))
-        # a: batch_size x state_x x state_y x 1
-        self.action_plane = Input(shape=(self.board_x, self.board_y))
+        # a: one hot encoded vector of shape batch_size x (state_x * state_y)
+        self.action_plane = Input(shape=(self.action_size,))
         # s': batch_size  x board_x x board_y x 1
         self.latent_state = Input(shape=(self.board_x, self.board_y))
 
         # TODO: Check functionality during training
-        action_plane = Reshape((self.board_x, self.board_y, 1))(self.action_plane)
+        action_plane = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_x,),
+                              input_shape=(self.action_size,))(self.action_plane)  # Omit resignation
+        action_plane = Reshape((self.board_x, self.board_y, 1))(action_plane)
         latent_state = Reshape((self.board_x, self.board_y, 1))(self.latent_state)
 
         self.s = self.encoder(self.observation_history)
@@ -64,7 +68,8 @@ class HexNNet:
         out_tensor = self.build_model(observations)
 
         s_fc_latent = Dense(self.board_x * self.board_y, activation='linear', name='s_0')(out_tensor)
-        latent_state = Reshape((self.board_x, self.board_y, 1))(s_fc_latent)
+        latent_state = MinMaxScaler()(s_fc_latent)
+        latent_state = Reshape((self.board_x, self.board_y, 1))(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
 
@@ -75,6 +80,7 @@ class HexNNet:
 
         s_fc_latent = Dense(self.board_x * self.board_y, activation='linear', name='s_next')(out_tensor)
         latent_state = Reshape((self.board_x, self.board_y, 1))(s_fc_latent)
+        latent_state = MinMaxScaler()(latent_state)
 
         r = Dense(1, activation='linear', name='r')(out_tensor) \
             if self.args.support_size == 0 else \

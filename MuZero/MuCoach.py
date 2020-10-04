@@ -58,25 +58,32 @@ class MuZeroCoach:
     def getCheckpointFile(iteration):
         return 'checkpoint_' + str(iteration) + '.pth.tar'
 
-    @staticmethod
-    def buildHypotheticalSteps(history, t, k):
+    def buildHypotheticalSteps(self, history, t, k):
         start = t
         end = t + k
-        actions = history.actions[start:end]
+        actions = history.actions[start:end]  # Actions are shifted one step to the right.
 
         # Targets
-        pis = history.probabilities[start:end]
-        vs = history.actual_returns[start:end]
-        rewards = history.rewards[start:end]
+        pis = history.probabilities[start:end+1]
+        vs = history.actual_returns[start:end+1]
+        rewards = history.rewards[start:end+1]
 
-        truncation = k - len(actions)
-        if truncation > 0:  # Truncation > 0 due to terminal states. Treat last state as absorbing state
-            actions += [actions[-1]] * truncation
-            pis += [pis[-1]] * truncation
-            vs += [vs[-1]] * truncation
-            rewards += [rewards[-1]] * truncation
+        # Handle truncations > 0 due to terminal states. Treat last state as absorbing state
+        a_truncation = k - len(actions)  # Action truncation
+        if a_truncation > 0:
+            actions += [actions[-1]] * a_truncation
 
-        return actions, (vs, rewards, pis)  # (Actions, Targets)
+        t_truncation = (k + 1) - len(pis)  # Target truncation
+        if t_truncation > 0:
+            pis += [pis[-1]] * t_truncation
+            vs += [vs[-1]] * t_truncation
+            rewards += [rewards[-1]] * t_truncation
+
+        # One hot encode actions.
+        enc_actions = np.zeros([len(actions), self.game.getActionSize()])
+        enc_actions[np.arange(len(actions)), actions] = 1
+
+        return enc_actions, (np.array(vs), np.array(rewards), np.array(pis))  # (Actions, Targets)
 
     def sampleBatch(self, histories):
         lengths = list(map(len, histories))

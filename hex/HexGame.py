@@ -109,9 +109,7 @@ class HexGame(Game):
             prefix = [np.zeros_like(s) for _ in range(length - len(trajectory))]
             trajectory = prefix + trajectory
 
-        trajectory = np.array(trajectory)  # TODO: Empirically check shape of trajectory
-
-        return trajectory
+        return np.array(trajectory)
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
