@@ -1,6 +1,13 @@
-from utils.loss_utils import scalar_loss, scale_gradient
+"""
+
+"""
+import typing
 
 import tensorflow as tf
+import numpy as np
+
+from utils.storage import DotDict
+from utils.loss_utils import scalar_loss, scale_gradient
 
 
 class MuZeroNeuralNet:
@@ -13,16 +20,37 @@ class MuZeroNeuralNet:
     See othello/NNet.py for an example implementation.
     """
 
-    def __init__(self, game, net_args, builder):
+    def __init__(self, game, net_args: DotDict, builder: typing.Callable) -> None:
+        """
+
+        :param game:
+        :param net_args:
+        :param builder:
+        """
         self.net_args = net_args
         self.neural_net = builder(game, net_args)
 
         self.optimizer = tf.optimizers.Adam(self.net_args.lr)
 
-    def loss_function(self, observations, actions, target_vs, target_rs, target_pis, sample_weights):
+    def loss_function(self, observations: tf.Tensor, actions: tf.Tensor, target_vs: tf.Tensor, target_rs: tf.Tensor,
+                      target_pis: tf.Tensor, sample_weights: tf.Tensor) -> typing.Callable:
+        """
+
+        :param observations:
+        :param actions:
+        :param target_vs:
+        :param target_rs:
+        :param target_pis:
+        :param sample_weights:
+        :return:
+        """
 
         @tf.function
-        def loss():
+        def loss() -> tf.Tensor:
+            """
+
+            :return:
+            """
             total_loss = tf.constant(0, dtype=tf.float32)
 
             # Root inference
@@ -35,14 +63,14 @@ class MuZeroNeuralNet:
                 r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
                 pi, v = self.neural_net.predictor(s[..., 0])
 
-                predictions.append((sample_weights / len(actions), v, r, pi))
+                predictions.append((tf.divide(sample_weights, len(actions)), v, r, pi))
                 s = scale_gradient(s, 1 / 2)
 
             for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
                 gradient_scale, vs, rs, pis = predictions[t]
                 t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
 
-                r_loss = scalar_loss(rs, t_rs) if t > 0 else 0
+                r_loss = scalar_loss(rs, t_rs) if t > 0 else tf.constant(0, dtype=tf.float32)
                 v_loss = scalar_loss(vs, t_vs)
                 pi_loss = scalar_loss(pis, t_pis)
 
@@ -52,20 +80,19 @@ class MuZeroNeuralNet:
             return total_loss
         return loss
 
-    def train(self, examples):
+    def train(self, examples: typing.List) -> float:
         """
         This function trains the neural network with examples obtained from
         self-play.
 
         Input:
-            examples: a list of training examples, where each example is of form
-                      (board, pi, v). pi is the MCTS informed policy vector for
-                      the given board, and v is its value. The examples has
-                      board in its canonical form.
+            examples: a list of training examples of the form (observation_trajectory,
+                      action_trajectory, targets, loss_scale). Here targets is another
+                      tuple comprised of the trajectories of (v, r, pi).
         """
         pass
 
-    def get_variables(self):
+    def get_variables(self) -> typing.List:
         """
         Yield a list of all trainable variables within the model
 
@@ -74,17 +101,17 @@ class MuZeroNeuralNet:
         """
         pass
 
-    def encode(self, observations):
+    def encode(self, observations: np.ndarray) -> np.ndarray:
         """
         Input:
-            observations: A history of observations of an environment (in canonical form).
+            observations: A trajectory/ observation of an environment (in canonical form).
 
         Returns:
             s_0: A neural encoding of the environment.
         """
         pass
 
-    def forward(self, latent_state, action):
+    def forward(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
         """
         Input:
             latent_state: A neural encoding of the environment at step k: s_k.
@@ -97,7 +124,7 @@ class MuZeroNeuralNet:
         """
         pass
 
-    def predict(self, latent_state):
+    def predict(self, latent_state: np.ndarray) -> typing.Tuple[np.ndarray, float]:
         """
         Input:
             latent_state: A neural encoding of the environment's.
@@ -109,14 +136,14 @@ class MuZeroNeuralNet:
         """
         pass
 
-    def save_checkpoint(self, folder, filename):
+    def save_checkpoint(self, folder: str, filename: str) -> None:
         """
         Saves the current neural network (with its parameters) in
         folder/filename
         """
         pass
 
-    def load_checkpoint(self, folder, filename):
+    def load_checkpoint(self, folder: str, filename: str) -> None:
         """
         Loads parameters of the neural network from folder/filename
         """

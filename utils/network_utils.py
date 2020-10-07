@@ -1,3 +1,8 @@
+"""
+
+"""
+import typing
+
 from keras.layers import Layer
 from keras import backend as k
 
@@ -5,19 +10,30 @@ import numpy as np
 
 
 class MinMaxScaler(Layer):
+    """
 
-    def __init__(self):
+    """
+
+    def __init__(self) -> None:
+        """
+
+        """
         super().__init__()
         self.epsilon = 1.0
 
         self.D = float()
         self.shape = tuple()
 
-    def build(self, input_shape):
+    def build(self, input_shape: np.ndarray) -> None:
+        """
+
+        :param input_shape:
+        :return:
+        """
         self.D = 1.0 / np.prod(input_shape[1:])
         self.shape = input_shape
 
-    def call(self, inputs, **kwargs):
+    def call(self, inputs, **kwargs) -> typing.Callable:
         """
         MinMax normalize the given inputs with minimum value 1 / dimensions.
         Normalization is performed strictly over one example (not a batch).

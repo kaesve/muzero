@@ -1,34 +1,77 @@
+"""
+
+"""
+import typing
+
 import numpy as np
 import tensorflow as tf
 
 
-def scale_gradient(tensor, scale):
-    """Scales the gradient for the backward pass."""
-    return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
+def scale_gradient(tensor: tf.Tensor, scale: float) -> tf.Tensor:
+    """
+    Scales the gradient for the backward pass.
+    :param tensor:
+    :param scale:
+    :return:
+    """
+    return tf.multiply(tensor, scale) + tf.stop_gradient(tensor) * (1 - scale)
 
 
-def scalar_loss(prediction, target):
+def scalar_loss(prediction: typing.Union[tf.Tensor, np.ndarray],
+                target: typing.Union[tf.Tensor, np.ndarray]) -> typing.Union[tf.Tensor, float]:
+    """
+
+    :param prediction:
+    :param target:
+    :return:
+    """
     if np.prod(prediction.shape) == prediction.shape[0]:           # Implies (batch_size, 1) --> Regression
         return tf.losses.mse(target, prediction)                   # MSE
 
     return tf.losses.categorical_crossentropy(target, prediction)  # Default: Cross Entropy
 
 
-def cast(x):
+def cast_to_tensor(x: typing.Union[np.ndarray, float]) -> tf.Tensor:
+    """
+
+    :param x:
+    :return:
+    """
     return tf.convert_to_tensor(x, dtype=tf.keras.backend.floatx())
 
 
-def atari_reward_transform(x, var_eps=0.001):
+def atari_reward_transform(x: np.ndarray, var_eps: float = 0.001) -> np.ndarray:
+    """
+
+    :param x:
+    :param var_eps:
+    :return:
+    """
     # See https://arxiv.org/pdf/1805.11593.pdf
     return np.sign(x) * (np.sqrt(np.abs(x) + 1) - 1) + var_eps * x
 
 
-def inverse_atari_reward_transform(x, var_eps=0.001):
+def inverse_atari_reward_transform(x: np.ndarray, var_eps: float = 0.001) -> np.ndarray:
+    """
+
+    :param x:
+    :param var_eps:
+    :return:
+    """
     # See https://arxiv.org/pdf/1805.11593.pdf
     return np.sign(x) * (((np.sqrt(1 + 4 * var_eps * (np.abs(x) + 1 + var_eps)) - 1) / (2 * var_eps)) ** 2 - 1)
 
 
-def support_to_scalar(x: np.ndarray, support_size: int, reward_transformer=inverse_atari_reward_transform, **kwargs):
+def support_to_scalar(x: np.ndarray, support_size: int,
+                      reward_transformer: typing.Callable = inverse_atari_reward_transform, **kwargs) -> np.ndarray:
+    """
+
+    :param x:
+    :param support_size:
+    :param reward_transformer:
+    :param kwargs:
+    :return:
+    """
     if support_size == 0:  # Simple regression (support in this case can be the mean of a Gaussian)
         return x
 
@@ -40,7 +83,16 @@ def support_to_scalar(x: np.ndarray, support_size: int, reward_transformer=inver
     return value
 
 
-def scalar_to_support(x: np.ndarray, support_size: int, reward_transformer=atari_reward_transform, **kwargs):
+def scalar_to_support(x: np.ndarray, support_size: int,
+                      reward_transformer: typing.Callable = atari_reward_transform, **kwargs) -> np.ndarray:
+    """
+
+    :param x:
+    :param support_size:
+    :param reward_transformer:
+    :param kwargs:
+    :return:
+    """
     if support_size == 0:  # Simple regression (support in this case can be the mean of a Gaussian)
         return x
 
@@ -58,11 +110,9 @@ def scalar_to_support(x: np.ndarray, support_size: int, reward_transformer=atari
 
 
 if __name__ == "__main__":
+    # Simple Debugging. TODO: Refactor to unit tests.
     scalars = np.arange(10)
     support = scalar_to_support(scalars, 20)
     inverted = support_to_scalar(support, 20)
 
     assert np.linalg.norm(scalars - inverted) < 1e-8, "x != f^-1(f(x))"
-
-
-

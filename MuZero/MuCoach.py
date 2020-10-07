@@ -1,3 +1,7 @@
+"""
+
+"""
+import typing
 import os
 import sys
 import time
@@ -6,8 +10,10 @@ from pickle import Pickler, Unpickler
 
 import numpy as np
 
+from MuZero.MuNeuralNet import MuZeroNeuralNet
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import Bar, AverageMeter
+from utils.storage import DotDict
 
 
 class MuZeroCoach:
@@ -21,19 +27,20 @@ class MuZeroCoach:
         Data container for keeping track of games
         """
 
-        def __init__(self):
-            self.states = list()
-            self.players = list()
-            self.actions = list()
-            self.probabilities = list()
-            self.rewards = list()
-            self.predicted_returns = list()
-            self.actual_returns = list()
+        def __init__(self) -> None:
+            """
 
-        def __len__(self):
+            """
+            self.states = self.players = self.actions = self.probabilities = \
+                self.rewards = self.predicted_returns = self.actual_returns = None
+            self.refresh()
+
+        def __len__(self) -> int:
+            """Get length of current stored trajectory"""
             return len(self.states)
 
-        def capture(self, state, action, player, pi, r, v):
+        def capture(self, state: np.ndarray, action: int, player: int, pi: typing.List, r: float, v: float) -> None:
+            """"""
             self.states.append(state)
             self.actions.append(action)
             self.players.append(player)
@@ -42,11 +49,18 @@ class MuZeroCoach:
             self.predicted_returns.append(v)
             self.actual_returns.append(None)
 
-        def refresh(self):
+        def refresh(self) -> None:
+            """Clear all statistics within the class"""
             self.states, self.players, self.actions, self.probabilities, \
             self.rewards, self.predicted_returns, self.actual_returns = [[] for _ in range(7)]
 
-    def __init__(self, game, neural_net, args):
+    def __init__(self, game, neural_net: MuZeroNeuralNet, args: DotDict) -> None:
+        """
+
+        :param game:
+        :param neural_net:
+        :param args:
+        """
         self.game = game
         self.neural_net = neural_net
         self.args = args
@@ -55,10 +69,19 @@ class MuZeroCoach:
         self.current_player = 1
 
     @staticmethod
-    def getCheckpointFile(iteration):
+    def getCheckpointFile(iteration: int) -> str:
+        """"""
         return 'checkpoint_' + str(iteration) + '.pth.tar'
 
-    def buildHypotheticalSteps(self, history, t, k):
+    def buildHypotheticalSteps(self, history: GameHistory, t: int, k: int) -> \
+            typing.Tuple[np.ndarray, typing.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        """
+
+        :param history:
+        :param t:
+        :param k:
+        :return:
+        """
         start = t
         end = t + k
         actions = history.actions[start:end]  # Actions are shifted one step to the right.
@@ -85,7 +108,12 @@ class MuZeroCoach:
 
         return enc_actions, (np.array(vs), np.array(rewards), np.array(pis))  # (Actions, Targets)
 
-    def sampleBatch(self, histories):
+    def sampleBatch(self, histories: typing.List[GameHistory]) -> typing.List:
+        """
+
+        :param histories:
+        :return:
+        """
         lengths = list(map(len, histories))
         n = self.neural_net.net_args.batch_size
 
@@ -124,7 +152,12 @@ class MuZeroCoach:
 
         return examples
 
-    def computeReturns(self, history):  # TODO: Testing of this function.
+    def computeReturns(self, history: GameHistory) -> None:  # TODO: Testing of this function.
+        """
+
+        :param history:
+        :return:
+        """
         # Update the MCTS estimate v_t with the more accurate estimates z_t
         if self.args.boardgame:
             # Boardgames
@@ -139,7 +172,7 @@ class MuZeroCoach:
                 bootstrap = np.pow(self.args.gamma, horizon - t) * history.predicted_returns[horizon]
                 history.actual_returns[t] = np.sum(discounted_rewards) + bootstrap
 
-    def executeEpisode(self):
+    def executeEpisode(self) -> GameHistory:
         """
         This function executes one episode of self-play, starting with player 1.
 
@@ -163,7 +196,7 @@ class MuZeroCoach:
                 temp /= 2
 
             # Construct an observation array (o_1, ..., o_t).
-            observation_array = self.game.buildTrajectory(history, s=s, player=self.current_player,
+            observation_array = self.game.buildTrajectory(history, s, self.current_player,
                                                           length=self.neural_net.net_args.observation_length)
 
             # Compute the move probability vector and state value using MCTS.
@@ -186,7 +219,11 @@ class MuZeroCoach:
         self.computeReturns(history)
         return history
 
-    def selfPlay(self):
+    def selfPlay(self) -> None:
+        """
+
+        :return:
+        """
         iteration_train_examples = list()
 
         eps_time = AverageMeter()
@@ -211,7 +248,12 @@ class MuZeroCoach:
         # Store data from previous self-play iterations into the history
         self.trainExamplesHistory.append(iteration_train_examples)
 
-    def backprop(self, history):  # TODO: Tidy duplicate code.
+    def backprop(self, history: typing.List[GameHistory]) -> None:  # TODO: Tidy duplicate code.
+        """
+
+        :param history:
+        :return:
+        """
         eps_time = AverageMeter()
         bar = Bar('Backpropagation', max=self.args.numTrainingSteps)
         end = time.time()
@@ -230,7 +272,7 @@ class MuZeroCoach:
             bar.next()
         bar.finish()
 
-    def learn(self):
+    def learn(self) -> None:
         """
         Performs numIters iterations with numEps episodes of self-play in each
         iteration. After every iteration, it retrains neural network with
@@ -262,7 +304,12 @@ class MuZeroCoach:
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
 
-    def saveTrainExamples(self, iteration):
+    def saveTrainExamples(self, iteration: int) -> None:
+        """
+
+        :param iteration:
+        :return:
+        """
         folder = self.args.checkpoint
         if not os.path.exists(folder):
             os.makedirs(folder)
@@ -275,7 +322,7 @@ class MuZeroCoach:
         if os.path.isfile(old_checkpoint):
             os.remove(old_checkpoint)
 
-    def loadTrainExamples(self):
+    def loadTrainExamples(self) -> None:
         model_file = os.path.join(self.args.load_folder_file[0], self.args.load_folder_file[1])
         examples_file = model_file + ".examples"
         if not os.path.isfile(examples_file):

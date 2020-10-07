@@ -1,4 +1,12 @@
+"""
+
+"""
+import typing
+
 import numpy as np
+
+from MuZero.MuNeuralNet import MuZeroNeuralNet
+from utils.storage import DotDict
 
 EPS = 1e-8
 
@@ -10,25 +18,51 @@ class MuZeroMCTS:
 
     class MinMaxStats(object):
         """A class that holds the min-max values of the tree."""
-        def __init__(self, minimum_reward=None, maximum_reward=None):
+
+        def __init__(self, minimum_reward: bool = None, maximum_reward: bool = None) -> None:
+            """
+
+            :param minimum_reward:
+            :param maximum_reward:
+            """
             self.default_max = self.maximum = maximum_reward if maximum_reward is not None else -np.inf
             self.default_min = self.minimum = minimum_reward if minimum_reward is not None else np.inf
 
-        def refresh(self):
+        def refresh(self) -> None:
+            """
+
+            :return:
+            """
             self.maximum = self.default_max
             self.minimum = self.default_min
 
-        def update(self, value):
+        def update(self, value: float) -> None:
+            """
+
+            :param value:
+            :return:
+            """
             self.maximum = np.max([self.maximum, value])
             self.minimum = np.min([self.minimum, value])
 
-        def normalize(self, value):
+        def normalize(self, value: float) -> float:
+            """
+
+            :param value:
+            :return:
+            """
             if self.maximum > self.minimum:
                 # We normalize only when we have set the maximum and minimum values.
                 return (value - self.minimum) / (self.maximum - self.minimum)
             return value
 
-    def __init__(self, game, neural_net, args):
+    def __init__(self, game, neural_net: MuZeroNeuralNet, args: DotDict) -> None:
+        """
+
+        :param game:
+        :param neural_net:
+        :param args:
+        """
         self.game = game
         self.neural_net = neural_net
         self.args = args
@@ -44,15 +78,26 @@ class MuZeroMCTS:
         self.Ps = {}  # stores initial policy (returned by neural net)
         self.Vs = {}  # stores valid moves at the ROOT node.
 
-    def clear_tree(self):
+    def clear_tree(self) -> None:
+        """Clear all statistics stored in the current search tree"""
         self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
-    def turn_indicator(self, counter):
+    def turn_indicator(self, counter: int) -> int:
+        """
+
+        :param counter:
+        :return:
+        """
         if self.args.boardgame:
             return 1 if counter % 2 == 0 else -1
         return 1
 
-    def modify_root_prior(self, s):
+    def modify_root_prior(self, s: np.ndarray) -> None:
+        """
+
+        :param s:
+        :return:
+        """
         # Add Dirichlet Exploration noise
         noise = np.random.dirichlet([self.args.dirichlet_alpha] * len(self.Ps[s]))
         self.Ps[s] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * self.Ps[s]
@@ -61,7 +106,14 @@ class MuZeroMCTS:
         self.Ps[s] *= self.Vs[s]
         self.Ps[s] = self.Ps[s] / np.sum(self.Ps[s])
 
-    def compute_ucb(self, s, a, exploration_factor):
+    def compute_ucb(self, s: str, a: int, exploration_factor: float) -> float:
+        """
+
+        :param s:
+        :param a:
+        :param exploration_factor:
+        :return:
+        """
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
         q_value = self.Qsa[(s, a)] if (s, a) in self.Qsa else 0
         c_children = np.max([self.Ns[s], 1e-4])  # Ensure that prior doesn't collapse to 0 if s is new.
@@ -70,7 +122,7 @@ class MuZeroMCTS:
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
         return ucb
 
-    def runMCTS(self, observations, temp=1):
+    def runMCTS(self, observations: np.ndarray, temp: int = 1) -> typing.Tuple[typing.List, float]:
         """
         This function performs numMCTSSims simulations of MCTS starting from
         a history (array) of past observations. The current state observation must
@@ -108,7 +160,7 @@ class MuZeroMCTS:
         move_probabilities = counts / np.sum(counts)
         return move_probabilities.tolist(), v
 
-    def _search(self, latent_state, count=0, root=False):
+    def _search(self, latent_state: np.ndarray, count: int = 0, root: bool = False) -> float:
         """ TODO: Edit documentation
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that

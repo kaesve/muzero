@@ -1,3 +1,9 @@
+import numpy as np
+import typing
+
+from MuZero.MuCoach import MuZeroCoach
+
+
 class Game:
     """
     This class specifies the base Game class. To define your own game, subclass
@@ -9,10 +15,10 @@ class Game:
     See hex/HexGame.py for an example implementation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def getInitialState(self):
+    def getInitialState(self) -> np.ndarray:
         """
         Returns:
             startState: a representation of the initial state (ideally this is the form
@@ -20,21 +26,21 @@ class Game:
         """
         pass
 
-    def getDimensions(self):
+    def getDimensions(self) -> typing.Tuple[int, ...]:
         """
         Returns:
             (x,y): a tuple of the state dimensions
         """
         pass
 
-    def getActionSize(self):
+    def getActionSize(self) -> int:
         """
         Returns:
             actionSize: number of all possible actions
         """
         pass
 
-    def getNextState(self, state, action, player):
+    def getNextState(self, state: np.ndarray, action: int, player: int) -> typing.Tuple[np.ndarray, float, int]:
         """
         Input:
             state: current state
@@ -48,7 +54,7 @@ class Game:
         """
         pass
 
-    def getLegalMoves(self, state, player):
+    def getLegalMoves(self, state: np.ndarray, player: int) -> np.ndarray:
         """
         Input:
             board: current state
@@ -60,20 +66,20 @@ class Game:
         """
         pass
 
-    def getGameEnded(self, state, player):
+    def getGameEnded(self, state: np.ndarray, player: int) -> typing.Union[float, int]:
         """
         Input:
             state: current state
             player: current player (1 or -1)
 
         Returns:
-            r: 0 if game has not ended. 1 if player won, -1 if player lost,
+            z: 0 if game has not ended. 1 if player won, -1 if player lost,
                small non-zero value for draw.
                
         """
         pass
 
-    def getCanonicalForm(self, state, player):
+    def getCanonicalForm(self, state: np.ndarray, player: int) -> np.ndarray:
         """
         Input:
             state: current state
@@ -89,10 +95,11 @@ class Game:
         """
         pass
 
-    def buildTrajectory(self, history, current_state, current_player, length, t=None):
+    def buildTrajectory(self, history: MuZeroCoach.GameHistory, current_state: np.ndarray, current_player: int,
+                        length: int, t: int = None) -> np.ndarray:
         """
         Input:
-            history: Some data structure that can be queried for past observations.
+            history: A game specific history of an environment that can be queried for past observations.
             current_state: Either the current observation of the environment or the integer index.
             current_player: Current player (-1 or 1) TODO: Check if needed for canonicalForm trajectory.
             length: The length of the trajectory.
@@ -105,7 +112,8 @@ class Game:
         """
         pass
 
-    def getSymmetries(self, state, pi):
+    def getSymmetries(
+            self, state: np.ndarray, pi: np.ndarray) -> typing.List:
         """
         Input:
             state: current state
@@ -118,7 +126,7 @@ class Game:
         """
         pass
 
-    def stringRepresentation(self, state):
+    def stringRepresentation(self, state: np.ndarray) -> str:
         """
         Input:
             state: current state
