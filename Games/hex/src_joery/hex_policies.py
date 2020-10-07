@@ -23,7 +23,7 @@ from ast import literal_eval
 import numpy as np
 
 from AlphaZero.MCTS import MCTS
-from hex.HexGame import HexGame
+from Games.hex.HexGame import HexGame
 
 from .hex_search import MinimaxSearcher, MCTSSearcher
 from .hex_utils import available_moves

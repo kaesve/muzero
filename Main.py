@@ -14,16 +14,12 @@ session = InteractiveSession(config=config)
 # Bugfxing TF2?
 
 import json
-from collections import deque
-
-import numpy as np
 
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
-from hex.HexGame import HexGame as Game
-from hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
-from hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
-from MuZero.MuMCTS import MuZeroMCTS
+from Games.hex.HexGame import HexGame as Game
+from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
+from Games.hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
 from MuZero.MuCoach import MuZeroCoach
 
 ALPHAZERO_DEFAULTS = "Experimenter/Configs/SmallModel_AlphaZeroHex.json"

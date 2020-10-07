@@ -10,10 +10,9 @@ from utils.loss_utils import support_to_scalar, scalar_to_support, cast_to_tenso
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .HexNNet import HexNNet as NetBuilder
 
-from Game import Game
 from utils.storage import DotDict
 
-sys.path.append('../..')
+sys.path.append('../../..')
 
 
 class NNetWrapper(MuZeroNeuralNet):

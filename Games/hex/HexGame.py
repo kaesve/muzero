@@ -17,7 +17,7 @@ from Game import Game
 from .src_joery.hex_skeleton import HexBoard
 from .src_joery.hex_utils import available_moves, make_move
 
-sys.path.append('..')
+sys.path.append('../../..')
 
 
 class HexGame(Game):

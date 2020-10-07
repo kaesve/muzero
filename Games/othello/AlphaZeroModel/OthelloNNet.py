@@ -1,11 +1,11 @@
 import sys
-sys.path.append('..')
-from utils import *
 
-import argparse
 from keras.models import *
 from keras.layers import *
 from keras.optimizers import *
+
+sys.path.append('..')
+
 
 class OthelloNNet():
     def __init__(self, game, args):

@@ -23,11 +23,11 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # Edit to select GPU!
 
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
-from hex.HexGame import HexGame as Game
-from hex.AlphaZeroModel.NNet import NNetWrapper as nn
+from Games.hex.HexGame import HexGame as Game
+from Games.hex.AlphaZeroModel.NNet import NNetWrapper as nn
 
-from hex.src_joery.hex_policies import *
-from hex.src_joery.experimenter import *
+from Games.hex.src_joery.hex_policies import *
+from Games.hex.src_joery.experimenter import *
 
 import time
 import datetime

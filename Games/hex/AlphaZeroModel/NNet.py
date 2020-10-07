@@ -6,7 +6,7 @@ import sys
 from AlphaZero.NeuralNet import NeuralNet
 from .HexNNet import HexNNet as onnet
 
-sys.path.append('../..')
+sys.path.append('../../..')
 
 
 class NNetWrapper(NeuralNet):

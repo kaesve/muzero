@@ -13,7 +13,7 @@ from keras.layers import *
 
 from utils.network_utils import MinMaxScaler
 
-sys.path.append('..')
+sys.path.append('../..')
 
 
 class HexNNet:
