@@ -6,8 +6,9 @@ import typing
 import tensorflow as tf
 import numpy as np
 
-from utils.storage import DotDict
+from utils import DotDict
 from utils.loss_utils import scalar_loss, scale_gradient
+from utils.selfplay_utils import GameHistory
 
 
 class MuZeroNeuralNet:

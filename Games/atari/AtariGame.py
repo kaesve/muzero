@@ -9,7 +9,6 @@ import gym
 
 sys.path.append('../../..')
 
-
 class GymState:
     def __init__(self, env, observation, done):
         self.env = env

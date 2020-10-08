@@ -2,3 +2,6 @@ Plan of Action: https://leidenuniv1-my.sharepoint.com/:w:/r/personal/s2420384_vu
 
 
 ## Work in Progress
+
+## Minimal requirements
+* Python 3.7+

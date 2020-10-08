@@ -6,7 +6,8 @@ import typing
 import numpy as np
 
 from MuZero.MuNeuralNet import MuZeroNeuralNet
-from utils.storage import DotDict
+from utils import DotDict
+from utils.selfplay_utils import MinMaxStats
 
 EPS = 1e-8
 
@@ -15,46 +16,6 @@ class MuZeroMCTS:
     """
     This class handles the MCTS tree.
     """
-
-    class MinMaxStats(object):
-        """A class that holds the min-max values of the tree."""
-
-        def __init__(self, minimum_reward: bool = None, maximum_reward: bool = None) -> None:
-            """
-
-            :param minimum_reward:
-            :param maximum_reward:
-            """
-            self.default_max = self.maximum = maximum_reward if maximum_reward is not None else -np.inf
-            self.default_min = self.minimum = minimum_reward if minimum_reward is not None else np.inf
-
-        def refresh(self) -> None:
-            """
-
-            :return:
-            """
-            self.maximum = self.default_max
-            self.minimum = self.default_min
-
-        def update(self, value: float) -> None:
-            """
-
-            :param value:
-            :return:
-            """
-            self.maximum = np.max([self.maximum, value])
-            self.minimum = np.min([self.minimum, value])
-
-        def normalize(self, value: float) -> float:
-            """
-
-            :param value:
-            :return:
-            """
-            if self.maximum > self.minimum:
-                # We normalize only when we have set the maximum and minimum values.
-                return (value - self.minimum) / (self.maximum - self.minimum)
-            return value
 
     def __init__(self, game, neural_net: MuZeroNeuralNet, args: DotDict) -> None:
         """
@@ -68,7 +29,7 @@ class MuZeroMCTS:
         self.args = args
 
         # Gets reinitialized at every search
-        self.minmax = self.MinMaxStats(self.args.minimum_reward, self.args.maximum_reward)
+        self.minmax = MinMaxStats(self.args.minimum_reward, self.args.maximum_reward)
 
         self.Qsa = {}  # stores Q values for s,a (as defined in the paper)
         self.Ssa = {}  # stores latent state transition for s_k, a
@@ -122,7 +83,7 @@ class MuZeroMCTS:
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
         return ucb
 
-    def runMCTS(self, observations: np.ndarray, temp: int = 1) -> typing.Tuple[typing.List, float]:
+    def runMCTS(self, observations: np.ndarray, temp: int = 1) -> typing.Tuple[np.ndarray, float]:
         """
         This function performs numMCTSSims simulations of MCTS starting from
         a history (array) of past observations. The current state observation must
@@ -143,22 +104,23 @@ class MuZeroMCTS:
 
         v_sum = 0
         for i in range(self.args.numMCTSSims):
-            v_sum += self._search(latent_state, root=(i == 0))  # Add noise only on the first search
+            v_sum += self._search(latent_state, root=(i == 0))
 
         v = v_sum / self.args.numMCTSSims
 
+        # MCTS Visit count array for each edge 'a' from root node 's'.
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
-        if temp == 0:
+        if temp == 0:  # Greedy selection.
             best_actions = np.array(np.argwhere(counts == np.max(counts))).flatten()
             sample = np.random.choice(best_actions)
-            move_probabilities = [0] * len(counts)
+            move_probabilities = np.zeros(len(counts))
             move_probabilities[sample] = 1
             return move_probabilities, v
 
         counts = np.power(counts, 1. / temp)
         move_probabilities = counts / np.sum(counts)
-        return move_probabilities.tolist(), v
+        return move_probabilities, v
 
     def _search(self, latent_state: np.ndarray, count: int = 0, root: bool = False) -> float:
         """ TODO: Edit documentation
@@ -200,9 +162,9 @@ class MuZeroMCTS:
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
         confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
 
-        if count > 25:
-            print(latent_state)
-            print(confidence_bounds)
+        if count > self.args.numMCTSSims + 1:
+            print(f'Warning: latent state may have collapsed, defaulting to random search. Recursion depth: {count}')
+            confidence_bounds = np.random.uniform(size=len(confidence_bounds))
 
         # Only the root node has access to the set of legal actions.
         if s in self.Vs:

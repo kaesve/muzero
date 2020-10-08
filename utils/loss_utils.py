@@ -107,12 +107,3 @@ def scalar_to_support(x: np.ndarray, support_size: int,
     bins[np.arange(len(x)), floored + support_size + 1] = prob
 
     return bins
-
-
-if __name__ == "__main__":
-    # Simple Debugging. TODO: Refactor to unit tests.
-    scalars = np.arange(10)
-    support = scalar_to_support(scalars, 20)
-    inverted = support_to_scalar(support, 20)
-
-    assert np.linalg.norm(scalars - inverted) < 1e-8, "x != f^-1(f(x))"

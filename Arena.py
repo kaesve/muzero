@@ -76,12 +76,10 @@ class Arena:
         bar = Bar('Arena.playGames', max=num)
         end = time.time()
         eps = 0
-        max_eps = int(num)
+        max_eps = num
 
-        num = int(num / 2)
-        one_won = 0
-        two_won = 0
-        draws = 0
+        num = max_eps // 2
+        one_won = two_won = draws = 0
         for _ in range(num):
             game_result = self.playGame(verbose=verbose)
             if game_result == 1:

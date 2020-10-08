@@ -11,26 +11,31 @@ import numpy as np
 
 class MinMaxScaler(Layer):
     """
+    Keras layer to MinMax scale an incoming tensor to the range [D, 1 + D].
 
+    The transformation is defined as:
+        s = (s - min(s)) / (max(s) - min(s) + e) + D
+    here s is the tensor passed to the layer, e is a constant for numerical
+    stability and D is a minimum value for the tensor.
+
+    D is derived by the dimensions of s, D = prod(dim(s)) ** shrinkage.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, epsilon: float = 1.0, shrinkage: float = 1.0) -> None:
         """
-
+        :param epsilon: float additive constant in the division operator
+        :param shrinkage: float exponent for controlling the minimum value of the output tensor (higher = smaller s).
         """
         super().__init__()
-        self.epsilon = 1.0
+        self.epsilon = epsilon
+        self.shrinkage = shrinkage
 
         self.D = float()
         self.shape = tuple()
 
     def build(self, input_shape: np.ndarray) -> None:
-        """
-
-        :param input_shape:
-        :return:
-        """
-        self.D = 1.0 / np.prod(input_shape[1:])
+        """Initialize shapes and D within the computation graph"""
+        self.D = 1.0 / (np.prod(input_shape[1:]) ** self.shrinkage)
         self.shape = input_shape
 
     def call(self, inputs, **kwargs) -> typing.Callable:

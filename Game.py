@@ -1,7 +1,7 @@
 import numpy as np
 import typing
 
-from MuZero.MuCoach import MuZeroCoach
+from utils.selfplay_utils import GameHistory
 
 
 class Game:
@@ -95,7 +95,7 @@ class Game:
         """
         pass
 
-    def buildTrajectory(self, history: MuZeroCoach.GameHistory, current_state: np.ndarray, current_player: int,
+    def buildTrajectory(self, history: GameHistory, current_state: np.ndarray, current_player: int,
                         length: int, t: int = None) -> np.ndarray:
         """
         Input:

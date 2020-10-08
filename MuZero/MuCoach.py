@@ -12,8 +12,8 @@ import numpy as np
 
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from MuZero.MuMCTS import MuZeroMCTS
-from utils import Bar, AverageMeter
-from utils.storage import DotDict
+from utils import Bar, AverageMeter, DotDict
+from utils.selfplay_utils import GameHistory, sample_batch
 
 
 class MuZeroCoach:
@@ -21,38 +21,6 @@ class MuZeroCoach:
     This class executes the self-play + learning. It uses the functions defined
     in Game and NeuralNet. args are specified in main.py.
     """
-
-    class GameHistory:
-        """
-        Data container for keeping track of games
-        """
-
-        def __init__(self) -> None:
-            """
-
-            """
-            self.states = self.players = self.actions = self.probabilities = \
-                self.rewards = self.predicted_returns = self.actual_returns = None
-            self.refresh()
-
-        def __len__(self) -> int:
-            """Get length of current stored trajectory"""
-            return len(self.states)
-
-        def capture(self, state: np.ndarray, action: int, player: int, pi: typing.List, r: float, v: float) -> None:
-            """"""
-            self.states.append(state)
-            self.actions.append(action)
-            self.players.append(player)
-            self.probabilities.append(pi)
-            self.rewards.append(r)
-            self.predicted_returns.append(v)
-            self.actual_returns.append(None)
-
-        def refresh(self) -> None:
-            """Clear all statistics within the class"""
-            self.states, self.players, self.actions, self.probabilities, \
-            self.rewards, self.predicted_returns, self.actual_returns = [[] for _ in range(7)]
 
     def __init__(self, game, neural_net: MuZeroNeuralNet, args: DotDict) -> None:
         """
@@ -66,12 +34,10 @@ class MuZeroCoach:
         self.args = args
         self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
-        self.current_player = 1
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
-        """"""
-        return 'checkpoint_' + str(iteration) + '.pth.tar'
+        return f'checkpoint_{iteration}.pth.tar'
 
     def buildHypotheticalSteps(self, history: GameHistory, t: int, k: int) -> \
             typing.Tuple[np.ndarray, typing.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
@@ -88,7 +54,7 @@ class MuZeroCoach:
 
         # Targets
         pis = history.probabilities[start:end+1]
-        vs = history.actual_returns[start:end+1]
+        vs = history.observed_returns[start:end + 1]
         rewards = history.rewards[start:end+1]
 
         # Handle truncations > 0 due to terminal states. Treat last state as absorbing state
@@ -114,63 +80,21 @@ class MuZeroCoach:
         :param histories:
         :return:
         """
-        lengths = list(map(len, histories))
-        n = self.neural_net.net_args.batch_size
-
-        # Array of sampling probabilities over the range (0, total_data_length)
-        sampling_probability = None
-        sample_weight = np.ones(np.sum(lengths)) / n  # == Uniform weight update strength over batch.
-
-        if self.args.prioritize:
-            errors = np.array([np.abs(h.predicted_returns[i] - h.actual_returns[i])
-                               for h in histories for i in range(len(h))])
-
-            mass = np.pow(errors, self.args.prioritize_alpha)  # un-normalized mass
-            sampling_probability = mass / np.sum(mass)
-
-            # Adjust weight update strength proportionally to IS-ratio to prevent sampling bias.
-            sample_weight = np.power(n * sampling_probability, -self.args.prioritize_beta)
-
-        indices = np.random.choice(a=np.sum(lengths), size=self.neural_net.net_args.batch_size,
-                                   replace=False, p=sampling_probability)
-
-        # Map the flat indices to the correct histories and history indices.
-        history_index_borders = np.cumsum([0] + lengths)
-        history_indices = [(np.sum(i >= history_index_borders), i) for i in indices]
-
-        # Of the form [(history_i, t), ...] \equiv history_it
-        sample_coordinates = [(h_i - 1, i - history_index_borders[h_i-1]) for h_i, i in history_indices]
+        # Generate coordinates within the replay buffer to sample from. Also generate the loss scale of said samples.
+        sample_coordinates, sample_weight = sample_batch(
+            list_of_histories=histories, n=self.neural_net.net_args.batch_size, prioritize=self.args.prioritize,
+            alpha=self.args.prioritize_alpha, beta=self.args.prioritize_beta)
 
         # Construct training examples for MuZero of the form (input, action, (targets), loss_scalar)
         examples = [(
             self.game.buildTrajectory(histories[c[0]], None, None, self.neural_net.net_args.observation_length, t=c[1]),
             *self.buildHypotheticalSteps(histories[c[0]], c[1], k=self.args.K),
-            sample_weight[lengths[c[0]] + c[1]]
+            loss_scale
         )
-            for c in sample_coordinates
+            for c, loss_scale in zip(sample_coordinates, sample_weight)
         ]
 
         return examples
-
-    def computeReturns(self, history: GameHistory) -> None:  # TODO: Testing of this function.
-        """
-
-        :param history:
-        :return:
-        """
-        # Update the MCTS estimate v_t with the more accurate estimates z_t
-        if self.args.boardgame:
-            # Boardgames
-            for i in range(len(history)):
-                history.actual_returns[i] = -1 if history.players[i] == self.current_player else 1
-        else:
-            # General MDPs. Letters follow notation from the paper.
-            n = self.args.n_steps
-            for t in range(len(history)):
-                horizon = np.min([t + n, len(history)])
-                discounted_rewards = [np.pow(self.args.gamma, k) * history.rewards[k] for k in range(t, horizon)]
-                bootstrap = np.pow(self.args.gamma, horizon - t) * history.predicted_returns[horizon]
-                history.actual_returns[t] = np.sum(discounted_rewards) + bootstrap
 
     def executeEpisode(self) -> GameHistory:
         """
@@ -184,46 +108,42 @@ class MuZeroCoach:
                      from the perspective of the past current players.
                      The structure is of the form (s_t, a_t, player_t, pi_t, r_t, v_t, z_t)
         """
-        history = self.GameHistory()
+        history = GameHistory()
         s = self.game.getInitialState()
-        self.current_player = 1
-        episode_step = 1
-        temp = 1
+        current_player = episode_step = temp = 1
 
-        while not self.game.getGameEnded(s, self.current_player):  # Boardgames: If loop ends => current player lost
+        while not self.game.getGameEnded(s, current_player):  # Boardgames: If loop ends => current player lost
             # Turn action selection to greedy as an episode progresses.
             if episode_step % self.args.tempThreshold == 0:
                 temp /= 2
 
             # Construct an observation array (o_1, ..., o_t).
-            observation_array = self.game.buildTrajectory(history, s, self.current_player,
+            observation_array = self.game.buildTrajectory(history, s, current_player,
                                                           length=self.neural_net.net_args.observation_length)
 
             # Compute the move probability vector and state value using MCTS.
             pi, v = self.mcts.runMCTS(observation_array, temp=temp)
 
             # Take a step in the environment and observe the transition and store necessary statistics.
-            action = np.random.choice(len(pi), p=pi)  # TODO Check if action is in perspective of the canonicalForm
+            action = np.random.choice(len(pi), p=pi)
             s_next, r, next_player = self.game.getNextState(s, action, 1)
-            history.capture(s, action, self.current_player, pi, r, v)
+            history.capture(s, action, current_player, pi, r, v)
 
             # Update state of control
-            self.current_player = self.current_player if next_player == 1 else -self.current_player
+            current_player = current_player if next_player == 1 else -current_player
             episode_step += 1
 
-            s = self.game.getCanonicalForm(s_next, self.current_player)
+            s = self.game.getCanonicalForm(s_next, current_player)
 
         # TODO: Check whether the very last observation s needs to be stored (no play statistics?)
+        # history.capture(s, -1, current_player, None, None, None)
 
         # Compute z_t for each observation. N-step returns for general MDPs or game outcomes for boardgames
-        self.computeReturns(history)
+        history.compute_returns(gamma=self.args.gamma, n=(self.args.n if not self.args.boardgame else None))
+
         return history
 
     def selfPlay(self) -> None:
-        """
-
-        :return:
-        """
         iteration_train_examples = list()
 
         eps_time = AverageMeter()
@@ -240,24 +160,19 @@ class MuZeroCoach:
             # Bookkeeping + plot progress
             eps_time.update(time.time() - end)
             end = time.time()
-            bar.suffix = '({eps}/{maxeps}) Eps Time: {et:.3f}s | Total: {total:} | ETA: {eta:}'.format(
-                eps=eps + 1, maxeps=self.args.numEps, et=eps_time.avg, total=bar.elapsed_td, eta=bar.eta_td)
+            bar.suffix = f'({eps}/{self.args.numEps}) Eps Time: {eps_time.avg:.3f}s | ' \
+                         f'Total: {bar.elapsed_td:} | ETA: {bar.eta_td:}'
             bar.next()
         bar.finish()
 
         # Store data from previous self-play iterations into the history
         self.trainExamplesHistory.append(iteration_train_examples)
 
-    def backprop(self, history: typing.List[GameHistory]) -> None:  # TODO: Tidy duplicate code.
-        """
-
-        :param history:
-        :return:
-        """
+    def backpropagation(self, history: typing.List[GameHistory]) -> None:
         eps_time = AverageMeter()
         bar = Bar('Backpropagation', max=self.args.numTrainingSteps)
-        end = time.time()
 
+        end = time.time()
         for epoch in range(self.args.numTrainingSteps):
             batch = self.sampleBatch(history)
 
@@ -267,28 +182,27 @@ class MuZeroCoach:
             # Bookkeeping + plot progress
             eps_time.update(time.time() - end)
             end = time.time()
-            bar.suffix = '({}/{}) Eps Time: {:.3f}s | Total: {} | ETA: {} | loss: {:.4f}'.format(
-                epoch + 1, self.args.numTrainingSteps, eps_time.avg, bar.elapsed_td, bar.eta_td, loss)
+            bar.suffix = f'({epoch + 1}/{self.args.numTrainingSteps}) Eps Time: {eps_time.avg:.3f}s | ' \
+                         f'Total: {bar.elapsed_td} | ETA: {bar.eta_td} | loss: {loss:.4f}'
             bar.next()
         bar.finish()
 
     def learn(self) -> None:
         """
         Performs numIters iterations with numEps episodes of self-play in each
-        iteration. After every iteration, it retrains neural network with
+        iteration. After every iteration, it trains the neural network with
         examples in train_examples (which has a maximum length of maxlenofQueue).
-        It then pits the new neural network against the old one and accepts it
-        only if it wins >= updateThreshold fraction of games.
+        Afterwards the current neural network weights are stored and the loop continues.
         """
         for i in range(1, self.args.numIters + 1):
-            print('------ITER {}------'.format(i))
+            print(f'------ITER {i}------')
 
             # Gather training data.
             self.selfPlay()
 
             n = len(self.trainExamplesHistory)
-            print("Replay buffer filled with data from {} self play iterations, at {}% of maximum capacity.".format(
-                n, 100 * n / self.args.numItersForTrainExamplesHistory))
+            print(f"Replay buffer filled with data from {n} self play iterations, at "
+                  f"{100 * n / self.args.numItersForTrainExamplesHistory}% of maximum capacity.")
 
             # Backup history to a file
             self.saveTrainExamples(i - 1)
@@ -298,18 +212,13 @@ class MuZeroCoach:
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
 
-            self.backprop(complete_history)
+            self.backpropagation(complete_history)
 
             print('Storing a snapshot of the new model')
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
 
     def saveTrainExamples(self, iteration: int) -> None:
-        """
-
-        :param iteration:
-        :return:
-        """
         folder = self.args.checkpoint
         if not os.path.exists(folder):
             os.makedirs(folder)
@@ -334,4 +243,3 @@ class MuZeroCoach:
             print("File with trainExamples found. Read it.")
             with open(examples_file, "rb") as f:
                 self.trainExamplesHistory = Unpickler(f).load()
-            # examples based on the AlphaZeroModel were already collected (loaded)

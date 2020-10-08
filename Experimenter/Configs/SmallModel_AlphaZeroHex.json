@@ -11,9 +11,9 @@
     "arenaCompare": 2,
     "cpuct": 1,
 
-    "checkpoint": "./temp/",
+    "checkpoint": "./AlphaZeroOut/",
     "load_model": false,
-    "load_folder_file": ["./temp/", "best.pth.tar"],
+    "load_folder_file": ["./AlphaZeroOut/", "best.pth.tar"],
     "numItersForTrainExamplesHistory": 20
   },
   
