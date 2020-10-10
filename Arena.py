@@ -40,27 +40,31 @@ class Arena:
         """
         players = [self.player2, None, self.player1]
         cur_player = 1
-        board = self.game.getInitialState()
+        state = self.game.getInitialState()
         it = 0
-        while self.game.getGameEnded(board, cur_player) == 0:
+
+        while not self.game.getGameEnded(state, cur_player):
             it += 1
             if verbose:
                 assert self.display
                 print("Turn ", str(it), "Player ", str(cur_player))
-                self.display(board)
-            action = players[cur_player + 1](self.game.getCanonicalForm(board, cur_player))
+                self.display(state)
 
-            valids = self.game.getLegalMoves(self.game.getCanonicalForm(board, cur_player), 1)
+            action = players[cur_player + 1](self.game.buildObservation(state, cur_player))
 
-            if valids[action] == 0:
-                assert valids[action] > 0
+            valid_moves = self.game.getLegalMoves(self.game.getCanonicalForm(state, cur_player), 1)
 
-            board, r, cur_player = self.game.getNextState(board, action, cur_player)
+            if valid_moves[action] == 0:
+                assert valid_moves[action] > 0
+
+            state, r, cur_player = self.game.getNextState(state, action, cur_player)
+
         if verbose:
             assert self.display
-            print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
-            self.display(board)
-        return cur_player * self.game.getGameEnded(board, cur_player)
+            print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(state, 1)))
+            self.display(state)
+
+        return cur_player * self.game.getGameEnded(state, cur_player)
 
     def playGames(self, num: int, verbose: bool = False) -> typing.Tuple[int, int, int]:
         """

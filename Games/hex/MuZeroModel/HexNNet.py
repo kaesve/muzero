@@ -20,19 +20,19 @@ class HexNNet:
 
     def __init__(self, game, args):
         # Network arguments
-        self.board_x, self.board_y = game.getDimensions()
+        self.board_x, self.board_y, self.planes = game.getDimensions(game.Observation.HEURISTIC)
         self.action_size = game.getActionSize()
         self.args = args
 
-        # s: batch_size x state_x x state_y x time
-        self.observation_history = Input(shape=(self.board_x, self.board_y, self.args.observation_length))
+        # s: batch_size x time x state_x x state_y
+        self.observation_history = Input(shape=(self.board_x, self.board_y, self.planes * self.args.observation_length))
         # a: one hot encoded vector of shape batch_size x (state_x * state_y)
         self.action_plane = Input(shape=(self.action_size,))
         # s': batch_size  x board_x x board_y x 1
         self.latent_state = Input(shape=(self.board_x, self.board_y))
 
         # TODO: Check functionality during training
-        action_plane = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_x,),
+        action_plane = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_y,),
                               input_shape=(self.action_size,))(self.action_plane)  # Omit resignation
         action_plane = Reshape((self.board_x, self.board_y, 1))(action_plane)
         latent_state = Reshape((self.board_x, self.board_y, 1))(self.latent_state)

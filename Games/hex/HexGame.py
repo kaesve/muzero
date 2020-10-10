@@ -28,7 +28,7 @@ class HexGame(Game):
     }
 
     def __init__(self, n):
-        super().__init__()
+        super().__init__(n_players=2)
         self.n = n
 
     def getInitialState(self):
@@ -36,9 +36,14 @@ class HexGame(Game):
         b = HexBoard(self.n)
         return b.board
 
-    def getDimensions(self):
+    def getDimensions(self, form: Game.Observation = Game.Observation.CANONICAL):
         # (a,b) tuple
-        return self.n, self.n
+        if form == Game.Observation.CANONICAL:
+            return self.n, self.n, 1
+        elif form == Game.Observation.HEURISTIC:
+            return self.n, self.n, 3
+
+        raise NotImplementedError("Did not specify a valid observation encoding.")
 
     def getActionSize(self):
         # return number of actions
@@ -67,13 +72,14 @@ class HexGame(Game):
         b = HexBoard(self.n)
         b.board = np.copy(state)
 
-        # Order of raveling is done in normal order C or in tranposed order F depending on the player.
+        # Order of raveling is done in normal order C or in transposed order F depending on the player.
         valids = np.append(1 - np.abs(b.board.ravel(order='C' if player == 1 else 'F')), 0)
         if np.sum(valids) == 0:  # or self.getGameEnded(board, player) != 0:
             valids[-1] = 1
             return np.array(valids)
 
-        assert np.all(np.array(valids[:-1]).reshape((self.n, self.n), order='C') + np.abs(b.board) == 1)
+        assert np.all(np.array(valids[:-1]).reshape((self.n, self.n), order='C' if player == 1 else 'F') +
+                      np.abs(b.board) == 1)
 
         return valids
 
@@ -94,41 +100,36 @@ class HexGame(Game):
     def getCanonicalForm(self, state, player):
         return state if player == 1 else -state.T
 
-    def buildTrajectory(self, history, s, player, length, t=None):  # TODO: Functionality check
-        if t is not None:
-            s = history.states[t]
-            player = history.players[t]  # TODO: Check whether trajectory should be in player's canonicalForm.
-            t -= 1
-        else:
-            t = len(history)
+    def buildObservation(self, state: np.ndarray, player: int,
+                         form: Game.Observation = Game.Observation.CANONICAL) -> np.ndarray:
+        if form == self.Observation.CANONICAL:
+            return self.getCanonicalForm(state, player)
 
-        # Get a trajectory of states of 'length' most recent observations until time-point t.
-        trajectory = history.states[:t][-(length - 1):] + [s]
+        elif form == self.Observation.HEURISTIC:
+            # Observation consists of three planes concatenated along the last dimension.
+            # The first plane is an elementwise indicator for the board where player 1 is.
+            # The second plane is identical to the first plane, but for player -1.
+            # The third plane is a bias plane indicating whose turn it is (p1=1, p2=-1).
+            # Output shape = (board_x, board_y, 3)
+            s_p1 = np.where(state == 1, 1.0, 0.0)
+            s_p2 = np.where(state == -1, 1.0, 0.0)
+            to_play = np.full_like(state, player)
 
-        if len(trajectory) < length:
-            prefix = [np.zeros_like(s) for _ in range(length - len(trajectory))]
-            trajectory = prefix + trajectory
+            return np.stack([s_p1, s_p2, to_play], axis=-1)
 
-        return np.array(trajectory)
+        raise NotImplementedError("Did not find an observation encoding.")
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
         assert (len(pi) == self.n ** 2 + 1)  # 1 for pass
         pi_board = np.reshape(pi[:-1], (self.n, self.n))
-        syms = []
+        symmetries = []
 
         # Only symmetry that Hex has is a 180 degree rotation.
-        syms += [(board, pi)]
-        syms += [(np.rot90(board, 2), list(np.rot90(pi_board, 2).ravel()) + [pi[-1]])]
+        symmetries += [(board, pi)]
+        symmetries += [(np.rot90(board, 2), list(np.rot90(pi_board, 2).ravel()) + [pi[-1]])]
 
-        # Optionally, the board's perspective can be flipped by:
-        # -board.T
-        # However, this is not as simple for the policy, pi. As pi was generated in terms
-        # for the adversary. Not correctly modifying the policy would imply learning the
-        # adversary's policy for the player's perspective (i.e., learn to lose). Hence,
-        # we did not use this additional symmetry.
-
-        return syms
+        return symmetries
 
     def stringRepresentation(self, state):
         return state.tostring()

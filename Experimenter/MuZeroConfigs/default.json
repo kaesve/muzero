@@ -1,13 +1,14 @@
 {
   "name": "default",
+  "algorithm": "MUZERO",
 
   "args": {
-    "numIters": 100,
+    "numIters": 10,
     "numEps": 5,
     "numTrainingSteps": 5,
-    "tempThreshold": 15,
+    "tempThreshold": 4,
     "dirichlet_alpha": 0.3,
-    "exploration_fraction": 0.25,
+    "exploration_fraction": 0.05,
     "maxlenOfQueue": 200000,
     "numMCTSSims": 25,
     "prioritize": false,
@@ -19,7 +20,6 @@
     "c2": 19652,
     "gamma": 0.997,
 
-    "boardgame": true,
     "minimum_reward": -1,
     "maximum_reward": 1,
 
@@ -31,17 +31,14 @@
 
   "net_args": {
     "lr": 0.0001,
-    "l2_penalty": 1e-4,
-    "momentum": 0.9,
-    "dropout": 0.3,
-    "epochs": 10,
+    "dropout": 0.4,
     "batch_size": 64,
     "cuda": false,
     "num_channels": 512,
     "num_towers": 2,
     "len_dense": 2,
     "size_dense": 256,
-    "support_size": 10,
-    "observation_length": 5
+    "support_size": 0,
+    "observation_length": 3
   }
 }

@@ -19,6 +19,7 @@ class OthelloGame(Game):
         return OthelloGame.square_content[piece]
 
     def __init__(self, n):
+        super().__init__(n_players=2)
         self.n = n
 
     def getInitialState(self):

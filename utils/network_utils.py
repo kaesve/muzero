@@ -21,7 +21,7 @@ class MinMaxScaler(Layer):
     D is derived by the dimensions of s, D = prod(dim(s)) ** shrinkage.
     """
 
-    def __init__(self, epsilon: float = 1.0, shrinkage: float = 1.0) -> None:
+    def __init__(self, epsilon: float = 1.0, shrinkage: float = 1.0, safe: bool = False) -> None:
         """
         :param epsilon: float additive constant in the division operator
         :param shrinkage: float exponent for controlling the minimum value of the output tensor (higher = smaller s).
@@ -29,6 +29,7 @@ class MinMaxScaler(Layer):
         super().__init__()
         self.epsilon = epsilon
         self.shrinkage = shrinkage
+        self.safe = safe
 
         self.D = float()
         self.shape = tuple()
@@ -49,4 +50,7 @@ class MinMaxScaler(Layer):
         tensor_min = k.min(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
         tensor_max = k.max(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
 
-        return (inputs - tensor_min) / (tensor_max - tensor_min + self.epsilon) + self.D
+        if self.safe:
+            return (inputs - tensor_min) / (tensor_max - tensor_min + self.epsilon) + self.D
+
+        return (inputs - tensor_min) / (tensor_max - tensor_min)

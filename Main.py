@@ -1,7 +1,6 @@
 """
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
-
 # Bugfxing TF2?
 # Prevent TF2 from hogging all the available VRAM when initializing?
 # @url: https://github.com/tensorflow/tensorflow/issues/24496#issuecomment-464909727
@@ -22,7 +21,7 @@ from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 from Games.hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
 from MuZero.MuCoach import MuZeroCoach
 
-ALPHAZERO_DEFAULTS = "Experimenter/Configs/SmallModel_AlphaZeroHex.json"
+ALPHAZERO_DEFAULTS = "Experimenter/Configs/default.json"
 MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/default.json"
 
 BOARD_SIZE = 5

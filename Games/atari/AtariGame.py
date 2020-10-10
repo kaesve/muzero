@@ -113,7 +113,7 @@ class AtariGame(Game):
         """
         return state
 
-    def buildTrajectory(self, history, current_state, current_player, t=None):
+    def stackObservations(self, history, current_state, current_player, t=None):
         """
         Input:
             history: Some data structure that can be queried for past observations.

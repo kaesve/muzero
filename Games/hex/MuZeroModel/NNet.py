@@ -27,7 +27,7 @@ class NNetWrapper(MuZeroNeuralNet):
         :param net_args:
         """
         super().__init__(game, net_args, NetBuilder)
-        self.board_x, self.board_y = game.getDimensions()
+        self.board_x, self.board_y, self.planes = game.getDimensions(game.Observation.HEURISTIC)
         self.action_size = game.getActionSize()
 
     def get_variables(self) -> typing.List:
@@ -40,33 +40,34 @@ class NNetWrapper(MuZeroNeuralNet):
 
     def train(self, examples: typing.List) -> float:
         """
-
+        Format the data contained in examples for computing the loss
         :param examples:
         :return:
         """
-
-        def encode_returns(x: np.ndarray) -> np.ndarray:
-            """"""
-            return scalar_to_support(x, self.net_args.support_size)
-
         # Unpack and transform data for loss computation.
         observations, actions, targets, sample_weight = list(zip(*examples))
         actions, sample_weight = np.array(actions), np.array(sample_weight)
 
         # Unpack and encode targets. All target shapes are of the form [time, batch_size, categories]
         target_vs, target_rs, target_pis = list(map(np.array, zip(*targets)))
-        target_vs = np.array([encode_returns(target_vs[:, t]) for t in range(target_vs.shape[-1])])
-        target_rs = np.array([encode_returns(target_rs[:, t]) for t in range(target_rs.shape[-1])])
+
+        target_vs = np.array([scalar_to_support(target_vs[:, t], self.net_args.support_size)
+                              for t in range(target_vs.shape[-1])])
+        target_rs = np.array([scalar_to_support(target_rs[:, t], self.net_args.support_size)
+                              for t in range(target_rs.shape[-1])])
         target_pis = np.swapaxes(target_pis, 0, 1)
 
         # Pack formatted inputs as tensors.
         data = [cast_to_tensor(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
 
+        # Get the tf computation graph for the loss given the data.
         loss = self.loss_function(*data)
 
         # Perform an optimization step.
-        _ = self.optimizer.minimize(loss, self.get_variables)
-        return loss()  # Returns loss contained within a tf.tensor
+        _ = self.optimizer.minimize(loss, self.get_variables, name='MuZeroHex')
+        self.steps += 1
+
+        return 0 #loss()  # Returns loss contained within a tf.tensor
 
     def encode(self, observations: np.ndarray) -> np.ndarray:
         """

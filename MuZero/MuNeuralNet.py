@@ -2,13 +2,13 @@
 
 """
 import typing
+import datetime
 
 import tensorflow as tf
 import numpy as np
 
 from utils import DotDict
 from utils.loss_utils import scalar_loss, scale_gradient
-from utils.selfplay_utils import GameHistory
 
 
 class MuZeroNeuralNet:
@@ -28,13 +28,19 @@ class MuZeroNeuralNet:
         :param net_args:
         :param builder:
         """
+        self.fit_rewards = (game.n_players == 1)
         self.net_args = net_args
         self.neural_net = builder(game, net_args)
 
         self.optimizer = tf.optimizers.Adam(self.net_args.lr)
+        self.steps = 0
+
+        self.logdir = "logs/scalars/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
+        self.file_writer.set_as_default()
 
     def loss_function(self, observations: tf.Tensor, actions: tf.Tensor, target_vs: tf.Tensor, target_rs: tf.Tensor,
-                      target_pis: tf.Tensor, sample_weights: tf.Tensor) -> typing.Callable:
+                      target_pis: tf.Tensor, sample_weights: tf.Tensor) -> tf.function:
         """
 
         :param observations:
@@ -49,8 +55,9 @@ class MuZeroNeuralNet:
         @tf.function
         def loss() -> tf.Tensor:
             """
+            Defines the computation graph for computing the loss of a MuZero model given data.
 
-            :return:
+            :return: tf.Tensor with value being the total loss of the MuZero model given the data.
             """
             total_loss = tf.constant(0, dtype=tf.float32)
 
@@ -58,7 +65,7 @@ class MuZeroNeuralNet:
             s = self.neural_net.encoder(observations)
             pi_0, v_0 = self.neural_net.predictor(s[..., 0])
 
-            # Collect predictions of the form: [w_i * 1 / K, v, r, pi] for each forward step k...K
+            # Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
             predictions = [(sample_weights, v_0, None, pi_0)]
             for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
                 r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
@@ -75,9 +82,15 @@ class MuZeroNeuralNet:
                 v_loss = scalar_loss(vs, t_vs)
                 pi_loss = scalar_loss(pis, t_pis)
 
+                # Logging
+                tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * gradient_scale), step=self.steps)
+                tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * gradient_scale), step=self.steps)
+                tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * gradient_scale), step=self.steps)
+
                 step_loss = r_loss + v_loss + pi_loss
                 total_loss += tf.reduce_sum(scale_gradient(step_loss, gradient_scale))
 
+            tf.summary.scalar("loss", data=total_loss, step=self.steps)
             return total_loss
         return loss
 

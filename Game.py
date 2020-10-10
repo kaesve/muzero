@@ -1,7 +1,7 @@
-import numpy as np
 import typing
+from enum import Enum
 
-from utils.selfplay_utils import GameHistory
+import numpy as np
 
 
 class Game:
@@ -15,8 +15,12 @@ class Game:
     See hex/HexGame.py for an example implementation.
     """
 
-    def __init__(self) -> None:
-        pass
+    class Observation(Enum):
+        CANONICAL: int = 1
+        HEURISTIC: int = 2
+
+    def __init__(self, n_players: int = 1) -> None:
+        self.n_players = n_players
 
     def getInitialState(self) -> np.ndarray:
         """
@@ -95,20 +99,16 @@ class Game:
         """
         pass
 
-    def buildTrajectory(self, history: GameHistory, current_state: np.ndarray, current_player: int,
-                        length: int, t: int = None) -> np.ndarray:
+    def buildObservation(self, state: np.ndarray, player: int, form: Observation = Observation.CANONICAL) -> np.ndarray:
         """
         Input:
-            history: A game specific history of an environment that can be queried for past observations.
-            current_state: Either the current observation of the environment or the integer index.
-            current_player: Current player (-1 or 1) TODO: Check if needed for canonicalForm trajectory.
-            length: The length of the trajectory.
-            t: optional Specifies the index of current state within history (if present)
+            state: current state
+            player: current player (1 or -1)
+            form: Enum specification for how the observation should be constructed
 
         Returns:
-            trajectory: Game specific array of observed features over time of len 'length'.
-                        Feature planes are flattened over time, such that
-                        the number of planes = time x features.
+            observation: Game specific implementation for what the neural network observes
+                         at the state provided as an argument.
         """
         pass
 

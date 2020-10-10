@@ -1,5 +1,6 @@
 {
   "name": "format",
+  "algorithm": "Algorithm name @see experimenter Enum",
 
   "args": {
     "numIters": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",

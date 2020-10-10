@@ -34,6 +34,7 @@ class MuZeroCoach:
         self.args = args
         self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
+        self.observation_encoding = game.Observation.HEURISTIC
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
@@ -54,15 +55,19 @@ class MuZeroCoach:
 
         # Targets
         pis = history.probabilities[start:end+1]
-        vs = history.observed_returns[start:end + 1]
+        vs = history.observed_returns[start:end+1]
         rewards = history.rewards[start:end+1]
+
+        if pis[-1] is None:  # one hot encode for resignation
+            pis[-1] = np.zeros(self.game.getActionSize())
+            pis[-1][-1] = 1  # Pr(a in {do nothing, resign} ) = 1
 
         # Handle truncations > 0 due to terminal states. Treat last state as absorbing state
         a_truncation = k - len(actions)  # Action truncation
         if a_truncation > 0:
             actions += [actions[-1]] * a_truncation
 
-        t_truncation = (k + 1) - len(pis)  # Target truncation
+        t_truncation = (k + 1) - len(pis)  # Target truncation due to terminal state => pis[-1] is None
         if t_truncation > 0:
             pis += [pis[-1]] * t_truncation
             vs += [vs[-1]] * t_truncation
@@ -87,11 +92,11 @@ class MuZeroCoach:
 
         # Construct training examples for MuZero of the form (input, action, (targets), loss_scalar)
         examples = [(
-            self.game.buildTrajectory(histories[c[0]], None, None, self.neural_net.net_args.observation_length, t=c[1]),
-            *self.buildHypotheticalSteps(histories[c[0]], c[1], k=self.args.K),
+            histories[h_i].stackObservations(self.neural_net.net_args.observation_length, t=i),
+            *self.buildHypotheticalSteps(histories[h_i], i, k=self.args.K),
             loss_scale
         )
-            for c, loss_scale in zip(sample_coordinates, sample_weight)
+            for (h_i, i), loss_scale in zip(sample_coordinates, sample_weight)
         ]
 
         return examples
@@ -109,37 +114,38 @@ class MuZeroCoach:
                      The structure is of the form (s_t, a_t, player_t, pi_t, r_t, v_t, z_t)
         """
         history = GameHistory()
-        s = self.game.getInitialState()
-        current_player = episode_step = temp = 1
+        state = self.game.getInitialState()  # Always from perspective of player 1 for boardgames.
+        current_player = temp = 1
+        z = step = 0
 
-        while not self.game.getGameEnded(s, current_player):  # Boardgames: If loop ends => current player lost
+        while not z:  # Boardgames: If loop ends => current player lost
             # Turn action selection to greedy as an episode progresses.
-            if episode_step % self.args.tempThreshold == 0:
+            step += 1
+            if step % self.args.tempThreshold == 0:
                 temp /= 2
 
             # Construct an observation array (o_1, ..., o_t).
-            observation_array = self.game.buildTrajectory(history, s, current_player,
-                                                          length=self.neural_net.net_args.observation_length)
+            o_t = self.game.buildObservation(state, current_player, self.observation_encoding)
+            stacked_observations = history.stackObservations(self.neural_net.net_args.observation_length, o_t)
 
-            # Compute the move probability vector and state value using MCTS.
-            pi, v = self.mcts.runMCTS(observation_array, temp=temp)
+            # Compute the move probability vector and state value using MCTS for the current state of the environment.
+            root_actions = self.game.getLegalMoves(state, current_player)  # We can query the env at a current state.
+            pi, v = self.mcts.runMCTS(stacked_observations, legal_moves=root_actions, temp=temp)
 
             # Take a step in the environment and observe the transition and store necessary statistics.
             action = np.random.choice(len(pi), p=pi)
-            s_next, r, next_player = self.game.getNextState(s, action, 1)
-            history.capture(s, action, current_player, pi, r, v)
+            state, r, next_player = self.game.getNextState(state, action, current_player)
+            history.capture(o_t, action, current_player, pi, r, v)
 
             # Update state of control
-            current_player = current_player if next_player == 1 else -current_player
-            episode_step += 1
+            current_player = next_player
+            z = self.game.getGameEnded(state, current_player)
 
-            s = self.game.getCanonicalForm(s_next, current_player)
+        # Capture terminal state and compute z_t for each observation == N-step returns for general MDPs
+        o_terminal = self.game.buildObservation(state, current_player, self.observation_encoding)
 
-        # TODO: Check whether the very last observation s needs to be stored (no play statistics?)
-        # history.capture(s, -1, current_player, None, None, None)
-
-        # Compute z_t for each observation. N-step returns for general MDPs or game outcomes for boardgames
-        history.compute_returns(gamma=self.args.gamma, n=(self.args.n if not self.args.boardgame else None))
+        history.terminate(o_terminal, current_player, z)
+        history.compute_returns(gamma=self.args.gamma, n=(self.args.n if self.game.n_players == 1 else None))
 
         return history
 
@@ -160,7 +166,7 @@ class MuZeroCoach:
             # Bookkeeping + plot progress
             eps_time.update(time.time() - end)
             end = time.time()
-            bar.suffix = f'({eps}/{self.args.numEps}) Eps Time: {eps_time.avg:.3f}s | ' \
+            bar.suffix = f'({eps + 1}/{self.args.numEps}) Eps Time: {eps_time.avg:.3f}s | ' \
                          f'Total: {bar.elapsed_td:} | ETA: {bar.eta_td:}'
             bar.next()
         bar.finish()

@@ -49,7 +49,7 @@ class MuZeroMCTS:
         :param counter:
         :return:
         """
-        if self.args.boardgame:
+        if self.game.n_players == 2:
             return 1 if counter % 2 == 0 else -1
         return 1
 
@@ -83,7 +83,8 @@ class MuZeroMCTS:
         ucb += self.minmax.normalize(q_value)                                               # Exploitation
         return ucb
 
-    def runMCTS(self, observations: np.ndarray, temp: int = 1) -> typing.Tuple[np.ndarray, float]:
+    def runMCTS(self, observations: np.ndarray, legal_moves: np.ndarray,
+                temp: int = 1) -> typing.Tuple[np.ndarray, float]:
         """
         This function performs numMCTSSims simulations of MCTS starting from
         a history (array) of past observations. The current state observation must
@@ -100,7 +101,7 @@ class MuZeroMCTS:
         # Refresh value bounds in the tree
         self.minmax.refresh()
         # Initialize legal moves ONLY at the root.
-        self.Vs[s] = self.game.getLegalMoves(state=observations[-1], player=1)
+        self.Vs[s] = legal_moves
 
         v_sum = 0
         for i in range(self.args.numMCTSSims):

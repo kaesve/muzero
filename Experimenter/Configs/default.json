@@ -1,5 +1,6 @@
 {
   "name": "SmallModel_AlphaZeroHex",
+  "algorithm": "ALPHAZERO",
   
   "args": {
     "numIters": 3,

@@ -12,7 +12,7 @@ class GameHistory:
     """
     Data container for keeping track of game trajectories.
     """
-    states: list = field(default_factory=list)
+    observations: list = field(default_factory=list)
     players: list = field(default_factory=list)
     actions: list = field(default_factory=list)
     probabilities: list = field(default_factory=list)
@@ -22,17 +22,27 @@ class GameHistory:
 
     def __len__(self) -> int:
         """Get length of current stored trajectory"""
-        return len(self.states)
+        return len(self.observations)
 
-    def capture(self, state: np.ndarray, action: int, player: int, pi: np.ndarray, r: float, v: float) -> None:
+    def capture(self, observation: np.ndarray, action: int, player: int, pi: np.ndarray, r: float, v: float) -> None:
         """Take a snapshot of the current state of the environment and the search results"""
-        self.states.append(state)
+        self.observations.append(observation)
         self.actions.append(action)
         self.players.append(player)
         self.probabilities.append(pi)
         self.rewards.append(r)
         self.search_returns.append(v)
         self.observed_returns.append(None)
+
+    def terminate(self, observation: np.ndarray, player: int, z) -> None:
+        """Take a snapshot of the terminal state of the environment"""
+        self.observations.append(observation)
+        self.actions.append(-1)
+        self.players.append(player)
+        self.probabilities.append(None)
+        self.rewards.append(0)
+        self.search_returns.append(None)
+        self.observed_returns.append(z)
 
     def refresh(self) -> None:
         """Clear all statistics within the class"""
@@ -42,21 +52,44 @@ class GameHistory:
         """Computes the n-step returns assuming that the last recorded snapshot was a terminal state"""
         if n is None:
             # Boardgames
-            for i in range(len(self)):
-                self.observed_returns[i] = 1 if self.players[i] == self.players[-1] else -1
+            for i in reversed(range(len(self) - 1)):
+                self.observed_returns[i] = -self.observed_returns[i + 1]
         else:
             # General MDPs. Symbols follow notation from the paper.
             for t in range(len(self)):
                 horizon = np.min([t + n, len(self)])
-                discounted_rewards = [np.pow(gamma, k) * self.rewards[k] for k in range(t, horizon)]
+                discounted_rewards = [np.pow(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
                 bootstrap = np.pow(gamma, horizon - t) * self.search_returns[horizon]
                 self.observed_returns[t] = np.sum(discounted_rewards) + bootstrap
+
+    def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,
+                          t: typing.Optional[int] = None) -> np.ndarray:
+        """Stack the most recent 'length' elements from the observation list along the end of the observation axis"""
+        if length <= 1:
+            return current_observation if current_observation is not None else self.observations[-1]
+
+        if t is None:
+            t = len(self)
+
+        if current_observation is None:
+            current_observation = self.observations[t]
+            t = np.max([0, t - 1])
+
+        # Get a trajectory of states of 'length' most recent observations until time-point t.
+        trajectory = self.observations[:t][-(length - 1):] + [current_observation]
+
+        if len(trajectory) < length:
+            prefix = [np.zeros_like(current_observation) for _ in range(length - len(trajectory))]
+            trajectory = prefix + trajectory
+        # TODO: Functionality check/ unit testing
+        return np.concatenate(trajectory, axis=-1)  # Concatenate along channel dimension.
 
 
 class MinMaxStats(object):
     """A class that holds the min-max values of the tree."""
 
-    def __init__(self, minimum_reward: bool = None, maximum_reward: bool = None) -> None:
+    def __init__(self, minimum_reward: typing.Optional[float] = None,
+                 maximum_reward: typing.Optional[float] = None) -> None:
         """
 
         :param minimum_reward:
@@ -94,8 +127,8 @@ class MinMaxStats(object):
         return value
 
 
-def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize: bool = False, alpha: float = 1,
-                 beta: float = 1) -> typing.Tuple[typing.List[typing.Tuple[int, int]], typing.List[float]]:
+def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize: bool = False, alpha: float = 1.0,
+                 beta: float = 1.0) -> typing.Tuple[typing.List[typing.Tuple[int, int]], typing.List[float]]:
     """
     Generate a sample specification from the list of GameHistory object using uniform or prioritized sampling.
     Along with the generated indices, for each sample/ index a scalar is returned for the loss function during
@@ -125,7 +158,7 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
     sampling_probability = None                   # None defaults to uniform in np.random.choice
     sample_weight = np.ones(np.sum(lengths)) / n  # 1 / N. Uniform weight update strength over batch.
 
-    if prioritize:
+    if prioritize or alpha == 0:
         errors = np.array([np.abs(h.search_returns[i] - h.observed_returns[i])
                            for h in list_of_histories for i in range(len(h))])
 
