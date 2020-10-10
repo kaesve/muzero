@@ -83,15 +83,16 @@ class MuZeroNeuralNet:
                 pi_loss = scalar_loss(pis, t_pis)
 
                 # Logging
-                tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * gradient_scale), step=self.steps)
-                tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * gradient_scale), step=self.steps)
-                tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * gradient_scale), step=self.steps)
+                # tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * gradient_scale), step=self.steps)
+                # tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * gradient_scale), step=self.steps)
+                # tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * gradient_scale), step=self.steps)
 
                 step_loss = r_loss + v_loss + pi_loss
                 total_loss += tf.reduce_sum(scale_gradient(step_loss, gradient_scale))
 
             tf.summary.scalar("loss", data=total_loss, step=self.steps)
             return total_loss
+
         return loss
 
     def train(self, examples: typing.List) -> float:
