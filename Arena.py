@@ -1,7 +1,9 @@
-import time
 import typing
+import sys
 
-from utils import Bar, AverageMeter
+import numpy as np
+from tqdm import trange
+
 from Game import Game
 
 
@@ -10,8 +12,8 @@ class Arena:
     An Arena class where any 2 agents can be pit against each other.
     """
 
-    def __init__(self, player1: typing.Callable, player2: typing.Callable,
-                 game: Game, display: typing.Callable = None) -> None:
+    def __init__(self, game: Game, player1: typing.Callable, player2: typing.Callable = None,
+                 display: typing.Callable = None) -> None:
         """
         Input:
             player 1,2: two functions that takes board as input, return action
@@ -45,8 +47,8 @@ class Arena:
 
         while not self.game.getGameEnded(state, cur_player):
             it += 1
+
             if verbose:
-                assert self.display
                 print("Turn ", str(it), "Player ", str(cur_player))
                 self.display(state)
 
@@ -55,69 +57,42 @@ class Arena:
             valid_moves = self.game.getLegalMoves(self.game.getCanonicalForm(state, cur_player), 1)
 
             if valid_moves[action] == 0:
-                assert valid_moves[action] > 0
+                action = len(valid_moves)  # Resign.
 
             state, r, cur_player = self.game.getNextState(state, action, cur_player)
 
         if verbose:
-            assert self.display
             print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(state, 1)))
             self.display(state)
 
         return cur_player * self.game.getGameEnded(state, cur_player)
 
-    def playGames(self, num: int, verbose: bool = False) -> typing.Tuple[int, int, int]:
+    def playTrial(self, num_trials: int, verbose: bool = False) -> np.ndarray:
+        pass  # TODO: e.g. Atari
+
+    def playGames(self, num_games: int, verbose: bool = False) -> typing.Tuple[int, int, int]:
         """
-        Plays num games in which player1 starts num/2 games and player2 starts
-        num/2 games.
+        Plays 2 * num_games games such that player 1 and 2 start an uniform number of times.
 
         Returns:
             one_won: games won by player1
             two_won: games won by player2
             draws:  games won by nobody
         """
-        eps_time = AverageMeter()
-        bar = Bar('Arena.playGames', max=num)
-        end = time.time()
-        eps = 0
-        max_eps = num
+        results = list()
 
-        num = max_eps // 2
-        one_won = two_won = draws = 0
-        for _ in range(num):
-            game_result = self.playGame(verbose=verbose)
-            if game_result == 1:
-                one_won += 1
-            elif game_result == -1:
-                two_won += 1
-            else:
-                draws += 1
-            # bookkeeping + plot progress
-            eps += 1
-            eps_time.update(time.time() - end)
-            end = time.time()
-            bar.suffix = f'({eps}/{max_eps}) Eps Time: {eps_time.avg:.3f}s | ' \
-                         f'Total: {bar.elapsed_td:} | ETA: {bar.eta_td:}'
-            bar.next()
+        for _ in trange(num_games, desc="player 1 to move first", file=sys.stdout):
+            results.append(self.playGame(verbose=verbose))
+
+        one_won = np.sum(np.array(results) == 1).item()
+        two_won = np.sum(np.array(results) == -1).item()
 
         self.player1, self.player2 = self.player2, self.player1
 
-        for _ in range(num):
-            game_result = self.playGame(verbose=verbose)
-            if game_result == -1:
-                one_won += 1
-            elif game_result == 1:
-                two_won += 1
-            else:
-                draws += 1
-            # bookkeeping + plot progress
-            eps += 1
-            eps_time.update(time.time() - end)
-            end = time.time()
-            bar.suffix = '({eps}/{max_eps}) Eps Time: {eps_time.avg:.3f}s | ' \
-                         'Total: {bar.elapsed_td:} | ETA: {bar.eta_td:}'
-            bar.next()
+        for _ in trange(num_games, desc="player 2 to move first", file=sys.stdout):
+            results.append(self.playGame(verbose=verbose))
 
-        bar.finish()
+        one_won += np.sum(np.array(results) == -1).item()
+        two_won += np.sum(np.array(results) == 1).item()
 
-        return one_won, two_won, draws
+        return one_won, two_won, (one_won + two_won - num_games * 2)

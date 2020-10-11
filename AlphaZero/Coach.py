@@ -3,16 +3,15 @@ TODO Revamp to work with single player games. Prioritized sampling.
 """
 import os
 import sys
-import time
 from collections import deque
 from pickle import Pickler, Unpickler
 from random import shuffle
 
 import numpy as np
+from tqdm import trange
 
 from Arena import Arena
 from AlphaZero.MCTS import MCTS
-from utils import Bar, AverageMeter
 
 
 class Coach:
@@ -90,21 +89,9 @@ class Coach:
             if not self.skipFirstSelfPlay or i > 1:
                 iteration_train_examples = deque([], maxlen=self.args.maxlenOfQueue)
 
-                eps_time = AverageMeter()
-                bar = Bar('Self Play', max=self.args.numEps)
-                end = time.time()
-
-                for eps in range(self.args.numEps):
+                for _ in trange(self.args.numEps, desc="Self Play", file=sys.stdout):
                     self.mcts = MCTS(self.game, self.neural_net, self.args)  # reset search tree
                     iteration_train_examples += self.executeEpisode()
-
-                    # bookkeeping + plot progress
-                    eps_time.update(time.time() - end)
-                    end = time.time()
-                    bar.suffix = f'({eps}/{self.args.numEps}) Eps Time: {eps_time.avg:.3f}s | ' \
-                                 f'Total: {bar.elapsed_td:} | ETA: {bar.eta_td:}'
-                    bar.next()
-                bar.finish()
 
                 # save the iteration examples to the history 
                 self.trainExamplesHistory.append(iteration_train_examples)
@@ -131,8 +118,9 @@ class Coach:
             network_mcts = MCTS(self.game, self.neural_net, self.args)
 
             print('PITTING AGAINST PREVIOUS VERSION')
-            arena = Arena(lambda x: np.argmax(opponent_mcts.getActionProb(x, temp=0)),
-                          lambda x: np.argmax(network_mcts.getActionProb(x, temp=0)), self.game)
+            arena = Arena(self.game,
+                          lambda x: np.argmax(opponent_mcts.getActionProb(x, temp=0)),
+                          lambda x: np.argmax(network_mcts.getActionProb(x, temp=0)))
             losses, wins, draws = arena.playGames(self.args.arenaCompare)
 
             print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (wins, losses, draws))

@@ -31,13 +31,14 @@
 
   "net_args": {
     "lr": 0.0001,
-    "dropout": 0.4,
+    "l2": 1e-4,
+    "dropout": 0.3,
     "batch_size": 64,
     "cuda": false,
     "num_channels": 512,
-    "num_towers": 2,
+    "num_towers": 3,
     "len_dense": 2,
-    "size_dense": 256,
+    "size_dense": 512,
     "support_size": 0,
     "observation_length": 3
   }

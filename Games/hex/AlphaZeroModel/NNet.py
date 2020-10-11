@@ -3,13 +3,13 @@ import os
 import numpy as np
 import sys
 
-from AlphaZero.NeuralNet import NeuralNet
+from AlphaZero.AlphaZeroNeuralNet import AlphaZeroNeuralNet
 from .HexNNet import HexNNet as onnet
 
 sys.path.append('../../..')
 
 
-class NNetWrapper(NeuralNet):
+class NNetWrapper(AlphaZeroNeuralNet):
     def __init__(self, game, net_args):
         super().__init__(game)
         self.net_args = net_args

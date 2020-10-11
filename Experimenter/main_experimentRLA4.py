@@ -13,6 +13,8 @@ function and the `learn' function calls in order to load in a previous checkpoin
 :author: Joery de Vries
 """
 
+# TODO Delete file
+
 # TENSORFLOW GPU CONFIGURATION
 import os
 
@@ -34,94 +36,6 @@ import datetime
 
 import numpy as np
 import trueskill
-
-
-# Bugfxing TF2?
-# Prevent TF2 from hogging all the available VRAM when initializing?
-# @url: https://github.com/tensorflow/tensorflow/issues/24496#issuecomment-464909727
-from tensorflow.compat.v1 import ConfigProto
-from tensorflow.compat.v1 import InteractiveSession
-
-config = ConfigProto()
-config.gpu_options.allow_growth = True
-session = InteractiveSession(config=config)
-# Bugfxing TF2?
-
-
-args = DotDict({
-    'numIters': 3,  # (1000)
-    'numEps': 10,              # Number of complete self-play games to simulate during a new iteration.  (100)
-    'tempThreshold': 15,        #
-    'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
-    'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
-    'numMCTSSims': 25,          # Number of games moves for MCTS to simulate.
-    'arenaCompare': 2,         # Number of games to play during arena play to determine if new net will be accepted. (40)
-    'cpuct': 1,
-
-    'checkpoint': './temp/',
-    'load_model': False,
-    'load_folder_file': ('./temp/', 'best.pth.tar'),
-    'numItersForTrainExamplesHistory': 20,
-
-})
-
-net_args = DotDict({
-    'lr': 0.001,
-    'dropout': 0.3,
-    'epochs': 10,
-    'batch_size': 64,
-    'cuda': False,
-    'num_channels': 256,  # Default 512. DownScaled 256.
-    'choice': 0
-})
-
-
-BOARD_SIZE = 5
-
-
-def learn(manual=True, model=0, debug=False):
-    """
-    Train a network with the given configuration on the game of Hex.
-
-    Paths are set relatively to the current working directory.
-
-    :param manual: Set to False to utilize the baseline
-    :param model: int if manual = True: 0 = shallow, 1 = medium, 2 = deep
-    :param debug: Set to True to set the disk-path to a debugging folder.
-    """
-    g = Game(BOARD_SIZE)
-
-    if manual:
-        net_args.default = False
-        net_args.transfer = model
-
-        if net_args.transfer == 0:
-            args.checkpoint = './temp/hex/small/'
-            args.load_folder_file = ('./temp/hex/small/', 'best.pth.tar')
-        elif net_args.transfer == 1:
-            args.checkpoint = './temp/hex/medium/'
-            args.load_folder_file = ('./temp/hex/medium/', 'best.pth.tar')
-        elif net_args.transfer == 2:
-            args.checkpoint = './temp/hex/large/'
-            args.load_folder_file = ('./temp/hex/large/', 'best.pth.tar')
-    else:
-        net_args.num_channels = 512  # A0G default.
-
-    if debug:
-        args.checkpoint = './temp/hex/debug/'
-        args.load_folder_file = ('./temp/hex/debug/', 'best.pth.tar')
-
-    nnet = nn(g, net_args)
-
-    if args.load_model:
-        nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
-
-    c = Coach(g, nnet, args)
-    if args.load_model:
-        print("Load trainExamples from file")
-        c.loadTrainExamples()
-
-    c.learn()
 
 
 def progression_tournament():
@@ -263,79 +177,6 @@ def progression_tournament():
     np.save('progression_tournament_trueskill', player_pool, allow_pickle=True)
 
 
-def simple_tournament():
-    """
-    Performs the tournament between two equivalently trained shallow models
-    the AlphaZero General AlphaZeroModel, an MCTS agent, and an IDTT agent.
-
-    The agents were trained for 100 iterations in this tournament.
-
-    Model paths are defined *Manually*.
-    The parameters (net_args, args) should be kept at the source code's defaults.
-    """
-    g = Game(BOARD_SIZE)
-    resolution = 12
-
-    # Define configuration to correctly load in the players to be tested!
-    shallow_args_1_net_args = DotDict(net_args.copy())
-    shallow_args_2_net_args = DotDict(net_args.copy())
-    alphazero_general_net_args = DotDict(net_args.copy())
-
-    shallow_args_1_net_args.default = False
-    shallow_args_1_net_args.num_channels = 256
-    shallow_args_1_net_args.transfer = 0
-    shallow_1_path = "./models/"
-    shallow_1_filename = "shallow_model_1"
-
-    shallow_args_2_net_args.default = False
-    shallow_args_2_net_args.num_channels = 256
-    shallow_args_2_net_args.transfer = 0
-    shallow_2_path = "./models/"
-    shallow_2_filename = "shallow_model_2"
-
-    alphazero_general_net_args.default = True
-    alphazero_general_net_args.num_channels = 512
-    alphazero_general_path = "./models/"
-    alphazero_general_filename = "alphazero_general"
-
-    shallow_model_1 = nn(g, shallow_args_1_net_args)
-    shallow_model_2 = nn(g, shallow_args_2_net_args)
-    alphazero_general = nn(g, alphazero_general_net_args)
-
-    shallow_model_1.load_checkpoint(shallow_1_path, shallow_1_filename)
-    shallow_model_2.load_checkpoint(shallow_2_path, shallow_2_filename)
-    alphazero_general.load_checkpoint(alphazero_general_path, alphazero_general_filename)
-    # END Define configurations
-
-    shallow1_alphazero = AlphaZeroPolicy(1, 25, shallow_model_1, BOARD_SIZE)
-    shallow2_alphazero = AlphaZeroPolicy(1, 25, shallow_model_2, BOARD_SIZE)
-    general_alphazero = AlphaZeroPolicy(1, 25, alphazero_general, BOARD_SIZE)
-
-    shallow1_alphazero_high = AlphaZeroPolicy(1, 250, shallow_model_1, BOARD_SIZE)
-    shallow2_alphazero_high = AlphaZeroPolicy(1, 250, shallow_model_2, BOARD_SIZE)
-    general_alphazero_high = AlphaZeroPolicy(1, 250, alphazero_general, BOARD_SIZE)
-
-    mcts_low = MCTSPolicy(1, 100, memorize=False, monitor=True)
-    mcts_medium = MCTSPolicy(1, 1_000, memorize=False, monitor=True)
-    mcts_high = MCTSPolicy(1, 10_000, memorize=False, monitor=True)
-
-    idtt_low = MinimaxPolicy(DijkstraHeuristic(), itd=True, transpositions=True, budget=500)
-    idtt_high = MinimaxPolicy(DijkstraHeuristic(), itd=True, transpositions=True, budget=3_000)
-
-    policies = [shallow1_alphazero, shallow2_alphazero, general_alphazero,
-                shallow1_alphazero_high, shallow2_alphazero_high, general_alphazero_high,
-                mcts_low, mcts_medium, mcts_high, idtt_low, idtt_high]
-    names = ['AlphaZero Shallow 1 $N=25$', 'AlphaZero Shallow 2 $N=25$', 'AlphaZero General $N=25$',
-             'AlphaZero Shallow 1 $N=250$', 'AlphaZero Shallow 2 $N=250$', 'AlphaZero General $N=250$',
-             'MCTS $N=10^2$', 'MCTS $N=10^3$', 'MCTS $N=10^4$', 'IDTT $N=5\cdot 10^2$', 'IDTT $N=3\cdot 10^3$']
-
-    ratings, history = doubles_ratings(BOARD_SIZE, policy_list=policies,
-                    resolution=resolution, verbose=True, monitor=True, name_list=names)
-
-    np.save('results/ratings_history_tournament', [ratings, history], allow_pickle=True)
-    plot_history(history, names, 'results/ratings_history_tournament.pdf')
-
-
 def final_tournament():
     """
     Performs the tournament between the five fully trained AlphaZero agents.
@@ -430,15 +271,3 @@ def plot_history(history, labels, filename):
     plt.legend()
     plt.savefig(filename, format='pdf')
     plt.close()
-
-
-if __name__ == "__main__":
-    learn(True, model=0, debug=False)  # Train the Shallow Model
-    # learn(True, AlphaZeroModel=1, debug=False)  # Train the Medium Model
-    # learn(True, AlphaZeroModel=2, debug=False)  # Train the Deep Model
-    # learn(False)                       # Train the Baseline Alpha0General AlphaZeroModel
-    # learn_net2net()                    # Train the Net2Net AlphaZeroModel (shallow -> medium -> deep)
-    # simple_tournament()                # Perform the interim tourney
-    # final_tournament()                 # Perform the final tourney
-    # progression_tournament()           # Perform the learning curve estimation tourney
-    pass

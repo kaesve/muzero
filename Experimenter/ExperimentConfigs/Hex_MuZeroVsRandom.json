@@ -1,0 +1,22 @@
+{
+  "name": "Hex_MuZeroVsRandom",
+  "output_dir": "./Results/",
+
+  "environment": {
+    "name": "HEX",
+    "args": {
+      "n": 5
+    }
+  },
+
+  "players": [
+    {
+      "name": "MUZERO",
+      "config": "Experimenter/MuZeroConfigs/default.json"
+    },
+    {
+      "name": "RANDOM",
+      "config": null
+    }
+  ]
+}

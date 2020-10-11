@@ -67,8 +67,6 @@ class NNetWrapper(MuZeroNeuralNet):
         _ = self.optimizer.minimize(loss, self.get_variables, name='MuZeroHex')
         self.steps += 1
 
-        return 0 #loss()  # Returns loss contained within a tf.tensor
-
     def encode(self, observations: np.ndarray) -> np.ndarray:
         """
 
