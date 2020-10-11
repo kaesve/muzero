@@ -10,9 +10,10 @@ import gym
 sys.path.append('../../..')
 
 class GymState:
-    def __init__(self, env, observation, done):
+    def __init__(self, env, observation, action, done):
         self.env = env
         self.observation = observation
+        self.action = action
         self.done = done
 
 
@@ -31,6 +32,7 @@ class AtariGame(Game):
         #TODO: check if this name is valid?
         super().__init__()
         self.env_name = env_name
+        self.action_size = gym.make(env_name).action_space.n
 
     def getInitialState(self):
         """
@@ -39,22 +41,23 @@ class AtariGame(Game):
                         that will be the input to your neural network)
         """
         env = gym.make(env_name)
-        return GymState(env, env.reset(), False)
+        env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False)
+        return GymState(env, env.reset(), 0, False)
 
     def getDimensions(self):
         """
         Returns:
-            (x,y): a tuple of the state dimensions
+            (x,y,z): a tuple of the state dimensions
         """
 
-        return (210, 160, 3)
+        return (96, 96, 4)
 
     def getActionSize(self):
         """
         Returns:
             actionSize: number of all possible actions
         """
-        return 6
+        return self.action_size
 
     def getNextState(self, state, action, player):
         """
@@ -69,8 +72,13 @@ class AtariGame(Game):
             nextPlayer: player who plays in the next turn
         """
 
+        # reorder actions so that we can have NOOP at the end
+        action = (action + 1) % self.getActionSize()
+
         observation, reward, done, info = state.env.step(action)
-        return (GymState(env, observation, done), reward, 1)
+        next_state = GymState(env, observation, action, done)
+
+        return (next_state, reward, 1)
 
     def getLegalMoves(self, state, player):
         """
@@ -82,7 +90,7 @@ class AtariGame(Game):
             validMoves: a binary vector of length self.getActionSize(), 1 for
                         moves that are legal 0 for invalid moves
         """
-        return np.identity(self.getActionSize())
+        return np.ones(self.getActionSize())
 
     def getGameEnded(self, state, player):
         """
@@ -113,20 +121,15 @@ class AtariGame(Game):
         """
         return state
 
-    def stackObservations(self, history, current_state, current_player, t=None):
-        """
-        Input:
-            history: Some data structure that can be queried for past observations.
-            current_state: Current observation of the environment.
-            current_player: Current player (-1 or 1)
-            t: optional Specifies the index of current state within history (if present)
+    def buildObservation(self, state, player: int, form: Game.Observation = Game.Observation.HEURISTIC) -> np.ndarray:
+        if form == Game.Observation.CANONICAL:
+            return self.getCanonicalForm(state, player)
 
-        Returns:
-            trajectory: Game specific array of observed features over time.
-                        Feature planes are flattened over time, such that
-                        the number of planes = time x features.
-        """
-        pass
+        elif form == Game.Observation.HEURISTIC:
+            action_plane = np.ones(state.observation[:2]) * state.action / self.getActionSize()
+            action_plane = action_plane.reshape((*action_plane.shape, 1))
+            return np.concatenate(state.observation, action_plane, axis=2)
+
 
     def getSymmetries(self, state, pi):
         """
@@ -150,7 +153,4 @@ class AtariGame(Game):
             stateString: a quick conversion of state to a string format.
                          Required by MCTS for hashing.
         """
-        pass
-
-    def buildTrajectory(self, history):
-        pass
+        return state.observation.tostring()
