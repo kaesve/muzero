@@ -5,6 +5,8 @@ import numpy as np
 from tqdm import trange
 
 from Game import Game
+from utils.selfplay_utils import GameHistory
+from Experimenter.Players import Player
 
 
 class Arena:
@@ -12,7 +14,7 @@ class Arena:
     An Arena class where any 2 agents can be pit against each other.
     """
 
-    def __init__(self, game: Game, player1: typing.Callable, player2: typing.Callable = None,
+    def __init__(self, game: Game, player1: Player, player2: Player = None,
                  display: typing.Callable = None) -> None:
         """
         Input:
@@ -29,6 +31,7 @@ class Arena:
         self.player2 = player2
         self.game = game
         self.display = display
+        self.trajectories = [GameHistory(), GameHistory()]
 
     def playGame(self, verbose: bool = False) -> int:
         """
@@ -40,6 +43,7 @@ class Arena:
             or
                 draw result returned from the game that is neither 1, -1, nor 0.
         """
+        all(x.refresh() for x in self.trajectories)
         players = [self.player2, None, self.player1]
         cur_player = 1
         state = self.game.getInitialState()
@@ -49,20 +53,22 @@ class Arena:
             it += 1
 
             if verbose:
-                print("Turn ", str(it), "Player ", str(cur_player))
+                print(f"Turn {it} Player {cur_player}")
                 self.display(state)
 
-            action = players[cur_player + 1](self.game.buildObservation(state, cur_player))
+            action = players[cur_player + 1].act(state, cur_player)
 
             valid_moves = self.game.getLegalMoves(self.game.getCanonicalForm(state, cur_player), 1)
-
             if valid_moves[action] == 0:
                 action = len(valid_moves)  # Resign.
+
+            # Ensure that the opponent also observes the environment
+            players[1 - cur_player].capture(state, action, cur_player)
 
             state, r, cur_player = self.game.getNextState(state, action, cur_player)
 
         if verbose:
-            print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(state, 1)))
+            print(f"Game over: Turn {it}Result {self.game.getGameEnded(state, 1)}")
             self.display(state)
 
         return cur_player * self.game.getGameEnded(state, cur_player)
@@ -81,7 +87,7 @@ class Arena:
         """
         results = list()
 
-        for _ in trange(num_games, desc="player 1 to move first", file=sys.stdout):
+        for _ in range(num_games):
             results.append(self.playGame(verbose=verbose))
 
         one_won = np.sum(np.array(results) == 1).item()
@@ -89,7 +95,7 @@ class Arena:
 
         self.player1, self.player2 = self.player2, self.player1
 
-        for _ in trange(num_games, desc="player 2 to move first", file=sys.stdout):
+        for _ in range(num_games):
             results.append(self.playGame(verbose=verbose))
 
         one_won += np.sum(np.array(results) == -1).item()

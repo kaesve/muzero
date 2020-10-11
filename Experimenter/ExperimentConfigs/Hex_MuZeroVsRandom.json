@@ -2,6 +2,9 @@
   "name": "Hex_MuZeroVsRandom",
   "output_dir": "./Results/",
 
+  "num_repeat": 5,
+  "num_trials": 5,
+
   "environment": {
     "name": "HEX",
     "args": {

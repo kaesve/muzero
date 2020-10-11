@@ -1,6 +1,12 @@
 from dataclasses import dataclass
+from itertools import combinations
+import sys
+
+from tqdm import tqdm, trange
 
 from utils import DotDict
+
+from Arena import Arena
 
 from Games.hex.HexGame import HexGame
 from Games.othello.OthelloGame import OthelloGame
@@ -54,23 +60,22 @@ class ExperimentConfig(object):
     })
 
     def __init__(self, experiment_file: str):
-        self.experiment_file = experiment_file
+        self.experiment_args = DotDict.from_json(experiment_file)
+        self.game_config = None
         self.game = None
         self.player_configs = list()
 
     def construct(self) -> None:
-        experiment = DotDict.from_json(self.experiment_file)
-
-        env = experiment.environment
+        env = self.experiment_args.environment
 
         if env.name in self.games:
-            self.game = self.games[env.name]
+            self.game_config = self.games[env.name]
         else:
             raise NotImplementedError("Did not specify a valid environment.")
 
-        g = self.game.cls(**env.args)
+        self.game = self.game_config.cls(**env.args)
 
-        player_configs = experiment.players
+        player_configs = self.experiment_args.players
         for config in player_configs:
 
             if config.name not in self.players:
@@ -79,27 +84,49 @@ class ExperimentConfig(object):
             if config.name == self.players.ALPHAZERO.name:
                 algorithm_config = DotDict.from_json(config.config)
 
-                model = self.game.alpha_zero(g, algorithm_config.net_args)
-                search = MCTS(g, model, algorithm_config.args)
-                self.players.ALPHAZERO.player(g, search, model)
+                model = self.game_config.alpha_zero(self.game, algorithm_config.net_args)
+                search = MCTS(self.game, model, algorithm_config.args)
 
-                self.player_configs.append(self.players.ALPHAZERO.player(g, search, model))
+                self.player_configs.append(self.players.ALPHAZERO.player(
+                    self.game, search, model, config=algorithm_config))
 
             elif config.name == self.players.MUZERO.name:
                 algorithm_config = DotDict.from_json(config.config)
 
-                model = self.game.mu_zero(g, algorithm_config.net_args)
-                search = MuZeroMCTS(g, model, algorithm_config.args)
-                self.players.MUZERO.player(g, search, model)
+                model = self.game_config.mu_zero(self.game, algorithm_config.net_args)
+                search = MuZeroMCTS(self.game, model, algorithm_config.args)
 
-                self.player_configs.append(self.players.MUZERO.player(g, search, model))
+                self.player_configs.append(self.players.MUZERO.player(
+                    self.game, search, model, config=algorithm_config))
 
+            elif config.name == self.players.MANUAL.name:
+                self.player_configs.append(self.players[config.name].player(
+                    self.game, name=input("Input a player name: ")))
             else:
-                self.player_configs.append(self.players[config.name].player(g))
+                self.player_configs.append(self.players[config.name].player(self.game))
 
 
 def tournament_final(experiment: ExperimentConfig) -> None:
-    pass
+
+    # Initialize parametric players.
+    for p in experiment.player_configs:
+        if p.parametric:  # Load in latest model.
+            p.model.load_checkpoint(*p.config.args.load_folder_file)
+
+    results = list()
+    for rep in trange(experiment.experiment_args.num_repeat, desc="Tourney repetition", file=sys.stdout):
+        for players in tqdm(combinations(experiment.player_configs, experiment.game.n_players),
+                            desc=f"Tourney {rep}", file=sys.stdout):
+            if experiment.game.n_players == 1:
+                pass
+            else:
+                arena = Arena(experiment.game, *players)
+
+                all(x.bind_history(history=h) for x, h in zip(players, arena.trajectories))
+
+                results.append(arena.playGames(experiment.experiment_args.num_trials))
+
+    print(results)
 
 
 def tournament_pool(experiment: ExperimentConfig) -> None:

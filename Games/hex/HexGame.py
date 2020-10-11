@@ -57,6 +57,7 @@ class HexGame(Game):
         b = HexBoard(self.n)
         b.board = np.copy(state)
 
+        # TODO Rework action specification on canonicalform vs heuristicform
         move = (action // self.n, action % self.n)
         if player == -1:  # Make the move on the transposed board
             move = move[::-1]

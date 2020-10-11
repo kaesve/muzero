@@ -27,7 +27,7 @@ from Games.hex.HexGame import HexGame as Game
 from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 from Games.hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
 from MuZero.MuCoach import MuZeroCoach
-from Experimenter.experimenter import ExperimentConfig
+from Experimenter.experimenter import ExperimentConfig, tournament_final
 
 ALPHAZERO_DEFAULTS = "Experimenter/AlphaZeroConfigs/default.json"
 MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/default.json"
@@ -76,9 +76,10 @@ def learnM0():
 
 if __name__ == "__main__":
     # learnA0()
-    learnM0()
+    # learnM0()
     b = ExperimentConfig(MUZERO_RANDOM)
     b.construct()
-    print(b.game)
+    print(b.game_config)
     print(b.player_configs)
 
+    tournament_final(experiment=b)
