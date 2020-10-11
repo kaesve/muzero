@@ -35,7 +35,7 @@ class MuZeroNeuralNet:
         self.optimizer = tf.optimizers.Adam(self.net_args.lr)
         self.steps = 0
 
-        self.logdir = "logs/scalars/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.logdir = "logs/scalars/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")  # TODO specify path in file
         self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
         self.file_writer.set_as_default()
 
@@ -51,7 +51,6 @@ class MuZeroNeuralNet:
         :param sample_weights:
         :return:
         """
-
         @tf.function
         def loss() -> tf.Tensor:
             """
@@ -78,24 +77,31 @@ class MuZeroNeuralNet:
                 gradient_scale, vs, rs, pis = predictions[t]
                 t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
 
-                r_loss = scalar_loss(rs, t_rs) if t > 0 else tf.constant(0, dtype=tf.float32)
+                r_loss = scalar_loss(rs, t_rs) if (t > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
                 v_loss = scalar_loss(vs, t_vs)
                 pi_loss = scalar_loss(pis, t_pis)
 
-                # Logging
-                # tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * gradient_scale), step=self.steps)
-                # tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * gradient_scale), step=self.steps)
-                # tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * gradient_scale), step=self.steps)
+                # Logging loss of each unrolled head.
+                tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * gradient_scale), step=self.steps)
+                tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * gradient_scale), step=self.steps)
+                tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * gradient_scale), step=self.steps)
 
                 step_loss = r_loss + v_loss + pi_loss
                 total_loss += tf.reduce_sum(scale_gradient(step_loss, gradient_scale))
 
             tf.summary.scalar("loss", data=total_loss, step=self.steps)
+
+            # Penalize magnitude of weights using l2 norm
+            penalty = self.net_args.l2 * tf.reduce_mean([tf.nn.l2_loss(x) for x in self.get_variables()])
+            tf.summary.scalar("l2 penalty", data=penalty, step=self.steps)
+
+            total_loss += penalty
+
             return total_loss
 
         return loss
 
-    def train(self, examples: typing.List) -> float:
+    def train(self, examples: typing.List) -> None:
         """
         This function trains the neural network with examples obtained from
         self-play.

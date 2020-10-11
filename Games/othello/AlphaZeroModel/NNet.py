@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 from utils.storage import DotDict
-from AlphaZero.NeuralNet import NeuralNet
+from AlphaZero.AlphaZeroNeuralNet import AlphaZeroNeuralNet
 from .OthelloNNet import OthelloNNet as NetBuilder
 
 sys.path.append('../../..')
@@ -19,7 +19,7 @@ args = DotDict({
 })
 
 
-class NNetWrapper(NeuralNet):
+class NNetWrapper(AlphaZeroNeuralNet):
     def __init__(self, game):
         super().__init__(game)
         self.neural_net = NetBuilder(game, args)

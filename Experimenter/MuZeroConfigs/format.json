@@ -5,6 +5,7 @@
   "args": {
     "numIters": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",
     "numEps": "(int) Number of episodes to perform self play for collecting training examples",
+    "numTrainingSteps": "(int) Number of weight updates to perform in the backpropagation step",
     "tempThreshold": "(double) A boundary for the exploration temperature when exponentiating visit counts in MCTS",
     "dirichlet_alpha": "(double) Alpha parameter of the dirichlet distribution to sample noise from for exploration",
     "exploration_fraction": "(double: [0, 1]) Fraction to sample based on noise of the dirichlet for exploration vs the network prior",
@@ -30,6 +31,7 @@
 
   "net_args": {
     "lr": "(double) Learning rate for the neural network's optimizer",
+    "l2": "(double) Penalty scalar for l2 loss of network weights",
     "dropout": "(double) DropOut regularization rate for the neural network",
     "batch_size": "(int) Stochastic gradient descent batch size",
     "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",

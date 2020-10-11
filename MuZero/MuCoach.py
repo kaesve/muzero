@@ -4,15 +4,15 @@
 import typing
 import os
 import sys
-import time
 from collections import deque
 from pickle import Pickler, Unpickler
 
 import numpy as np
+from tqdm import trange
 
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from MuZero.MuMCTS import MuZeroMCTS
-from utils import Bar, AverageMeter, DotDict
+from utils import DotDict
 from utils.selfplay_utils import GameHistory, sample_batch
 
 
@@ -49,14 +49,12 @@ class MuZeroCoach:
         :param k:
         :return:
         """
-        start = t
-        end = t + k
-        actions = history.actions[start:end]  # Actions are shifted one step to the right.
+        actions = history.actions[t:t+k]  # Actions are shifted one step to the right.
 
         # Targets
-        pis = history.probabilities[start:end+1]
-        vs = history.observed_returns[start:end+1]
-        rewards = history.rewards[start:end+1]
+        pis = history.probabilities[t:t+k+1]
+        vs = history.observed_returns[t:t+k+1]
+        rewards = history.rewards[t:t+k+1]
 
         if pis[-1] is None:  # one hot encode for resignation
             pis[-1] = np.zeros(self.game.getActionSize())
@@ -149,50 +147,6 @@ class MuZeroCoach:
 
         return history
 
-    def selfPlay(self) -> None:
-        iteration_train_examples = list()
-
-        eps_time = AverageMeter()
-        bar = Bar('Self Play', max=self.args.numEps)
-        end = time.time()
-
-        for eps in range(self.args.numEps):
-            self.mcts.clear_tree()  # Reset the search tree after every game.
-            iteration_train_examples.append(self.executeEpisode())
-
-            if sum(map(len, iteration_train_examples)) > self.args.maxlenOfQueue:
-                iteration_train_examples.pop(0)
-
-            # Bookkeeping + plot progress
-            eps_time.update(time.time() - end)
-            end = time.time()
-            bar.suffix = f'({eps + 1}/{self.args.numEps}) Eps Time: {eps_time.avg:.3f}s | ' \
-                         f'Total: {bar.elapsed_td:} | ETA: {bar.eta_td:}'
-            bar.next()
-        bar.finish()
-
-        # Store data from previous self-play iterations into the history
-        self.trainExamplesHistory.append(iteration_train_examples)
-
-    def backpropagation(self, history: typing.List[GameHistory]) -> None:
-        eps_time = AverageMeter()
-        bar = Bar('Backpropagation', max=self.args.numTrainingSteps)
-
-        end = time.time()
-        for epoch in range(self.args.numTrainingSteps):
-            batch = self.sampleBatch(history)
-
-            # Backpropagation
-            loss = self.neural_net.train(batch)
-
-            # Bookkeeping + plot progress
-            eps_time.update(time.time() - end)
-            end = time.time()
-            bar.suffix = f'({epoch + 1}/{self.args.numTrainingSteps}) Eps Time: {eps_time.avg:.3f}s | ' \
-                         f'Total: {bar.elapsed_td} | ETA: {bar.eta_td} | loss: {loss:.4f}'
-            bar.next()
-        bar.finish()
-
     def learn(self) -> None:
         """
         Performs numIters iterations with numEps episodes of self-play in each
@@ -203,8 +157,17 @@ class MuZeroCoach:
         for i in range(1, self.args.numIters + 1):
             print(f'------ITER {i}------')
 
-            # Gather training data.
-            self.selfPlay()
+            # Self-play/ Gather training data.
+            iteration_train_examples = list()
+            for _ in trange(self.args.numEps, desc="Self Play", file=sys.stdout):
+                self.mcts.clear_tree()  # Reset the search tree after every game.
+                iteration_train_examples.append(self.executeEpisode())
+
+                if sum(map(len, iteration_train_examples)) > self.args.maxlenOfQueue:
+                    iteration_train_examples.pop(0)
+
+            # Store data from previous self-play iterations into the history
+            self.trainExamplesHistory.append(iteration_train_examples)
 
             n = len(self.trainExamplesHistory)
             print(f"Replay buffer filled with data from {n} self play iterations, at "
@@ -218,7 +181,10 @@ class MuZeroCoach:
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
 
-            self.backpropagation(complete_history)
+            # Backpropagation
+            for _ in trange(self.args.numTrainingSteps, desc="Backpropagation", file=sys.stdout):
+                batch = self.sampleBatch(complete_history)
+                self.neural_net.train(batch)
 
             print('Storing a snapshot of the new model')
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
