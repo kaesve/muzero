@@ -145,7 +145,7 @@ class MuZeroCoach:
         o_terminal = self.game.buildObservation(state, current_player, self.observation_encoding)
 
         history.terminate(o_terminal, current_player, z)
-        history.compute_returns(gamma=self.args.gamma, n=(self.args.n if self.game.n_players == 1 else None))
+        history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
 
         return history
 

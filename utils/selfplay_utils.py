@@ -58,8 +58,8 @@ class GameHistory:
             # General MDPs. Symbols follow notation from the paper.
             for t in range(len(self)):
                 horizon = np.min([t + n, len(self)])
-                discounted_rewards = [np.pow(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
-                bootstrap = np.pow(gamma, horizon - t) * self.search_returns[horizon]
+                discounted_rewards = [np.power(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
+                bootstrap = np.power(gamma, horizon - t) * self.search_returns[horizon]
                 self.observed_returns[t] = np.sum(discounted_rewards) + bootstrap
 
     def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,
@@ -162,7 +162,7 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
         errors = np.array([np.abs(h.search_returns[i] - h.observed_returns[i])
                            for h in list_of_histories for i in range(len(h))])
 
-        mass = np.pow(errors, alpha)
+        mass = np.power(errors, alpha)
         sampling_probability = mass / np.sum(mass)
 
         # Adjust weight update strength proportionally to IS-ratio to account for sampling bias.

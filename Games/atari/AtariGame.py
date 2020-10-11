@@ -40,7 +40,7 @@ class AtariGame(Game):
             startState: a representation of the initial state (ideally this is the form
                         that will be the input to your neural network)
         """
-        env = gym.make(env_name)
+        env = gym.make(self.env_name)
         env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False)
         return GymState(env, env.reset(), 0, False)
 
@@ -76,7 +76,7 @@ class AtariGame(Game):
         action = (action + 1) % self.getActionSize()
 
         observation, reward, done, info = state.env.step(action)
-        next_state = GymState(env, observation, action, done)
+        next_state = GymState(state.env, observation, action, done)
 
         return (next_state, reward, 1)
 
@@ -126,9 +126,9 @@ class AtariGame(Game):
             return self.getCanonicalForm(state, player)
 
         elif form == Game.Observation.HEURISTIC:
-            action_plane = np.ones(state.observation[:2]) * state.action / self.getActionSize()
+            action_plane = np.ones(state.observation.shape[:2]) * state.action / self.getActionSize()
             action_plane = action_plane.reshape((*action_plane.shape, 1))
-            return np.concatenate(state.observation, action_plane, axis=2)
+            return np.concatenate((state.observation, action_plane), axis=2)
 
 
     def getSymmetries(self, state, pi):
