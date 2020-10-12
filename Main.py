@@ -23,9 +23,11 @@ from types import SimpleNamespace
 
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
-from Games.hex.HexGame import HexGame as Game
+from Games.hex.HexGame import HexGame
 from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 from Games.hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
+from Games.atari.AtariGame import AtariGame
+from Games.atari.MuZeroModel.NNet import NNetWrapper as MuAtariNet
 from MuZero.MuCoach import MuZeroCoach
 from Experimenter.experimenter import ExperimentConfig, tournament_final
 
@@ -43,7 +45,7 @@ def learnA0():
 
     print("Testing:", name)
 
-    g = Game(BOARD_SIZE)
+    g = HexGame(BOARD_SIZE)
     hex_net = HexNet(g, net_args)
 
     if args.load_model:
@@ -57,29 +59,30 @@ def learnA0():
     c.learn()
 
 
-def learnM0():
+def learnM0(g, Net):
     content = DotDict.from_json(MUZERO_DEFAULTS)
     name, net_args, args = content.name, content.net_args, content.args
 
     print("Testing:", name)
 
-    g = Game(BOARD_SIZE)
-    hex_net = MuHexNet(g, net_args)
+    net = Net(g, net_args)
 
     if args.load_model:
-        hex_net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
+        net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    c = MuZeroCoach(g, hex_net, args)
+    c = MuZeroCoach(g, net, args)
 
     c.learn()
 
 
 if __name__ == "__main__":
     # learnA0()
-    # learnM0()
-    b = ExperimentConfig(MUZERO_RANDOM)
-    b.construct()
-    print(b.game_config)
-    print(b.player_configs)
+    # learnM0(HexGame(BOARD_SIZE), MuHexNet)
+    learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
+    
+    # b = ExperimentConfig(MUZERO_RANDOM)
+    # b.construct()
+    # print(b.game_config)
+    # print(b.player_configs)
 
-    tournament_final(experiment=b)
+    # tournament_final(experiment=b)

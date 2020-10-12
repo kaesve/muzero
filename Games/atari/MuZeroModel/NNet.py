@@ -47,7 +47,13 @@ class NNetWrapper(MuZeroNeuralNet):
         """
         # Unpack and transform data for loss computation.
         observations, actions, targets, sample_weight = list(zip(*examples))
+
         actions, sample_weight = np.array(actions), np.array(sample_weight)
+
+        action_padding = self.latent_x * self.latent_y - self.action_size
+        batch_size, K, _ = actions.shape
+        actions = np.concatenate((actions, np.zeros((batch_size, K, action_padding))), axis=2)
+        actions = actions.reshape((batch_size, K, self.latent_x, self.latent_y))
 
         # Unpack and encode targets. All target shapes are of the form [time, batch_size, categories]
         target_vs, target_rs, target_pis = list(map(np.array, zip(*targets)))

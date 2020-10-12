@@ -56,10 +56,13 @@ class GameHistory:
                 self.observed_returns[i] = -self.observed_returns[i + 1]
         else:
             # General MDPs. Symbols follow notation from the paper.
-            for t in range(len(self)):
-                horizon = np.min([t + n, len(self)])
+            for t in range(len(self) - 1):
+                horizon = np.min([t + n, len(self) - 1])
                 discounted_rewards = [np.power(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
-                bootstrap = np.power(gamma, horizon - t) * self.search_returns[horizon]
+                if not self.search_returns[horizon - 1]:
+                    print(horizon, t, n, len(self))
+                    print(self.search_returns[t:])
+                bootstrap = np.power(gamma, horizon - t) * self.search_returns[horizon - 1]
                 self.observed_returns[t] = np.sum(discounted_rewards) + bootstrap
 
     def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,

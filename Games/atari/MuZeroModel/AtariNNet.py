@@ -64,8 +64,8 @@ class AtariNNet:
 
     def encoder(self, observations):
 
-        downsampled = Activation('relu')(BatchNormalization()(Conv2D(128, 3, 2)(observations)))
-        downsampled = Activation('relu')(BatchNormalization()(Conv2D(256, 3, 2)(downsampled)))
+        downsampled = Activation('relu')(BatchNormalization()(Conv2D(64, 3, 2)(observations)))
+        downsampled = Activation('relu')(BatchNormalization()(Conv2D(128, 3, 2)(downsampled)))
         downsampled = AveragePooling2D(3, 2)(downsampled)
         downsampled = AveragePooling2D(3, 2)(downsampled)
 
