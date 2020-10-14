@@ -165,11 +165,14 @@ class MuZeroMCTS:
 
         if count > self.args.numMCTSSims + 1:
             print(f'Warning: latent state may have collapsed, defaulting to random search. Recursion depth: {count}')
+            print(latent_state)
             confidence_bounds = np.random.uniform(size=len(confidence_bounds))
 
         # Only the root node has access to the set of legal actions.
         if s in self.Vs:
             confidence_bounds = np.array(confidence_bounds) * self.Vs[s][:-1]  # Omit resignation.
+
+
         a = np.argmax(confidence_bounds)
 
         ### EXPANSION

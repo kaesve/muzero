@@ -139,6 +139,8 @@ class MuZeroCoach:
             current_player = next_player
             z = self.game.getGameEnded(state, current_player)
 
+            self.mcts.clear_tree()
+
         # Capture terminal state and compute z_t for each observation == N-step returns for general MDPs
         o_terminal = self.game.buildObservation(state, current_player, self.observation_encoding)
 

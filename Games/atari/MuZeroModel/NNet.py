@@ -100,8 +100,6 @@ class NNetWrapper(MuZeroNeuralNet):
         latent_state = latent_state.reshape((-1, self.latent_x, self.latent_y))
         a_plane = a_plane.reshape((-1, self.latent_x, self.latent_y))
 
-        # print("shapes", latent_state.shape, a_plane.shape)
-
         r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
 
         r_real = support_to_scalar(r, self.net_args.support_size)

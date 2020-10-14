@@ -66,6 +66,7 @@ class MuZeroNeuralNet:
 
             # Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
             predictions = [(sample_weights, v_0, None, pi_0)]
+
             for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
                 r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
                 pi, v = self.neural_net.predictor(s[..., 0])
@@ -92,7 +93,7 @@ class MuZeroNeuralNet:
             tf.summary.scalar("loss", data=total_loss, step=self.steps)
 
             # Penalize magnitude of weights using l2 norm
-            penalty = self.net_args.l2 * tf.reduce_mean([tf.nn.l2_loss(x) for x in self.get_variables()])
+            penalty = self.net_args.l2 * tf.reduce_sum([tf.nn.l2_loss(x) for x in self.get_variables()])
             tf.summary.scalar("l2 penalty", data=penalty, step=self.steps)
 
             total_loss += penalty

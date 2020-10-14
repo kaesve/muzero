@@ -41,7 +41,8 @@ class AtariGame(Game):
                         that will be the input to your neural network)
         """
         env = gym.make(self.env_name)
-        env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False, terminal_on_life_loss=True)
+        env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False, terminal_on_life_loss=True,
+            noop_max=10)
         return GymState(env, env.reset(), 0, False)
 
     def getDimensions(self):

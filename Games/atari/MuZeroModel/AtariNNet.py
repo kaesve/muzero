@@ -72,7 +72,7 @@ class AtariNNet:
         out_tensor = self.build_model(downsampled)
 
         s_fc_latent = Dense(self.latent_x * self.latent_y, activation='linear', name='s_0')(out_tensor)
-        latent_state = MinMaxScaler()(s_fc_latent)
+        latent_state = MinMaxScaler(safe=True)(s_fc_latent)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
@@ -84,7 +84,7 @@ class AtariNNet:
 
         s_fc_latent = Dense(self.latent_x * self.latent_y, activation='linear', name='s_next')(out_tensor)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(s_fc_latent)
-        latent_state = MinMaxScaler()(latent_state)
+        latent_state = MinMaxScaler(safe=True)(latent_state)
 
         r = Dense(1, activation='linear', name='r')(out_tensor) \
             if self.args.support_size == 0 else \
