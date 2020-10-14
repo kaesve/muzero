@@ -43,7 +43,7 @@ class Arena:
             or
                 draw result returned from the game that is neither 1, -1, nor 0.
         """
-        all(x.refresh() for x in self.trajectories)
+        all([x.refresh() for x in self.trajectories])
         players = [self.player2, None, self.player1]
         cur_player = 1
         state = self.game.getInitialState()

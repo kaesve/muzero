@@ -53,7 +53,7 @@ class MuZeroCoach:
 
         # Targets
         pis = history.probabilities[t:t+k+1]
-        vs = history.observed_returns[t:t+k+1]
+        vs = history.observed_returns[t:t+k+1]  # TODO: Multiply each value by player_i to get according perspective?
         rewards = history.rewards[t:t+k+1]
 
         if pis[-1] is None:  # one hot encode for resignation

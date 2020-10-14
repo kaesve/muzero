@@ -49,9 +49,7 @@ class MuZeroMCTS:
         :param counter:
         :return:
         """
-        if self.game.n_players == 2:
-            return 1 if counter % 2 == 0 else -1
-        return 1
+        return 1 if counter % self.game.n_players == 0 else -1
 
     def modify_root_prior(self, s: np.ndarray) -> None:
         """

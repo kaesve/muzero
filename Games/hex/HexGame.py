@@ -79,8 +79,8 @@ class HexGame(Game):
             valids[-1] = 1
             return np.array(valids)
 
-        assert np.all(np.array(valids[:-1]).reshape((self.n, self.n), order='C' if player == 1 else 'F') +
-                      np.abs(b.board) == 1)
+        assert np.all([np.array(valids[:-1]).reshape((self.n, self.n), order='C' if player == 1 else 'F') +
+                      np.abs(b.board) == 1])
 
         return valids
 

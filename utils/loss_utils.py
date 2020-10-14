@@ -46,8 +46,8 @@ def atari_reward_transform(x: np.ndarray, var_eps: float = 0.001) -> np.ndarray:
     :param x:
     :param var_eps:
     :return:
+    :references: https://arxiv.org/pdf/1805.11593.pdf
     """
-    # See https://arxiv.org/pdf/1805.11593.pdf
     return np.sign(x) * (np.sqrt(np.abs(x) + 1) - 1) + var_eps * x
 
 
@@ -57,8 +57,8 @@ def inverse_atari_reward_transform(x: np.ndarray, var_eps: float = 0.001) -> np.
     :param x:
     :param var_eps:
     :return:
+    :references: https://arxiv.org/pdf/1805.11593.pdf
     """
-    # See https://arxiv.org/pdf/1805.11593.pdf
     return np.sign(x) * (((np.sqrt(1 + 4 * var_eps * (np.abs(x) + 1 + var_eps)) - 1) / (2 * var_eps)) ** 2 - 1)
 
 

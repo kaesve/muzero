@@ -122,7 +122,7 @@ def tournament_final(experiment: ExperimentConfig) -> None:
             else:
                 arena = Arena(experiment.game, *players)
 
-                all(x.bind_history(history=h) for x, h in zip(players, arena.trajectories))
+                all([x.bind_history(history=h) for x, h in zip(players, arena.trajectories)])
 
                 results.append(arena.playGames(experiment.experiment_args.num_trials))
 

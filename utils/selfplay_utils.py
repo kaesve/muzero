@@ -12,13 +12,13 @@ class GameHistory:
     """
     Data container for keeping track of game trajectories.
     """
-    observations: list = field(default_factory=list)
-    players: list = field(default_factory=list)
-    actions: list = field(default_factory=list)
-    probabilities: list = field(default_factory=list)
-    rewards: list = field(default_factory=list)
-    search_returns: list = field(default_factory=list)
-    observed_returns: list = field(default_factory=list)
+    observations: list = field(default_factory=list)        # o_t: State Observations
+    players: list = field(default_factory=list)             # p_t: Current player
+    probabilities: list = field(default_factory=list)       # pi_t: Probability vector of MCTS for the action
+    search_returns: list = field(default_factory=list)      # v_t: MCTS value estimation
+    rewards: list = field(default_factory=list)             # u_t+1: Observed reward after performing a_t+1
+    actions: list = field(default_factory=list)             # a_t+1: Action leading to transition s_t -> s_t+1
+    observed_returns: list = field(default_factory=list)    # z_t: Training targets for the value function
 
     def __len__(self) -> int:
         """Get length of current stored trajectory"""
@@ -40,13 +40,13 @@ class GameHistory:
         self.actions.append(-1)
         self.players.append(player)
         self.probabilities.append(None)
-        self.rewards.append(0)
-        self.search_returns.append(None)
+        self.rewards.append(None)
+        self.search_returns.append(z)
         self.observed_returns.append(z)
 
     def refresh(self) -> None:
         """Clear all statistics within the class"""
-        all(x.clear() for x in vars(self).values())
+        all([x.clear() for x in vars(self).values()])
 
     def compute_returns(self, gamma: float = 1, n: typing.Optional[int] = None) -> None:
         """Computes the n-step returns assuming that the last recorded snapshot was a terminal state"""
@@ -58,11 +58,12 @@ class GameHistory:
             # General MDPs. Symbols follow notation from the paper.
             for t in range(len(self) - 1):
                 horizon = np.min([t + n, len(self) - 1])
+
+                # u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon
                 discounted_rewards = [np.power(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
-                if not self.search_returns[horizon - 1]:
-                    print(horizon, t, n, len(self))
-                    print(self.search_returns[t:])
-                bootstrap = np.power(gamma, horizon - t) * self.search_returns[horizon - 1]
+                # gamma ^ k * v_t+horizon
+                bootstrap = np.power(gamma, horizon - t) * self.search_returns[horizon]
+                # z_t for all (t - 1) = 1... len(self) - 1
                 self.observed_returns[t] = np.sum(discounted_rewards) + bootstrap
 
     def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,
@@ -72,11 +73,14 @@ class GameHistory:
             return current_observation if current_observation is not None else self.observations[-1]
 
         if t is None:
-            t = len(self)
+            # If current observation is also None, then t needs to both index and slice self.observations:
+            # for len(self) indexing will throw an out of bounds error when current_observation is None.
+            # for len(self) - 1, if current_observation is NOT None, then the trajectory wil omit a step.
+            # Proof: t = len(self) - 1 --> list[:t] in {i, ..., t-1}.
+            t = len(self) - (1 if current_observation is None else 0)
 
         if current_observation is None:
             current_observation = self.observations[t]
-            t = np.max([0, t - 1])
 
         # Get a trajectory of states of 'length' most recent observations until time-point t.
         trajectory = self.observations[:t][-(length - 1):] + [current_observation]
@@ -84,7 +88,7 @@ class GameHistory:
         if len(trajectory) < length:
             prefix = [np.zeros_like(current_observation) for _ in range(length - len(trajectory))]
             trajectory = prefix + trajectory
-        # TODO: Functionality check/ unit testing
+
         return np.concatenate(trajectory, axis=-1)  # Concatenate along channel dimension.
 
 

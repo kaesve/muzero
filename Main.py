@@ -34,7 +34,7 @@ from Experimenter.experimenter import ExperimentConfig, tournament_final
 ALPHAZERO_DEFAULTS = "Experimenter/AlphaZeroConfigs/default.json"
 MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/default.json"
 
-MUZERO_RANDOM = "Experimenter/ExperimentConfigs/Hex_MuZeroVsRandom.json"
+MUZERO_RANDOM = "Experimenter/JobConfigs/Tourney_Hex_MuZeroVsRandom.json"
 
 BOARD_SIZE = 5
 
