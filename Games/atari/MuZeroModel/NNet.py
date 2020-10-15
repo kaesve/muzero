@@ -61,7 +61,7 @@ class NNetWrapper(MuZeroNeuralNet):
         target_vs = np.array([scalar_to_support(target_vs[:, t], self.net_args.support_size)
                               for t in range(target_vs.shape[-1])])
         target_rs = np.array([scalar_to_support(target_rs[:, t], self.net_args.support_size)
-                              for t in range(target_rs.shape[-1])])
+                              for t in range(target_rs.shape[-1])])  # TODO: ufunc TypeError Ken1
         target_pis = np.swapaxes(target_pis, 0, 1)
 
         # Pack formatted inputs as tensors.

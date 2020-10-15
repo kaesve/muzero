@@ -68,8 +68,8 @@ class HexNNet:
         out_tensor = self.build_model(observations)
 
         s_fc_latent = Dense(self.board_x * self.board_y, activation='linear', name='s_0')(out_tensor)
-        latent_state = MinMaxScaler()(s_fc_latent)
-        latent_state = Reshape((self.board_x, self.board_y, 1))(latent_state)
+        latent_state = Reshape((self.board_x, self.board_y, 1))(s_fc_latent)
+        latent_state = MinMaxScaler()(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
 

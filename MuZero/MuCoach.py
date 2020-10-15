@@ -54,7 +54,7 @@ class MuZeroCoach:
         # Targets
         pis = history.probabilities[t:t+k+1]
         vs = history.observed_returns[t:t+k+1]  # TODO: Multiply each value by player_i to get according perspective?
-        rewards = history.rewards[t:t+k+1]
+        rewards = history.rewards[t:t+k+1]     # TODO: Handle None type terminal state
 
         if pis[-1] is None:  # one hot encode for resignation
             pis[-1] = np.zeros(self.game.getActionSize())

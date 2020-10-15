@@ -19,6 +19,7 @@ class GameHistory:
     rewards: list = field(default_factory=list)             # u_t+1: Observed reward after performing a_t+1
     actions: list = field(default_factory=list)             # a_t+1: Action leading to transition s_t -> s_t+1
     observed_returns: list = field(default_factory=list)    # z_t: Training targets for the value function
+    terminated: bool = False                                # Whether the environment has terminated
 
     def __len__(self) -> int:
         """Get length of current stored trajectory"""
@@ -43,6 +44,7 @@ class GameHistory:
         self.rewards.append(None)
         self.search_returns.append(z)
         self.observed_returns.append(z)
+        self.terminated = True
 
     def refresh(self) -> None:
         """Clear all statistics within the class"""

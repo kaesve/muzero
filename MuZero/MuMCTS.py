@@ -31,6 +31,7 @@ class MuZeroMCTS:
         # Gets reinitialized at every search
         self.minmax = MinMaxStats(self.args.minimum_reward, self.args.maximum_reward)
 
+        # Note. In the tables below, 's' is defined as a tuple (s_tensor, tree_path).
         self.Qsa = {}  # stores Q values for s,a (as defined in the paper)
         self.Ssa = {}  # stores latent state transition for s_k, a
         self.Rsa = {}  # stores R values for s,a
@@ -51,7 +52,7 @@ class MuZeroMCTS:
         """
         return 1 if counter % self.game.n_players == 0 else -1
 
-    def modify_root_prior(self, s: np.ndarray) -> None:
+    def modify_root_prior(self, s: bytes) -> None:
         """
 
         :param s:
@@ -65,7 +66,7 @@ class MuZeroMCTS:
         self.Ps[s] *= self.Vs[s]
         self.Ps[s] = self.Ps[s] / np.sum(self.Ps[s])
 
-    def compute_ucb(self, s: str, a: int, exploration_factor: float) -> float:
+    def compute_ucb(self, s: bytes, a: int, exploration_factor: float) -> float:
         """
 
         :param s:
@@ -94,7 +95,7 @@ class MuZeroMCTS:
             v: (float) Estimated value of the root state.
         """
         latent_state = self.neural_net.encode(observations)
-        s = latent_state.tostring()  # Hashable representation
+        s = (latent_state.tobytes(), tuple())  # Hashable representation
 
         # Refresh value bounds in the tree
         self.minmax.refresh()
@@ -121,29 +122,11 @@ class MuZeroMCTS:
         move_probabilities = counts / np.sum(counts)
         return move_probabilities, v
 
-    def _search(self, latent_state: np.ndarray, count: int = 0, root: bool = False) -> float:
-        """ TODO: Edit documentation
-        This function performs one iteration of MCTS. It is recursively called
-        till a leaf node is found. The action chosen at each node is one that
-        has the maximum upper confidence bound as in the paper.
-
-        Once a leaf node is found, the neural network is called to return an
-        initial policy P and a value v for the state. This value is propagated
-        up the search path. In case the leaf node is a terminal state, the
-        outcome is propagated up the search path. The values of Ns, Nsa, Qsa are
-        updated.
-
-        NOTE: the return values are the negative of the value of the current
-        state. This is done since v is in [-1,1] and if v is the value of a
-        state for the current player, then its value is -v for the other player.
-
-        max_depth is included to prevent infinite recursion when the network
-        predicts gets stuck in badly conditioned output spaces.
-
-        Returns:
-            v: the negative of the value of the current canonicalBoard
+    def _search(self, latent_state: np.ndarray, path: typing.Tuple[int, ...] = tuple(), root: bool = False) -> float:
         """
-        s = latent_state.tostring()  # Hashable representation.
+
+        """
+        s = (latent_state.tobytes(), path)  # Hashable representation.
 
         ### ROLLOUT
         if s not in self.Ps:
@@ -154,31 +137,24 @@ class MuZeroMCTS:
             if root:  # Add Dirichlet noise to the root prior and mask illegal moves.
                 self.modify_root_prior(s)
 
-            return self.turn_indicator(count) * v
+            return self.turn_indicator(len(path)) * v
 
         ### SELECTION
         # pick the action with the highest upper confidence bound
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
         confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
 
-        if count > self.args.numMCTSSims + 1:
-            print(f'Warning: latent state may have collapsed, defaulting to random search. Recursion depth: {count}')
-            print(latent_state)
-            confidence_bounds = np.random.uniform(size=len(confidence_bounds))
-
         # Only the root node has access to the set of legal actions.
         if s in self.Vs:
             confidence_bounds = np.array(confidence_bounds) * self.Vs[s][:-1]  # Omit resignation.
-
-
-        a = np.argmax(confidence_bounds)
+        a = np.argmax(confidence_bounds).item()  # Get argmax as scalar
 
         ### EXPANSION
         # Perform a forward pass using the dynamics function (unless already known in the transition table)
         if (s, a) not in self.Ssa:
             self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
 
-        v = self._search(self.Ssa[(s, a)], count + 1)  # 1-step look ahead state value
+        v = self._search(self.Ssa[(s, a)], path + (a, ))  # 1-step look ahead state value
         gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
 
         ### BACKUP
@@ -190,4 +166,4 @@ class MuZeroMCTS:
         self.Nsa[(s, a)] = 1
         self.Ns[s] += 1
 
-        return self.turn_indicator(count) * gk  # This was changed from -v
+        return self.turn_indicator(len(path)) * gk  # This was changed from -v
