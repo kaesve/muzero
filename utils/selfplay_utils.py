@@ -48,7 +48,7 @@ class GameHistory:
 
     def refresh(self) -> None:
         """Clear all statistics within the class"""
-        all([x.clear() for x in vars(self).values()])
+        all([x.clear() for x in vars(self).values() if type(x) == list])
 
     def compute_returns(self, gamma: float = 1, n: typing.Optional[int] = None) -> None:
         """Computes the n-step returns assuming that the last recorded snapshot was a terminal state"""

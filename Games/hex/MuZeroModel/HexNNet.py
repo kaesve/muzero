@@ -31,7 +31,6 @@ class HexNNet:
         # s': batch_size  x board_x x board_y x 1
         self.latent_state = Input(shape=(self.board_x, self.board_y))
 
-        # TODO: Check functionality during training
         action_plane = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_y,),
                               input_shape=(self.action_size,))(self.action_plane)  # Omit resignation
         action_plane = Reshape((self.board_x, self.board_y, 1))(action_plane)
