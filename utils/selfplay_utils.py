@@ -41,7 +41,7 @@ class GameHistory:
         self.actions.append(-1)
         self.players.append(player)
         self.probabilities.append(None)
-        self.rewards.append(None)
+        self.rewards.append(0)
         self.search_returns.append(z)
         self.observed_returns.append(z)
         self.terminated = True
