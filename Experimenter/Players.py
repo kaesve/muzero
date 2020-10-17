@@ -46,11 +46,11 @@ class MuZeroPlayer(Player):
         self.name = config.name
 
     def capture(self, state: np.ndarray, action: int, player: int) -> None:
-        o_t = self.game.buildObservation(state, player, form=self.game.Observation.HEURISTIC)
+        o_t = self.game.buildObservation(state, player, form=self.game.Representation.HEURISTIC)
         self.history.capture(o_t, action, player, np.array([]), 0, 0)
 
     def act(self, state: np.ndarray, player: int) -> int:
-        o_t = self.game.buildObservation(state, player, form=self.game.Observation.HEURISTIC)
+        o_t = self.game.buildObservation(state, player, form=self.game.Representation.HEURISTIC)
         stacked_observations = self.history.stackObservations(self.model.net_args.observation_length, o_t)
 
         root_actions = self.game.getLegalMoves(state, player)

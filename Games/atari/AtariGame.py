@@ -126,11 +126,11 @@ class AtariGame(Game):
         """
         return state
 
-    def buildObservation(self, state, player: int, form: Game.Observation = Game.Observation.HEURISTIC) -> np.ndarray:
-        if form == Game.Observation.CANONICAL:
+    def buildObservation(self, state, player: int, form: Game.Representation = Game.Representation.HEURISTIC) -> np.ndarray:
+        if form == Game.Representation.CANONICAL:
             return self.getCanonicalForm(state, player)
 
-        elif form == Game.Observation.HEURISTIC:
+        elif form == Game.Representation.HEURISTIC:
             action_plane = np.ones(state.observation.shape[:2]) * state.action / self.getActionSize()
             action_plane = action_plane.reshape((*action_plane.shape, 1))
             return np.concatenate((state.observation, action_plane), axis=2)

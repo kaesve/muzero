@@ -20,7 +20,7 @@ class HexNNet:
 
     def __init__(self, game, args):
         # Network arguments
-        self.board_x, self.board_y, self.planes = game.getDimensions(game.Observation.HEURISTIC)
+        self.board_x, self.board_y, self.planes = game.getDimensions(game.Representation.HEURISTIC)
         self.action_size = game.getActionSize()
         self.args = args
 
@@ -45,29 +45,16 @@ class HexNNet:
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v])
 
-    def build_model(self, tensor_in):
-        def conv_block(n, x):  # Recursively builds a convolutional tower of height n.
-            if n > 0:
-                return conv_block(n - 1, Activation('relu')(BatchNormalization()(Conv2D(
-                    self.args.num_channels, 3, padding='same', use_bias=False)(x))))
-            return x
-
-        def dense_sequence(n, x):  # Recursively builds a Fully Connected sequence of length n.
-            if n > 0:
-                return dense_sequence(n - 1, Dropout(self.args.dropout)(Activation('relu')(
-                    Dense(self.args.size_dense)(x))))
-            return x
-
-        conv_block = conv_block(self.args.num_towers, tensor_in)
-        flattened = Flatten()(conv_block)
-        fc_sequence = dense_sequence(self.args.len_dense, flattened)
-        return fc_sequence
+    def conv_block(self, n, x):  # Recursively builds a convolutional tower of height n.
+        if n > 0:
+            return self.conv_block(n - 1, Activation('relu')(BatchNormalization()(Conv2D(
+                self.args.num_channels, 3, padding='same', use_bias=False)(x))))
+        return x
 
     def encoder(self, observations):
-        out_tensor = self.build_model(observations)
+        out_tensor = self.conv_block(self.args.num_towers, observations)
 
-        s_fc_latent = Dense(self.board_x * self.board_y, activation='linear', name='s_0')(out_tensor)
-        latent_state = Reshape((self.board_x, self.board_y, 1))(s_fc_latent)
+        latent_state = Activation('relu')(Conv2D(1, 3, padding='same', use_bias=False)(out_tensor))
         latent_state = MinMaxScaler()(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
@@ -75,24 +62,26 @@ class HexNNet:
     def dynamics(self, encoded_state, action_plane):
         stacked = Concatenate(axis=-1)([encoded_state, action_plane])
         reshaped = Reshape((self.board_x, self.board_y, -1))(stacked)
-        out_tensor = self.build_model(reshaped)
+        out_tensor = self.conv_block(self.args.num_towers, reshaped)
 
-        s_fc_latent = Dense(self.board_x * self.board_y, activation='linear', name='s_next')(out_tensor)
-        latent_state = Reshape((self.board_x, self.board_y, 1))(s_fc_latent)
+        latent_state = Activation('relu')(Conv2D(1, 3, padding='same', use_bias=False)(out_tensor))
         latent_state = MinMaxScaler()(latent_state)
 
-        r = Dense(1, activation='linear', name='r')(out_tensor) \
+        flat = Flatten()(out_tensor)
+        r = Dense(1, activation='linear', name='r')(flat) \
             if self.args.support_size == 0 else \
-            Dense(self.args.support_size * 2 + 1, activation='softmax', name='r')(out_tensor)
+            Dense(self.args.support_size * 2 + 1, activation='softmax', name='r')(flat)
 
         return r, latent_state
 
     def predictor(self, latent_state):
-        out_tensor = self.build_model(latent_state)
+        out_tensor = self.conv_block(self.args.num_towers, latent_state)
 
-        pi = Dense(self.action_size, activation='softmax', name='pi')(out_tensor)
-        v = Dense(1, activation='tanh', name='v')(out_tensor) \
+        flat = Flatten()(out_tensor)
+
+        pi = Dense(self.action_size, activation='softmax', name='pi')(flat)
+        v = Dense(1, activation='tanh', name='v')(flat) \
             if self.args.support_size == 0 else \
-            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(out_tensor)
+            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(flat)
 
         return pi, v

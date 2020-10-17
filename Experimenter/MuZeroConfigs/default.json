@@ -5,10 +5,10 @@
   "args": {
     "numIters": 10,
     "numEps": 5,
-    "numTrainingSteps": 5,
-    "tempThreshold": 4,
+    "numTrainingSteps": 10,
+    "tempThreshold": 7,
     "dirichlet_alpha": 0.3,
-    "exploration_fraction": 0.05,
+    "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
     "numMCTSSims": 25,
     "prioritize": false,
@@ -18,7 +18,7 @@
     "n_steps": 10,
     "c1": 1.25,
     "c2": 19652,
-    "gamma": 0.997,
+    "gamma": 1,
 
     "minimum_reward": -1,
     "maximum_reward": 1,
@@ -30,16 +30,16 @@
   },
 
   "net_args": {
-    "lr": 0.0001,
-    "l2": 1e-4,
-    "dropout": 0.3,
+    "lr": 0.001,
+    "l2": 1e-3,
+    "dropout": 0.0,
     "batch_size": 64,
     "cuda": false,
-    "num_channels": 512,
+    "num_channels": 256,
     "num_towers": 3,
     "len_dense": 2,
     "size_dense": 512,
     "support_size": 0,
-    "observation_length": 3
+    "observation_length": 1
   }
 }

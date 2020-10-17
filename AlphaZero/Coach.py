@@ -28,7 +28,7 @@ class Coach:
         self.mcts = MCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = []  # history of the most recent examples from args.numItersForTrainExamplesHistory
         self.skipFirstSelfPlay = False  # can be overridden in loadTrainExamples()
-        self.observation_encoding = game.Observation.CANONICAL  # TODO
+        self.observation_encoding = game.Representation.CANONICAL  # TODO
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:

@@ -27,7 +27,7 @@ class NNetWrapper(MuZeroNeuralNet):
         :param net_args:
         """
         super().__init__(game, net_args, NetBuilder)
-        self.board_x, self.board_y, self.planes = game.getDimensions(game.Observation.HEURISTIC)
+        self.board_x, self.board_y, self.planes = game.getDimensions(game.Representation.HEURISTIC)
         self.action_size = game.getActionSize()
 
     def get_variables(self) -> typing.List:
@@ -38,7 +38,7 @@ class NNetWrapper(MuZeroNeuralNet):
         parts = (self.neural_net.encoder, self.neural_net.predictor, self.neural_net.dynamics)
         return [v for v_list in map(lambda n: n.weights, parts) for v in v_list]
 
-    def train(self, examples: typing.List) -> float:
+    def train(self, examples: typing.List) -> None:
         """
         Format the data contained in examples for computing the loss
         :param examples:

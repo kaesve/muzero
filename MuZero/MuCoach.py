@@ -34,7 +34,7 @@ class MuZeroCoach:
         self.args = args
         self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
         self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
-        self.observation_encoding = game.Observation.HEURISTIC
+        self.observation_encoding = game.Representation.HEURISTIC
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
@@ -53,23 +53,19 @@ class MuZeroCoach:
 
         # Targets
         pis = history.probabilities[t:t+k+1]
-        vs = history.observed_returns[t:t+k+1]  # TODO: Multiply each value by player_i to get according perspective?
+        vs = history.observed_returns[t:t+k+1]
         rewards = history.rewards[t:t+k+1]
-
-        if pis[-1] is None:  # one hot encode for resignation
-            pis[-1] = np.zeros(self.game.getActionSize())
-            pis[-1][-1] = 1  # Pr(a in {do nothing, resign} ) = 1
 
         # Handle truncations > 0 due to terminal states. Treat last state as absorbing state
         a_truncation = k - len(actions)  # Action truncation
         if a_truncation > 0:
-            actions += [actions[-1]] * a_truncation
+            actions += np.random.choice(self.game.getActionSize(), size=a_truncation).tolist()
 
         t_truncation = (k + 1) - len(pis)  # Target truncation due to terminal state => pis[-1] is None
         if t_truncation > 0:
             pis += [pis[-1]] * t_truncation
-            vs += [vs[-1]] * t_truncation
-            rewards += [rewards[-1]] * t_truncation
+            rewards += [0] * t_truncation
+            vs += [0] * t_truncation
 
         # One hot encode actions.
         enc_actions = np.zeros([len(actions), self.game.getActionSize()])
@@ -120,7 +116,7 @@ class MuZeroCoach:
             # Turn action selection to greedy as an episode progresses.
             step += 1
             if step % self.args.tempThreshold == 0:
-                temp /= 2
+                temp = 0  # /= 2  TODO Temperature Schedule
 
             # Construct an observation array (o_1, ..., o_t).
             o_t = self.game.buildObservation(state, current_player, self.observation_encoding)

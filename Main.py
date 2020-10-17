@@ -18,9 +18,6 @@ config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 # Bugfxing TF2?
 
-import json
-from types import SimpleNamespace
-
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
 from Games.hex.HexGame import HexGame
@@ -77,8 +74,8 @@ def learnM0(g, Net):
 
 if __name__ == "__main__":
     # learnA0()
-    # learnM0(HexGame(BOARD_SIZE), MuHexNet)
-    learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
+    learnM0(HexGame(BOARD_SIZE), MuHexNet)
+    # learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
     
     # b = ExperimentConfig(MUZERO_RANDOM)
     # b.construct()

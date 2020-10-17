@@ -38,9 +38,9 @@ class GameHistory:
     def terminate(self, observation: np.ndarray, player: int, z) -> None:
         """Take a snapshot of the terminal state of the environment"""
         self.observations.append(observation)
-        self.actions.append(-1)
+        self.actions.append(np.random.choice(len(self.probabilities[-1])))
         self.players.append(player)
-        self.probabilities.append(None)
+        self.probabilities.append(np.full_like(self.probabilities[-1], fill_value=1/len(self.probabilities[-1])))
         self.rewards.append(0)
         self.search_returns.append(z)
         self.observed_returns.append(z)

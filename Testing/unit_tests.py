@@ -155,7 +155,7 @@ class TestHexMuZero(unittest.TestCase):
         """
         # Build the environment for an observation.
         s = self.g.getInitialState()
-        o_t = self.g.buildObservation(s, player=1, form=self.g.Observation.HEURISTIC)
+        o_t = self.g.buildObservation(s, player=1, form=self.g.Representation.HEURISTIC)
         h = GameHistory()
 
         # Build empty observations
@@ -190,7 +190,7 @@ class TestHexMuZero(unittest.TestCase):
 
         # Build the environment for an observation.
         s = self.g.getInitialState()
-        o_t = self.g.buildObservation(s, player=1, form=self.g.Observation.HEURISTIC)
+        o_t = self.g.buildObservation(s, player=1, form=self.g.Representation.HEURISTIC)
         h = GameHistory()
 
         # Build empty and random observations tensors
@@ -231,7 +231,7 @@ class TestHexMuZero(unittest.TestCase):
        """
         # Build the environment for an observation.
         s = self.g.getInitialState()
-        o_t = self.g.buildObservation(s, player=1, form=self.g.Observation.HEURISTIC)
+        o_t = self.g.buildObservation(s, player=1, form=self.g.Representation.HEURISTIC)
         h = GameHistory()
 
         # Build empty observations

@@ -15,7 +15,7 @@ class Game:
     See hex/HexGame.py for an example implementation.
     """
 
-    class Observation(Enum):
+    class Representation(Enum):
         CANONICAL: int = 1
         HEURISTIC: int = 2
 
@@ -30,7 +30,7 @@ class Game:
         """
         pass
 
-    def getDimensions(self) -> typing.Tuple[int, ...]:
+    def getDimensions(self, form: Representation = Representation.CANONICAL) -> typing.Tuple[int, ...]:
         """
         Returns:
             (x,y): a tuple of the state dimensions
@@ -44,7 +44,8 @@ class Game:
         """
         pass
 
-    def getNextState(self, state: np.ndarray, action: int, player: int) -> typing.Tuple[np.ndarray, float, int]:
+    def getNextState(self, state: np.ndarray, action: int, player: int,
+                     form: Representation = Representation.CANONICAL) -> typing.Tuple[np.ndarray, float, int]:
         """
         Input:
             state: current state
@@ -58,7 +59,7 @@ class Game:
         """
         pass
 
-    def getLegalMoves(self, state: np.ndarray, player: int) -> np.ndarray:
+    def getLegalMoves(self, state: np.ndarray, player: int, form: Representation = Representation.CANONICAL) -> np.ndarray:
         """
         Input:
             board: current state
@@ -99,7 +100,7 @@ class Game:
         """
         pass
 
-    def buildObservation(self, state: np.ndarray, player: int, form: Observation = Observation.CANONICAL) -> np.ndarray:
+    def buildObservation(self, state: np.ndarray, player: int, form: Representation = Representation.CANONICAL) -> np.ndarray:
         """
         Input:
             state: current state
@@ -112,8 +113,8 @@ class Game:
         """
         pass
 
-    def getSymmetries(
-            self, state: np.ndarray, pi: np.ndarray) -> typing.List:
+    def getSymmetries(self, state: np.ndarray, pi: np.ndarray,
+                      form: Representation = Representation.CANONICAL) -> typing.List:
         """
         Input:
             state: current state
