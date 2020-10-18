@@ -52,7 +52,7 @@ class MuZeroMCTS:
         """
         return 1 if counter % self.game.n_players == 0 else -1
 
-    def modify_root_prior(self, s: bytes) -> None:
+    def modify_root_prior(self, s: tuple) -> None:
         """
 
         :param s:
@@ -66,7 +66,7 @@ class MuZeroMCTS:
         self.Ps[s] *= self.Vs[s]
         self.Ps[s] = self.Ps[s] / np.sum(self.Ps[s])
 
-    def compute_ucb(self, s: bytes, a: int, exploration_factor: float) -> float:
+    def compute_ucb(self, s: tuple, a: int, exploration_factor: float) -> float:
         """
 
         :param s:
@@ -97,6 +97,7 @@ class MuZeroMCTS:
         latent_state = self.neural_net.encode(observations)
         s = (latent_state.tobytes(), tuple())  # Hashable representation
 
+        self.clear_tree()
         # Refresh value bounds in the tree
         self.minmax.refresh()
         # Initialize legal moves ONLY at the root.
@@ -105,7 +106,6 @@ class MuZeroMCTS:
         v_sum = 0
         for i in range(self.args.numMCTSSims):
             v_sum += self._search(latent_state, root=(i == 0))
-
         v = v_sum / self.args.numMCTSSims
 
         # MCTS Visit count array for each edge 'a' from root node 's'.
@@ -142,11 +142,11 @@ class MuZeroMCTS:
         ### SELECTION
         # pick the action with the highest upper confidence bound
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
-        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize() - 1)]
+        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize())]
 
         # Only the root node has access to the set of legal actions.
         if s in self.Vs:
-            confidence_bounds = np.array(confidence_bounds) * self.Vs[s][:-1]  # Omit resignation.
+            confidence_bounds = np.array(confidence_bounds) * self.Vs[s]
         a = np.argmax(confidence_bounds).item()  # Get argmax as scalar
 
         ### EXPANSION
@@ -160,10 +160,12 @@ class MuZeroMCTS:
         ### BACKUP
         if (s, a) in self.Qsa:
             self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + gk) / (self.Nsa[(s, a)] + 1)
+            self.Nsa[(s, a)] += 1
         else:
             self.Qsa[(s, a)] = gk
+            self.Nsa[(s, a)] = 1
+
         self.minmax.update(self.Qsa[(s, a)])
-        self.Nsa[(s, a)] = 1
         self.Ns[s] += 1
 
-        return self.turn_indicator(len(path)) * gk  # This was changed from -v
+        return self.turn_indicator(len(path)) * gk

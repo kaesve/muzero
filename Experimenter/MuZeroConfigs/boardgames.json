@@ -1,12 +1,15 @@
 {
-  "name": "default",
+  "name": "boardgames",
   "algorithm": "MUZERO",
 
   "args": {
     "numIters": 10,
-    "numEps": 5,
+    "numEps": 50,
     "numTrainingSteps": 10,
-    "tempThreshold": 7,
+    "pitting": true,
+    "pitting_trials": 20,
+    "pit_acceptance_ratio": 0.6,
+    "tempThreshold": 20,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
@@ -38,8 +41,8 @@
     "num_channels": 256,
     "num_towers": 3,
     "len_dense": 2,
-    "size_dense": 512,
-    "support_size": 0,
+    "size_dense": 256,
+    "support_size": 20,
     "observation_length": 1
   }
 }

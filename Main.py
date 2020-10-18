@@ -23,13 +23,16 @@ from AlphaZero.Coach import Coach
 from Games.hex.HexGame import HexGame
 from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexNet
 from Games.hex.MuZeroModel.NNet import NNetWrapper as MuHexNet
+from Games.gym.GymGame import GymGame
+from Games.gym.MuZeroModel.NNet import NNetWrapper as MuGymNet
 from Games.atari.AtariGame import AtariGame
 from Games.atari.MuZeroModel.NNet import NNetWrapper as MuAtariNet
 from MuZero.MuCoach import MuZeroCoach
 from Experimenter.experimenter import ExperimentConfig, tournament_final
 
-ALPHAZERO_DEFAULTS = "Experimenter/AlphaZeroConfigs/default.json"
-MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/default.json"
+ALPHAZERO_DEFAULTS = "Experimenter/AlphaZeroConfigs/singleplayergames.json"
+MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/singleplayergames.json"
+MUZERO_BOARD = "Experimenter/MuZeroConfigs/boardgames.json"
 
 MUZERO_RANDOM = "Experimenter/JobConfigs/Tourney_Hex_MuZeroVsRandom.json"
 
@@ -56,8 +59,8 @@ def learnA0():
     c.learn()
 
 
-def learnM0(g, Net):
-    content = DotDict.from_json(MUZERO_DEFAULTS)
+def learnM0(g, Net, config):
+    content = DotDict.from_json(config)
     name, net_args, args = content.name, content.net_args, content.args
 
     print("Testing:", name)
@@ -74,7 +77,7 @@ def learnM0(g, Net):
 
 if __name__ == "__main__":
     # learnA0()
-    learnM0(HexGame(BOARD_SIZE), MuHexNet)
+    learnM0(GymGame('CartPole-v0'), MuGymNet, MUZERO_DEFAULTS)
     # learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
     
     # b = ExperimentConfig(MUZERO_RANDOM)

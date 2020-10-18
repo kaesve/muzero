@@ -123,13 +123,13 @@ class Coach:
                           lambda x: np.argmax(network_mcts.getActionProb(x, temp=0)))
             losses, wins, draws = arena.playGames(self.args.arenaCompare)
 
-            print('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (wins, losses, draws))
+            print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}')
             if losses + wins == 0 or float(wins) / (losses + wins) < self.args.updateThreshold:
                 print('REJECTING NEW MODEL')
                 self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
             else:
                 print('ACCEPTING NEW MODEL')
-                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile())
+                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
                 self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
 
     def saveTrainExamples(self, iteration: int) -> None:

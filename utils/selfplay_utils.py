@@ -64,7 +64,7 @@ class GameHistory:
                 # u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon
                 discounted_rewards = [np.power(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
                 # gamma ^ k * v_t+horizon
-                bootstrap = np.power(gamma, horizon - t) * self.search_returns[horizon]
+                bootstrap = (np.power(gamma, horizon - t) * self.search_returns[horizon]) if horizon <= t + n else 0
                 # z_t for all (t - 1) = 1... len(self) - 1
                 self.observed_returns[t] = np.sum(discounted_rewards) + bootstrap
 
@@ -175,7 +175,7 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
         sampling_probability = mass / np.sum(mass)
 
         # Adjust weight update strength proportionally to IS-ratio to account for sampling bias.
-        sample_weight = np.power(n * sampling_probability, -beta)
+        sample_weight = np.power(n * sampling_probability, beta)
 
     # Sample with prioritized / uniform probabilities sample indices over the flattened list of GameHistory objects.
     flat_indices = np.random.choice(a=np.sum(lengths), size=n, replace=False, p=sampling_probability)

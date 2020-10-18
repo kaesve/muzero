@@ -63,17 +63,17 @@ class MuZeroNeuralNet:
             # Root inference
             s = self.neural_net.encoder(observations)
             pi_0, v_0 = self.neural_net.predictor(s[..., 0])
-            s = scale_gradient(s, 1 / 2)
 
             # Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
             predictions = [(sample_weights, v_0, None, pi_0)]
 
             for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
+                s = scale_gradient(s, 1/2)  # Scale the gradient at the start of the dynamics function by 1/2
+
                 r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
                 pi, v = self.neural_net.predictor(s[..., 0])
 
                 predictions.append((tf.divide(sample_weights, len(actions)), v, r, pi))
-                s = scale_gradient(s, 1 / 2)
 
             for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
                 loss_scale, vs, rs, pis = predictions[t]

@@ -9,7 +9,10 @@ from pickle import Pickler, Unpickler
 
 import numpy as np
 from tqdm import trange
+import tensorflow as tf
 
+from Arena import Arena
+from Experimenter.Players import MuZeroPlayer
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
@@ -22,7 +25,7 @@ class MuZeroCoach:
     in Game and NeuralNet. args are specified in main.py.
     """
 
-    def __init__(self, game, neural_net: MuZeroNeuralNet, args: DotDict) -> None:
+    def __init__(self, game, neural_net, args: DotDict) -> None:
         """
 
         :param game:
@@ -31,10 +34,15 @@ class MuZeroCoach:
         """
         self.game = game
         self.neural_net = neural_net
+        self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args)  # the competitor network
         self.args = args
         self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
+        self.opponent_mcts = MuZeroMCTS(self.game, self.opponent_net, self.args)
         self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
         self.observation_encoding = game.Representation.HEURISTIC
+
+        self.arena_player = MuZeroPlayer(self.game, self.mcts, self.neural_net, DotDict({'name': 'player'}))
+        self.arena_opponent = MuZeroPlayer(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'op'}))
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
@@ -61,10 +69,10 @@ class MuZeroCoach:
         if a_truncation > 0:
             actions += np.random.choice(self.game.getActionSize(), size=a_truncation).tolist()
 
-        t_truncation = (k + 1) - len(pis)  # Target truncation due to terminal state => pis[-1] is None
+        t_truncation = (k + 1) - len(pis)  # Target truncation due to terminal state
         if t_truncation > 0:
-            pis += [pis[-1]] * t_truncation
-            rewards += [0] * t_truncation
+            pis += [pis[-1]] * t_truncation  # Uniform policy
+            rewards += [rewards[-1]] * t_truncation
             vs += [0] * t_truncation
 
         # One hot encode actions.
@@ -99,8 +107,7 @@ class MuZeroCoach:
         """
         This function executes one episode of self-play, starting with player 1.
 
-        It uses a temp=1 if episode_step < tempThreshold, and thereafter
-        uses temp=0.
+        It uses a temp=1 if episode_step < tempThreshold, and thereafter uses temp=0.
 
         Returns:
             history: A data structure containing all observed states and statistics
@@ -116,7 +123,7 @@ class MuZeroCoach:
             # Turn action selection to greedy as an episode progresses.
             step += 1
             if step % self.args.tempThreshold == 0:
-                temp = 0  # /= 2  TODO Temperature Schedule
+                temp /= 2  # TODO Temperature Schedule
 
             # Construct an observation array (o_1, ..., o_t).
             o_t = self.game.buildObservation(state, current_player, self.observation_encoding)
@@ -179,14 +186,45 @@ class MuZeroCoach:
             for episode_history in self.trainExamplesHistory:
                 complete_history += episode_history
 
+            # training new network, keeping a copy of the old one
+            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
+            self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
+
             # Backpropagation
             for _ in trange(self.args.numTrainingSteps, desc="Backpropagation", file=sys.stdout):
                 batch = self.sampleBatch(complete_history)
                 self.neural_net.train(batch)
 
-            print('Storing a snapshot of the new model')
-            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
-            self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
+            # Pitting
+            if self.args.pitting:
+                print("Pitting against previous version...")
+
+                arena = Arena(self.game, self.arena_player, self.arena_opponent)
+                if self.game.n_players == 1:
+                    p1_score, p2_score = arena.playTrials(self.args.pitting_trials)
+
+                    wins, draws = np.sum(p1_score > p2_score), np.sum(p1_score == p2_score)
+                    losses = self.args.pitting_trials - (wins + draws)
+
+                    tf.summary.scalar("Average Cumulative Trial Rewards", data=p1_score.mean(), step=i)
+
+                    print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}, '
+                          f'AVERAGE NEW SCORE: {p1_score.mean()} ; AVERAGE OLD SCORE: {p2_score.mean()}')
+                else:
+                    losses, wins, draws = arena.playGames(self.args.pitting_trials)
+                    print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}')
+
+                if losses + wins == 0 or float(wins) / (losses + wins) < self.args.pit_acceptance_ratio:
+                    print('REJECTING NEW MODEL')
+                    self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
+                else:
+                    print('ACCEPTING NEW MODEL')
+                    self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+                    self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
+            else:
+                print('Storing a snapshot of the new model')
+                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
+                self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
 
     def saveTrainExamples(self, iteration: int) -> None:
         folder = self.args.checkpoint

@@ -14,7 +14,7 @@ class Arena:
     An Arena class where any 2 agents can be pit against each other.
     """
 
-    def __init__(self, game: Game, player1: Player, player2: Player = None,
+    def __init__(self, game: Game, player1, player2,
                  display: typing.Callable = None) -> None:
         """
         Input:
@@ -68,13 +68,45 @@ class Arena:
             state, r, cur_player = self.game.getNextState(state, action, cur_player)
 
         if verbose:
-            print(f"Game over: Turn {it}Result {self.game.getGameEnded(state, 1)}")
+            print(f"Game over: Turn {it} Result {self.game.getGameEnded(state, 1)}")
             self.display(state)
 
         return cur_player * self.game.getGameEnded(state, cur_player)
 
-    def playTrial(self, num_trials: int, verbose: bool = False) -> np.ndarray:
-        pass  # TODO: e.g. Atari
+    def playTrial(self, player, verbose: bool = False) -> float:
+        all([x.refresh() for x in self.trajectories])
+        state = self.game.getInitialState()
+        it = score = 0
+
+        while not self.game.getGameEnded(state, 1):
+            it += 1
+
+            if verbose:
+                self.display(state)
+
+            action = player.act(state, 1)
+
+            # Ensure that the opponent also observes the environment
+            player.capture(state, action, 1)
+            state, r, cur_player = self.game.getNextState(state, action, 1)
+            score += r
+
+        if verbose:
+            self.display(state)
+
+        return score
+
+    def playTrials(self, num_trials: int, verbose: bool = False) -> typing.Tuple[np.ndarray, np.ndarray]:
+        p1_scores, p2_scores = list(), list()
+
+        for _ in trange(num_trials, desc="Pitting", file=sys.stdout):
+            self.player1.search_engine.clear_tree()
+            self.player2.search_engine.clear_tree()
+
+            p1_scores.append(self.playTrial(self.player1, verbose=verbose))
+            p2_scores.append(self.playTrial(self.player2, verbose=verbose))
+
+        return np.array(p1_scores), np.array(p2_scores)
 
     def playGames(self, num_games: int, verbose: bool = False) -> typing.Tuple[int, int, int]:
         """
@@ -87,15 +119,21 @@ class Arena:
         """
         results = list()
 
-        for _ in range(num_games):
-            results.append(self.playGame(verbose=verbose))
+        for _ in trange(num_games, desc="Pitting Player 1 first", file=sys.stdout):
+            self.player1.search_engine.clear_tree()
+            self.player2.search_engine.clear_tree()
+
+        results.append(self.playGame(verbose=verbose))
 
         one_won = np.sum(np.array(results) == 1).item()
         two_won = np.sum(np.array(results) == -1).item()
 
         self.player1, self.player2 = self.player2, self.player1
 
-        for _ in range(num_games):
+        for _ in trange(num_games, desc="Pitting Player 2 first", file=sys.stdout):
+            self.player1.search_engine.clear_tree()
+            self.player2.search_engine.clear_tree()
+
             results.append(self.playGame(verbose=verbose))
 
         one_won += np.sum(np.array(results) == -1).item()
