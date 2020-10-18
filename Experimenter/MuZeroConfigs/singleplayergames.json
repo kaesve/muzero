@@ -3,19 +3,19 @@
   "algorithm": "MUZERO",
 
   "args": {
-    "numIters": 10,
-    "numEps": 50,
+    "numIters": 100,
+    "numEps": 100,
     "numTrainingSteps": 10,
     "pitting": true,
     "pitting_trials": 20,
-    "pit_acceptance_ratio": 0.6,
+    "pit_acceptance_ratio": 0.0,
     "tempThreshold": 20,
     "dirichlet_alpha": 0.25,
     "exploration_fraction": 0.25,
     "maxlenOfQueue": 200000,
     "numMCTSSims": 25,
     "prioritize": true,
-    "prioritize_alpha": 1,
+    "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
     "K": 5,
     "n_steps": 10,
@@ -29,20 +29,20 @@
     "checkpoint": "./MuZeroOut/",
     "load_model": false,
     "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 20
+    "numItersForTrainExamplesHistory": 5
   },
 
   "net_args": {
     "lr": 0.001,
-    "l2": 1e-3,
+    "l2": 1e-4,
     "dropout": 0.0,
     "batch_size": 64,
     "cuda": false,
     "num_channels": 256,
     "num_towers": 3,
-    "len_dense": 2,
+    "num_dense": 2,
     "size_dense": 256,
-    "support_size": 0,
+    "support_size": 20,
     "observation_length": 1
   }
 }

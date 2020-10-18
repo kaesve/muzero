@@ -79,9 +79,6 @@ class MuZeroNeuralNet:
                 loss_scale, vs, rs, pis = predictions[t]
                 t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
 
-                tf.summary.histogram(f"v_predict_{t}", data=vs, step=self.steps)
-                tf.summary.histogram(f"v_targets_{t}", data=t_vs, step=self.steps)
-
                 r_loss = scalar_loss(rs, t_rs) if (t > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
                 v_loss = scalar_loss(vs, t_vs)
                 pi_loss = scalar_loss(pis, t_pis)

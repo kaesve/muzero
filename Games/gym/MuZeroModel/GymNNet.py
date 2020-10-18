@@ -21,7 +21,7 @@ class GymNNet:
     def __init__(self, game, args):
         # Network arguments
         self.inputs = game.getDimensions()
-        self.latents = 5
+        self.latents = 4
         self.action_size = game.getActionSize()
         self.args = args
 
@@ -51,7 +51,7 @@ class GymNNet:
         return x
 
     def encoder(self, observations):
-        fc_sequence = self.dense_sequence(self.args.len_dense, observations)
+        fc_sequence = self.dense_sequence(self.args.num_dense, observations)
 
         s_fc_latent = Dense(self.latents, activation='linear', name='s_0')(fc_sequence)
         latent_state = MinMaxScaler()(s_fc_latent)
@@ -61,7 +61,7 @@ class GymNNet:
 
     def dynamics(self, encoded_state, action_plane):
         stacked = Concatenate()([Reshape((self.latents, ))(encoded_state), Reshape((self.action_size, ))(action_plane)])
-        fc_sequence = self.dense_sequence(self.args.len_dense, stacked)
+        fc_sequence = self.dense_sequence(self.args.num_dense, stacked)
 
         s_fc_latent = Dense(self.latents, activation='linear', name='s_next')(fc_sequence)
         latent_state = MinMaxScaler()(s_fc_latent)
@@ -74,7 +74,7 @@ class GymNNet:
         return r, latent_state
 
     def predictor(self, latent_state):
-        fc_sequence = self.dense_sequence(self.args.len_dense, latent_state)
+        fc_sequence = self.dense_sequence(self.args.num_dense, latent_state)
 
         pi = Dense(self.action_size, activation='softmax', name='pi')(fc_sequence)
         v = Dense(1, activation='tanh', name='v')(fc_sequence) \

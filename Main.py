@@ -77,7 +77,7 @@ def learnM0(g, Net, config):
 
 if __name__ == "__main__":
     # learnA0()
-    learnM0(GymGame('CartPole-v0'), MuGymNet, MUZERO_DEFAULTS)
+    learnM0(GymGame('CartPole-v1'), MuGymNet, MUZERO_DEFAULTS)
     # learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
     
     # b = ExperimentConfig(MUZERO_RANDOM)

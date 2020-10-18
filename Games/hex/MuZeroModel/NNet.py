@@ -90,11 +90,9 @@ class NNetWrapper(MuZeroNeuralNet):
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
         a_plane = a_plane[np.newaxis, ...]
 
-        r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
+        _, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
 
-        r_real = support_to_scalar(r, self.net_args.support_size)
-
-        return np.ndarray.item(r_real), s_next[0]
+        return 0, s_next[0]
 
     def predict(self, latent_state: np.ndarray) -> typing.Tuple[np.ndarray, float]:
         """

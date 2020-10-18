@@ -40,7 +40,7 @@
     "cuda": false,
     "num_channels": 256,
     "num_towers": 3,
-    "len_dense": 2,
+    "num_dense": 2,
     "size_dense": 256,
     "support_size": 20,
     "observation_length": 1

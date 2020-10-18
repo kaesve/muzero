@@ -206,7 +206,8 @@ class MuZeroCoach:
                     wins, draws = np.sum(p1_score > p2_score), np.sum(p1_score == p2_score)
                     losses = self.args.pitting_trials - (wins + draws)
 
-                    tf.summary.scalar("Average Cumulative Trial Rewards", data=p1_score.mean(), step=i)
+                    tf.summary.scalar("Scalar: Average Cumulative Trial Rewards", data=p1_score.mean(), step=i)
+                    tf.summary.histogram("Dist: Average Cumulative Trial Rewards", data=p1_score, step=i)
 
                     print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}, '
                           f'AVERAGE NEW SCORE: {p1_score.mean()} ; AVERAGE OLD SCORE: {p2_score.mean()}')

@@ -44,14 +44,6 @@ class MuZeroMCTS:
         """Clear all statistics stored in the current search tree"""
         self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
-    def turn_indicator(self, counter: int) -> int:
-        """
-
-        :param counter:
-        :return:
-        """
-        return 1 if counter % self.game.n_players == 0 else -1
-
     def modify_root_prior(self, s: tuple) -> None:
         """
 
@@ -75,11 +67,11 @@ class MuZeroMCTS:
         :return:
         """
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
-        q_value = self.Qsa[(s, a)] if (s, a) in self.Qsa else 0
-        c_children = np.max([self.Ns[s], 1e-4])  # Ensure that prior doesn't collapse to 0 if s is new.
+        q_value = self.minmax.normalize(self.Qsa[(s, a)]) if (s, a) in self.Qsa else 0
+        c_children = np.max([self.Ns[s], 1e-8])  # Ensure that prior doesn't collapse to 0 if s is new.
 
         ucb = self.Ps[s][a] * np.sqrt(c_children) / (1 + visit_count) * exploration_factor  # Exploration
-        ucb += self.minmax.normalize(q_value)                                               # Exploitation
+        ucb += q_value                                                                      # Exploitation
         return ucb
 
     def runMCTS(self, observations: np.ndarray, legal_moves: np.ndarray,
@@ -103,10 +95,12 @@ class MuZeroMCTS:
         # Initialize legal moves ONLY at the root.
         self.Vs[s] = legal_moves
 
-        v_sum = 0
         for i in range(self.args.numMCTSSims):
-            v_sum += self._search(latent_state, root=(i == 0))
-        v = v_sum / self.args.numMCTSSims
+            self._search(latent_state, root=(i == 0))
+
+        v = np.mean([(self.Rsa[(s, a)] + self.args.gamma * self.Qsa[(s, a)])
+                     if (s, a) in self.Qsa else 0
+                     for a in range(self.game.getActionSize())])
 
         # MCTS Visit count array for each edge 'a' from root node 's'.
         counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
@@ -137,7 +131,7 @@ class MuZeroMCTS:
             if root:  # Add Dirichlet noise to the root prior and mask illegal moves.
                 self.modify_root_prior(s)
 
-            return self.turn_indicator(len(path)) * v
+            return -v if self.game.n_players > 1 else v
 
         ### SELECTION
         # pick the action with the highest upper confidence bound
@@ -168,4 +162,4 @@ class MuZeroMCTS:
         self.minmax.update(self.Qsa[(s, a)])
         self.Ns[s] += 1
 
-        return self.turn_indicator(len(path)) * gk
+        return -v if self.game.n_players > 1 else v
