@@ -13,7 +13,6 @@ import tensorflow as tf
 
 from Arena import Arena
 from Experimenter.Players import MuZeroPlayer
-from MuZero.MuNeuralNet import MuZeroNeuralNet
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, sample_batch
@@ -122,8 +121,8 @@ class MuZeroCoach:
         while not z:  # Boardgames: If loop ends => current player lost
             # Turn action selection to greedy as an episode progresses.
             step += 1
-            if step % self.args.tempThreshold == 0:
-                temp /= 2  # TODO Temperature Schedule
+            if step > self.args.tempThreshold:
+                temp = 0  # TODO Temperature Schedule
 
             # Construct an observation array (o_1, ..., o_t).
             o_t = self.game.buildObservation(state, current_player, self.observation_encoding)
@@ -147,8 +146,12 @@ class MuZeroCoach:
         # Capture terminal state and compute z_t for each observation == N-step returns for general MDPs
         o_terminal = self.game.buildObservation(state, current_player, self.observation_encoding)
 
-        history.terminate(o_terminal, current_player, z)
+        # Terminal reward for board games is -1 or 1. For general games the bootstrap value is 0 (future rewards = 0)
+        history.terminate(o_terminal, current_player, (z if self.game.n_players > 1 else 0))
         history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
+
+        print(history.rewards)
+        print(history.observed_returns)
 
         return history
 

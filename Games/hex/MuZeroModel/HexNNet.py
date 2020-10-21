@@ -38,15 +38,15 @@ class HexNNet:
 
         self.s = self.encoder(self.observation_history)
         self.r, self.s_next = self.dynamics(latent_state, action_plane)
-
         self.pi, self.v = self.predictor(latent_state)
 
         self.encoder = Model(inputs=self.observation_history, outputs=self.s)
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v])
 
-        self.pi2, self.v2 = self.predictor(self.s_next)
-        self.recurrent = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next, self.pi2, self.v2])
+        self.forward = Model(inputs=self.observation_history, outputs=[self.s, *self.predictor(self.s)])
+        self.recurrent = Model(inputs=[self.latent_state, self.action_plane],
+                               outputs=[self.r, self.s_next, *self.predictor(self.s_next)])
 
     def conv_block(self, n, x):  # Recursively builds a convolutional tower of height n.
         if n > 0:

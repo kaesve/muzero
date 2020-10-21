@@ -69,17 +69,17 @@ class NNetWrapper(MuZeroNeuralNet):
 
     def encode(self, observations: np.ndarray) -> np.ndarray:
         """
-
+        Needed for unit tests.
         :param observations:
         :return:
         """
         observations = observations[np.newaxis, ...]
-        latent_state = self.neural_net.encoder.predict(observations)[0]
-        return latent_state
+        latent_state = self.neural_net.encoder.predict(observations)
+        return latent_state[0]
 
     def forward(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
         """
-
+        Needed for unit tests.
         :param latent_state:
         :param action:
         :return:
@@ -96,7 +96,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
     def predict(self, latent_state: np.ndarray) -> typing.Tuple[np.ndarray, float]:
         """
-
+        Needed for unit tests.
         :param latent_state:
         :return:
         """
@@ -106,8 +106,16 @@ class NNetWrapper(MuZeroNeuralNet):
         v_real = support_to_scalar(v, self.net_args.support_size)
 
         return pi[0], np.ndarray.item(v_real)
-    
-    def recurrent(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
+
+    def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
+        observations = observations[np.newaxis, ...]
+        s_0, pi, v = self.neural_net.forward.predict(observations)
+
+        v_real = support_to_scalar(v, self.net_args.support_size)
+
+        return s_0[0], pi[0], np.ndarray.item(v_real)
+
+    def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
         a_plane = np.zeros(self.action_size)
         a_plane[action] = 1
 
@@ -119,7 +127,6 @@ class NNetWrapper(MuZeroNeuralNet):
         v_real = support_to_scalar(v, self.net_args.support_size)
 
         return 0, s_next[0], pi[0], np.ndarray.item(v_real)
-    
 
     def save_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
         """

@@ -68,47 +68,28 @@ class NNetWrapper(MuZeroNeuralNet):
         _ = self.optimizer.minimize(loss, self.get_variables, name='MuZeroGym')
         self.steps += 1
 
-    def encode(self, observations: np.ndarray) -> np.ndarray:
-        """
-
-        :param observations:
-        :return:
-        """
+    def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
         observations = observations[np.newaxis, ...]
-        latent_state = self.neural_net.encoder.predict(observations)[0]
-        return latent_state
+        s_0, pi, v = self.neural_net.forward.predict(observations)
 
-    def forward(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
-        """
+        v_real = support_to_scalar(v, self.net_args.support_size)
 
-        :param latent_state:
-        :param action:
-        :return:
-        """
+        return s_0[0], pi[0], np.ndarray.item(v_real)
+
+    def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray,
+                                                                                         np.ndarray, float]:
         a_plane = np.zeros(self.action_size)
         a_plane[action] = 1
 
         latent_state = latent_state[np.newaxis, ...]
         a_plane = a_plane[np.newaxis, ...]
 
-        r, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
-
-        r_real = support_to_scalar(r, self.net_args.support_size)
-
-        return np.ndarray.item(r_real), s_next[0]
-
-    def predict(self, latent_state: np.ndarray) -> typing.Tuple[np.ndarray, float]:
-        """
-
-        :param latent_state:
-        :return:
-        """
-        latent_state = latent_state[np.newaxis, ...]
-        pi, v = self.neural_net.predictor.predict(latent_state)
+        r, s_next, pi, v = self.neural_net.recurrent.predict([latent_state, a_plane])
 
         v_real = support_to_scalar(v, self.net_args.support_size)
+        r_real = support_to_scalar(r, self.net_args.support_size)
 
-        return pi[0], np.ndarray.item(v_real)
+        return np.ndarray.item(r_real), s_next[0], pi[0], np.ndarray.item(v_real)
 
     def save_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
         """

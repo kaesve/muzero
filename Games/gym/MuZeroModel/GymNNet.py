@@ -44,9 +44,13 @@ class GymNNet:
         self.dynamics = Model(inputs=[self.latent_state, self.action_tensor], outputs=[self.r, self.s_next], name='d')
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v], name='p')
 
+        self.forward = Model(inputs=self.observation_history, outputs=[self.s, *self.predictor(self.s)])
+        self.recurrent = Model(inputs=[self.latent_state, self.action_tensor],
+                               outputs=[self.r, self.s_next, *self.predictor(self.s_next)])
+
     def dense_sequence(self, n, x):  # Recursively builds a Fully Connected sequence of length n.
         if n > 0:
-            return self.dense_sequence(n - 1, Dropout(self.args.dropout)(Activation('tanh')(
+            return self.dense_sequence(n - 1, Dropout(self.args.dropout)(Activation(self.args.dense_activation)(
                 Dense(self.args.size_dense)(x))))
         return x
 

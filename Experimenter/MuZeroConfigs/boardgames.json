@@ -4,7 +4,7 @@
 
   "args": {
     "numIters": 10,
-    "numEps": 50,
+    "numEps": 5,
     "numTrainingSteps": 10,
     "pitting": true,
     "pitting_trials": 20,
@@ -42,6 +42,7 @@
     "num_towers": 3,
     "num_dense": 2,
     "size_dense": 256,
+    "dense_activation": "relu",
     "support_size": 20,
     "observation_length": 1
   }

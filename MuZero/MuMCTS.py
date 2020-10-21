@@ -36,29 +36,39 @@ class MuZeroMCTS:
         self.Ssa = {}  # stores latent state transition for s_k, a
         self.Rsa = {}  # stores R values for s,a
         self.Nsa = {}  # stores #times edge s,a was visited
-        self.Ns = {}  # stores #times board s was visited
-        self.Ps = {}  # stores initial policy (returned by neural net)
-        self.Vs = {}  # stores valid moves at the ROOT node.
+        self.Ns = {}   # stores #times board s was visited
+        self.Ps = {}   # stores initial policy (returned by neural net)
+        self.Vs = {}   # stores valid moves at the ROOT node.
 
     def clear_tree(self) -> None:
         """Clear all statistics stored in the current search tree"""
         self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
-    def modify_root_prior(self, s: tuple) -> None:
+    def initialize_root(self, observations: np.ndarray,
+                        legal_moves: np.ndarray) -> typing.Tuple[typing.Tuple[bytes, tuple], np.ndarray, float]:
         """
 
-        :param s:
+        :param observations:
+        :param legal_moves:
         :return:
         """
+        latent_state, pi_0, v_0 = self.neural_net.initial_inference(observations)
+        s_0 = (latent_state.tobytes(), tuple())  # Hashable representation
+
         # Add Dirichlet Exploration noise
-        noise = np.random.dirichlet([self.args.dirichlet_alpha] * len(self.Ps[s]))
-        self.Ps[s] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * self.Ps[s]
+        noise = np.random.dirichlet([self.args.dirichlet_alpha] * len(pi_0))
+        self.Ps[s_0] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * pi_0
 
         # Mask the prior for illegal moves, and re-normalize accordingly.
-        self.Ps[s] *= self.Vs[s]
-        self.Ps[s] = self.Ps[s] / np.sum(self.Ps[s])
+        self.Ps[s_0] *= legal_moves
+        self.Ps[s_0] = self.Ps[s_0] / np.sum(self.Ps[s_0])
 
-    def compute_ucb(self, s: tuple, a: int, exploration_factor: float) -> float:
+        # Sum of visit counts of the edges/ children
+        self.Ns[s_0] = 0
+
+        return s_0, latent_state, v_0
+
+    def compute_ucb(self, s: typing.Tuple[bytes, tuple], a: int, exploration_factor: float) -> float:
         """
 
         :param s:
@@ -83,83 +93,69 @@ class MuZeroMCTS:
 
         Returns:
             move_probabilities: a policy vector where the probability of the ith action is
-                   proportional to Nsa[(s,a)]**(1./temp)
+                   proportional to Nsa[(s_0,a)]**(1./temp)
             v: (float) Estimated value of the root state.
         """
-        latent_state = self.neural_net.encode(observations)
-        s = (latent_state.tobytes(), tuple())  # Hashable representation
+        # Get a hashable latent state representation 's_0', the predicted value of the root, and the numerical root s_0.
+        s_0, latent_state, v_0 = self.initialize_root(observations, legal_moves)
 
-        self.clear_tree()
         # Refresh value bounds in the tree
         self.minmax.refresh()
-        # Initialize legal moves ONLY at the root.
-        self.Vs[s] = legal_moves
 
-        for i in range(self.args.numMCTSSims):
-            self._search(latent_state, root=(i == 0))
+        # Aggregate root state value over MCTS back-propagated values
+        v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims)])
+        v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.numMCTSSims
 
-        v = np.mean([(self.Rsa[(s, a)] + self.args.gamma * self.Qsa[(s, a)])
-                     if (s, a) in self.Qsa else 0
-                     for a in range(self.game.getActionSize())])
+        # MCTS Visit count array for each edge 'a' from root node 's_0'.
+        counts = np.array([self.Nsa[(s_0, a)] if (s_0, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
-        # MCTS Visit count array for each edge 'a' from root node 's'.
-        counts = np.array([self.Nsa[(s, a)] if (s, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
-
-        if temp == 0:  # Greedy selection.
-            best_actions = np.array(np.argwhere(counts == np.max(counts))).flatten()
-            sample = np.random.choice(best_actions)
+        if temp == 0:  # Greedy selection. One hot encode the most visited paths (uniformly random break ties).
+            a_star = np.random.choice(np.flatnonzero(counts == np.max(counts)))
             move_probabilities = np.zeros(len(counts))
-            move_probabilities[sample] = 1
-            return move_probabilities, v
+            move_probabilities[a_star] = 1
+        else:
+            counts = np.power(counts, 1. / temp)
+            move_probabilities = counts / np.sum(counts)
 
-        counts = np.power(counts, 1. / temp)
-        move_probabilities = counts / np.sum(counts)
         return move_probabilities, v
 
-    def _search(self, latent_state: np.ndarray, path: typing.Tuple[int, ...] = tuple(), root: bool = False) -> float:
+    def _search(self, latent_state: np.ndarray, path: typing.Tuple[int, ...] = tuple()) -> float:
         """
 
         """
-        s = (latent_state.tobytes(), path)  # Hashable representation.
-
-        ### ROLLOUT
-        if s not in self.Ps:
-            # leaf node
-            self.Ps[s], v = self.neural_net.predict(latent_state)
-            self.Ns[s] = 0
-
-            if root:  # Add Dirichlet noise to the root prior and mask illegal moves.
-                self.modify_root_prior(s)
-
-            return -v if self.game.n_players > 1 else v
+        s_k = (latent_state.tobytes(), path)  # Hashable representation.
 
         ### SELECTION
         # pick the action with the highest upper confidence bound
-        exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
-        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.game.getActionSize())]
-
-        # Only the root node has access to the set of legal actions.
-        if s in self.Vs:
-            confidence_bounds = np.array(confidence_bounds) * self.Vs[s]
+        exploration_factor = self.args.c1 + np.log(self.Ns[s_k] + self.args.c2 + 1) - np.log(self.args.c2)
+        confidence_bounds = [self.compute_ucb(s_k, a, exploration_factor) for a in range(self.game.getActionSize())]
         a = np.argmax(confidence_bounds).item()  # Get argmax as scalar
 
-        ### EXPANSION
-        # Perform a forward pass using the dynamics function (unless already known in the transition table)
-        if (s, a) not in self.Ssa:
-            self.Rsa[(s, a)], self.Ssa[(s, a)] = self.neural_net.forward(latent_state, a)
+        ### ROLLOUT
+        if (s_k, a) not in self.Ssa:
+            # Perform a forward pass in the dynamics function.
+            reward, next_latent, prior, value = self.neural_net.recurrent_inference(latent_state, a)
+            s_k_next = (next_latent.tobytes(), path + (a, ))  # Hashable representation.
 
-        v = self._search(self.Ssa[(s, a)], path + (a, ))  # 1-step look ahead state value
-        gk = self.Rsa[(s, a)] + self.args.gamma * v   # (Discounted) Value of the current node
+            self.Rsa[(s_k, a)], self.Ssa[(s_k, a)] = reward, next_latent  # Current depth statistics
+            self.Ps[s_k_next], self.Ns[s_k_next] = prior, 0               # Next depth statistics
+            value = value if self.game.n_players == 1 else -value         # Alternate value perspective for adversary.
+
+        ### EXPANSION
+        else:
+            value = self._search(self.Ssa[(s_k, a)], path + (a, ))        # 1-step look ahead state value
 
         ### BACKUP
-        if (s, a) in self.Qsa:
-            self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + gk) / (self.Nsa[(s, a)] + 1)
-            self.Nsa[(s, a)] += 1
+        gk = self.Rsa[(s_k, a)] + self.args.gamma * value   # (Discounted) Value of the current node
+
+        if (s_k, a) in self.Qsa:
+            self.Qsa[(s_k, a)] = (self.Nsa[(s_k, a)] * self.Qsa[(s_k, a)] + gk) / (self.Nsa[(s_k, a)] + 1)
+            self.Nsa[(s_k, a)] += 1
         else:
-            self.Qsa[(s, a)] = gk
-            self.Nsa[(s, a)] = 1
+            self.Qsa[(s_k, a)] = gk
+            self.Nsa[(s_k, a)] = 1
 
-        self.minmax.update(self.Qsa[(s, a)])
-        self.Ns[s] += 1
+        self.minmax.update(self.Qsa[(s_k, a)])
+        self.Ns[s_k] += 1
 
-        return -v if self.game.n_players > 1 else v
+        return -gk if self.game.n_players > 1 else gk

@@ -119,7 +119,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
         return pi[0], np.ndarray.item(v_real)
 
-    def recurrent(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
+    def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
         a_plane = np.zeros(self.action_size)
         a_plane[action] = 1
 

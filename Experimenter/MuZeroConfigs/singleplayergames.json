@@ -42,6 +42,7 @@
     "num_towers": 3,
     "num_dense": 2,
     "size_dense": 256,
+    "dense_activation": "elu",
     "support_size": 20,
     "observation_length": 1
   }

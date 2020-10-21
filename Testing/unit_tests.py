@@ -43,7 +43,7 @@ class TestStaticFunctions(unittest.TestCase):
 
     def test_reward_distribution_transformation(self):
         bins = 300  # Ensure that bins is large enough to support 'high'.
-        n = 10      # Number of samples to draw
+        n = 10  # Number of samples to draw
         high = 1e3  # Factor to scale the randomly generated rewards
 
         # Generate some random (large) values
@@ -65,21 +65,21 @@ class TestStaticFunctions(unittest.TestCase):
         np.testing.assert_array_almost_equal(scalars, inverted)
 
     def test_n_step_return_estimation_MDP(self):
-        horizon = 3    # n-step lookahead for computing z_t
+        horizon = 3  # n-step lookahead for computing z_t
         gamma = 1 / 2  # discount factor for future rewards and bootstrap
 
         # Experiment settings
         search_results = [5, 5, 5, 5, 5]  # MCTS v_t index +k
-        dummy_rewards = [0, 1, 2, 3, 4]   # u_t+1 index +k
-        z = 0                             # Final return provided by the env.
+        dummy_rewards = [0, 1, 2, 3, 4]  # u_t+1 index +k
+        z = 0  # Final return provided by the env.
 
         # Desired output: Correct z_t index +k (calculated manually)
-        n_step = [1 + 5/8, 3 + 3/8, 4 + 1/2, 5.0, 4.0, 0]
+        n_step = [1 + 5 / 8, 3 + 3 / 8, 4 + 1 / 2, 5.0, 4.0, 0]
 
         # Fill the GameHistory with the required data.
         h = GameHistory()
         for r, v in zip(dummy_rewards, search_results):
-            h.capture(np.array([]), -1, 1, np.array([]), r, v)
+            h.capture(np.array([0]), -1, 1, np.array([0]), r, v)
         h.terminate(np.array([]), 1, z)
 
         # Check if algorithm computes z_t's correctly
@@ -106,7 +106,7 @@ class TestStaticFunctions(unittest.TestCase):
         np.testing.assert_array_almost_equal(stacked_0, dummy_observations[0])  # Should be the same
         np.testing.assert_array_almost_equal(stacked_1, dummy_observations[0])  # Should be the same
 
-        np.testing.assert_array_almost_equal(stacked_5[..., :-8], 0)            # Should be only 0s
+        np.testing.assert_array_almost_equal(stacked_5[..., :-8], 0)  # Should be only 0s
         np.testing.assert_array_almost_equal(stacked_5[..., -8:], dummy_observations[0])  # Should be the first o_t
 
         # Check whether observation concatenation works correctly
@@ -118,9 +118,9 @@ class TestStaticFunctions(unittest.TestCase):
         all([h.capture(x, -1, 1, np.array([]), 0, 0) for x in dummy_observations[1:]])
 
         # Check whether time indexing works correctly
-        stacked_1to5 = h.stackObservations(4, t=4)   # 1-4 --> t is inclusive
+        stacked_1to5 = h.stackObservations(4, t=4)  # 1-4 --> t is inclusive
         stacked_last4 = h.stackObservations(4, t=9)  # 6-9
-        expected_1to5 = np.concatenate(dummy_observations[1:5], axis=-1)   # t in {1, 2, 3, 4}
+        expected_1to5 = np.concatenate(dummy_observations[1:5], axis=-1)  # t in {1, 2, 3, 4}
         expected_last4 = np.concatenate(dummy_observations[-4:], axis=-1)  # t in {6, 7, 8, 9}
 
         np.testing.assert_array_almost_equal(stacked_1to5, expected_1to5)
@@ -143,7 +143,7 @@ class TestHexMuZero(unittest.TestCase):
         super().__init__(*args, **kwargs)
         # Setup required for unit tests.
         print("Unit testing CWD:", os.getcwd())
-        self.config = DotDict.from_json("./Experimenter/MuZeroConfigs/singleplayergames.json")
+        self.config = DotDict.from_json("../Experimenter/MuZeroConfigs/boardgames.json")
         self.g = HexGame(self.hex_board_size)
         self.net = HexNet(self.g, self.config.net_args)
         self.mcts = MuZeroMCTS(self.g, self.net, self.config.args)
@@ -165,11 +165,11 @@ class TestHexMuZero(unittest.TestCase):
         zeros_like = np.zeros_like(stacked)
 
         # Check if nans are produced
-        latent = self.net.encode(zeros_like)
+        latent, _, _ = self.net.initial_inference(zeros_like)
         self.assertTrue(np.isfinite(latent).all())
 
         # Exhaustively ensure that all possible dynamics function inputs lead to finite values.
-        latent_forwards = [self.net.forward(latent, action)[1] for action in range(self.g.getActionSize())]
+        latent_forwards = [self.net.recurrent_inference(latent, action)[1] for action in range(self.g.getActionSize())]
         self.assertTrue(np.isfinite(np.array(latent_forwards)).all())
 
     def test_search_recursion_error(self):
@@ -211,7 +211,7 @@ class TestHexMuZero(unittest.TestCase):
         self.mcts.clear_tree()
 
         for _ in range(rep):
-            self.mcts.runMCTS(zeros_like, same)    # Empty observations ONE move at the root
+            self.mcts.runMCTS(zeros_like, same)  # Empty observations ONE move at the root
         self.mcts.clear_tree()
 
         for _ in range(rep):
@@ -245,8 +245,8 @@ class TestHexMuZero(unittest.TestCase):
         inf_like[inf_like == 0] = np.inf
 
         # Check if nans are produced
-        nan_latent = self.net.encode(nans_like)
-        inf_latent = self.net.encode(inf_like)
+        nan_latent, _, _ = self.net.initial_inference(nans_like)
+        inf_latent, _, _ = self.net.initial_inference(inf_like)
 
         self.assertTrue(np.isfinite(nan_latent).all())
         self.assertTrue(np.isfinite(inf_latent).all())
@@ -255,8 +255,8 @@ class TestHexMuZero(unittest.TestCase):
         inf_latent[inf_latent == 0] = np.inf
 
         # Exhaustively ensure that all possible dynamics function inputs lead to finite values.
-        nan_latent_forwards = [self.net.forward(nan_latent, action)[1] for action in range(self.g.getActionSize())]
-        inf_latent_forwards = [self.net.forward(inf_latent, action)[1] for action in range(self.g.getActionSize())]
+        nan_latent_forwards = [self.net.recurrent_inference(nan_latent, action)[1] for action in range(self.g.getActionSize())]
+        inf_latent_forwards = [self.net.recurrent_inference(inf_latent, action)[1] for action in range(self.g.getActionSize())]
 
         self.assertTrue(np.isfinite(np.array(nan_latent_forwards)).all())
         self.assertTrue(np.isfinite(np.array(inf_latent_forwards)).all())
@@ -266,14 +266,16 @@ class TestHexMuZero(unittest.TestCase):
         Execute all unit tests of this class using a model with badly conditioned weights.
         i.e., large weight magnitudes or only zeros.
         """
+
         class DumbModel(HexNet):
 
-            def forward(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
-                return 0, np.zeros_like(latent_state)
+            def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
+                s, pi, v = super().initial_inference(observations)
+                return np.zeros_like(s), np.random.uniform(size=len(pi)), 0
 
-            def predict(self, latent_state: np.ndarray) -> typing.Tuple[np.ndarray, float]:
-                pi, v = super().predict(latent_state)
-                return np.random.uniform(size=len(pi)), 0
+            def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
+                r, s, pi, v = super().recurrent_inference(latent_state, action)
+                return 0, np.zeros_like(latent_state), np.random.uniform(size=len(pi)), 0
 
         memory_net = self.net
         memory_search = self.mcts
@@ -288,7 +290,6 @@ class TestHexMuZero(unittest.TestCase):
         self.net = memory_net
         self.mcts = memory_search
 
-
     def test_combined_model(self):
         # The prediction and dynamics model can be combined into one computation graph.
         # This should be faster than calling the models separately. This test makes
@@ -298,22 +299,25 @@ class TestHexMuZero(unittest.TestCase):
         dim = self.g.getDimensions()
 
         latent_planes = np.random.uniform(size=(batch, dim[0], dim[1]))
-        actions = np.floor(np.random.uniform(size=(batch)) * dim[0] * dim[1])
+        actions = np.floor(np.random.uniform(size=batch) * dim[0] * dim[1])
         actions = actions.astype(int)
 
         recurrent_inputs = list(zip(latent_planes, actions))
-        
+
         # This line is just for warm-up, otherwise the timing is unfair.
-        combined_results = [ self.net.recurrent(latent, a) for latent, a in recurrent_inputs ]
+        combined_results = [self.net.recurrent_inference(latent, a) for latent, a in recurrent_inputs]
 
         t0 = time.time()
-        combined_results = [ self.net.recurrent(latent, a) for latent, a in recurrent_inputs ]
+        combined_results = [self.net.recurrent_inference(latent, a) for latent, a in recurrent_inputs]
         t1 = time.time()
         combined_time = t1 - t0
 
+        dynamics_results = [self.net.forward(latent, a) for latent, a in recurrent_inputs]
+        predict_results = [self.net.predict(dyn[1]) for dyn in dynamics_results]
+
         t0 = time.time()
-        dynamics_results = [ self.net.forward(latent, a) for latent, a in recurrent_inputs ]
-        predict_results = [ self.net.predict(dyn[1]) for dyn in dynamics_results ]
+        dynamics_results = [self.net.forward(latent, a) for latent, a in recurrent_inputs]
+        predict_results = [self.net.predict(dyn[1]) for dyn in dynamics_results]
         t1 = time.time()
         separate_time = t1 - t0
 
@@ -330,7 +334,10 @@ class TestHexMuZero(unittest.TestCase):
         np.testing.assert_array_almost_equal(combined_results[3], predict_results[1])
 
 
+class TestTreeSearch(unittest.TestCase):
 
+    def test_tree_search(self):
+        pass
 
 
 class TestSelfPlay(unittest.TestCase):

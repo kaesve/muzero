@@ -35,15 +35,15 @@ class GameHistory:
         self.search_returns.append(v)
         self.observed_returns.append(None)
 
-    def terminate(self, observation: np.ndarray, player: int, z) -> None:
+    def terminate(self, observation: np.ndarray, player: int, z: typing.Union[int, float]) -> None:
         """Take a snapshot of the terminal state of the environment"""
         self.observations.append(observation)
         self.actions.append(np.random.choice(len(self.probabilities[-1])))
         self.players.append(player)
         self.probabilities.append(np.full_like(self.probabilities[-1], fill_value=1/len(self.probabilities[-1])))
-        self.rewards.append(0)
-        self.search_returns.append(z)
-        self.observed_returns.append(z)
+        self.rewards.append(self.rewards[-1])  # r is repeated
+        self.search_returns.append(0)          # v set to 0
+        self.observed_returns.append(z)        # terminal rewards receive terminal value
         self.terminated = True
 
     def refresh(self) -> None:

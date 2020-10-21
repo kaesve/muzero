@@ -2,21 +2,7 @@
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
 # Suppress verbose warnings in stdout
-import logging
-import tensorflow as tf
-logger = tf.get_logger()
-logger.setLevel(logging.ERROR)
-
-# Bugfxing TF2?
-# Prevent TF2 from hogging all the available VRAM when initializing?
-# @url: https://github.com/tensorflow/tensorflow/issues/24496#issuecomment-464909727
-from tensorflow.compat.v1 import ConfigProto
-from tensorflow.compat.v1 import InteractiveSession
-
-config = ConfigProto()
-config.gpu_options.allow_growth = True
-session = InteractiveSession(config=config)
-# Bugfxing TF2?
+from utils.tensorflow_init import *
 
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
@@ -29,6 +15,9 @@ from Games.atari.AtariGame import AtariGame
 from Games.atari.MuZeroModel.NNet import NNetWrapper as MuAtariNet
 from MuZero.MuCoach import MuZeroCoach
 from Experimenter.experimenter import ExperimentConfig, tournament_final
+
+logger = tf.get_logger()
+logger.setLevel(logging.ERROR)
 
 ALPHAZERO_DEFAULTS = "Experimenter/AlphaZeroConfigs/singleplayergames.json"
 MUZERO_DEFAULTS = "Experimenter/MuZeroConfigs/singleplayergames.json"
@@ -77,6 +66,7 @@ def learnM0(g, Net, config):
 
 if __name__ == "__main__":
     # learnA0()
+    # learnM0(HexGame(BOARD_SIZE), MuHexNet, MUZERO_BOARD)
     learnM0(GymGame('CartPole-v1'), MuGymNet, MUZERO_DEFAULTS)
     # learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
     

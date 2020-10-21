@@ -43,8 +43,8 @@ class MuZeroNeuralNet:
                       target_pis: tf.Tensor, sample_weights: tf.Tensor) -> tf.function:
         """
 
-        :param observations:
-        :param actions:
+        :param observations: Shape (batch_size, observation_dimensions)
+        :param actions: Shape (batch_size, K, action_size)
         :param target_vs:
         :param target_rs:
         :param target_pis:
@@ -60,21 +60,17 @@ class MuZeroNeuralNet:
             """
             total_loss = tf.constant(0, dtype=tf.float32)
 
-            # Root inference
-            s = self.neural_net.encoder(observations)
-            pi_0, v_0 = self.neural_net.predictor(s[..., 0])
-
-            # Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+            # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+            s, pi_0, v_0 = self.neural_net.forward(observations)
             predictions = [(sample_weights, v_0, None, pi_0)]
 
-            for t in range(actions.shape[1]):  # Shape (batch_size, K, action_size)
+            for t in range(actions.shape[1]):
                 s = scale_gradient(s, 1/2)  # Scale the gradient at the start of the dynamics function by 1/2
-
-                r, s = self.neural_net.dynamics([s[..., 0], actions[:, t, :]])
-                pi, v = self.neural_net.predictor(s[..., 0])
+                r, s, pi, v = self.neural_net.recurrent([s[..., 0], actions[:, t, :]])
 
                 predictions.append((tf.divide(sample_weights, len(actions)), v, r, pi))
 
+            # Perform loss computation
             for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
                 loss_scale, vs, rs, pis = predictions[t]
                 t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
@@ -124,42 +120,24 @@ class MuZeroNeuralNet:
         """
         pass
 
-    def encode(self, observations: np.ndarray) -> np.ndarray:
+    def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
         """
+        Combines the prediction and representation models into one call. This reduces
+        overhead and results in a significant speed up.
+
         Input:
-            observations: A trajectory/ observation of an environment (in canonical form).
+            observations: A game specific (stacked) tensor of observations of the environment at step t: o_t.
 
         Returns:
-            s_0: A neural encoding of the environment.
-        """
-        pass
-
-    def forward(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
-        """
-        Input:
-            latent_state: A neural encoding of the environment at step k: s_k.
-            action: A (encoded) action to perform on the latent state
-
-        Returns:
-            r: The immediate predicted reward of the environment
-            s_(k+1): A new 'latent_state' resulting from performing the 'action' in
-                the latent_state.
-        """
-        pass
-
-    def predict(self, latent_state: np.ndarray) -> typing.Tuple[np.ndarray, float]:
-        """
-        Input:
-            latent_state: A neural encoding of the environment's.
-
-        Returns:
+            s_(0): The root 'latent_state' produced by the representation function
             pi: a policy vector for the current board- a numpy array of length
                 game.getActionSize
             v: a float that gives the value of the current board
         """
         pass
     
-    def recurrent(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
+    def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray,
+                                                                                         np.ndarray, float]:
         """
         Combines the prediction and dynamics models into one call. This reduces
         overhead and results in a significant speed up.
@@ -169,12 +147,12 @@ class MuZeroNeuralNet:
             action: A (encoded) action to perform on the latent state
 
         Returns:
-            r: The immediate predicted reward of the environment
+            r: The immediate predicted reward of the environment.
             s_(k+1): A new 'latent_state' resulting from performing the 'action' in
                 the latent_state.
             pi: a policy vector for the current board- a numpy array of length
-                game.getActionSize
-            v: a float that gives the value of the current board
+                game.getActionSize.
+            v: a float that gives the value of the current board.
         """
         pass
 
