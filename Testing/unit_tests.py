@@ -1,6 +1,7 @@
 import typing
 import unittest
 import os
+import time
 
 import numpy as np
 
@@ -142,7 +143,7 @@ class TestHexMuZero(unittest.TestCase):
         super().__init__(*args, **kwargs)
         # Setup required for unit tests.
         print("Unit testing CWD:", os.getcwd())
-        self.config = DotDict.from_json("../Experimenter/MuZeroConfigs/singleplayergames.json")
+        self.config = DotDict.from_json("./Experimenter/MuZeroConfigs/singleplayergames.json")
         self.g = HexGame(self.hex_board_size)
         self.net = HexNet(self.g, self.config.net_args)
         self.mcts = MuZeroMCTS(self.g, self.net, self.config.args)
@@ -286,6 +287,50 @@ class TestHexMuZero(unittest.TestCase):
         # Undo class variables swap
         self.net = memory_net
         self.mcts = memory_search
+
+
+    def test_combined_model(self):
+        # The prediction and dynamics model can be combined into one computation graph.
+        # This should be faster than calling the models separately. This test makes
+        # sure that the output is still the same, and also shows the time difference.
+
+        batch = 128
+        dim = self.g.getDimensions()
+
+        latent_planes = np.random.uniform(size=(batch, dim[0], dim[1]))
+        actions = np.floor(np.random.uniform(size=(batch)) * dim[0] * dim[1])
+        actions = actions.astype(int)
+
+        recurrent_inputs = list(zip(latent_planes, actions))
+        
+        # This line is just for warm-up, otherwise the timing is unfair.
+        combined_results = [ self.net.recurrent(latent, a) for latent, a in recurrent_inputs ]
+
+        t0 = time.time()
+        combined_results = [ self.net.recurrent(latent, a) for latent, a in recurrent_inputs ]
+        t1 = time.time()
+        combined_time = t1 - t0
+
+        t0 = time.time()
+        dynamics_results = [ self.net.forward(latent, a) for latent, a in recurrent_inputs ]
+        predict_results = [ self.net.predict(dyn[1]) for dyn in dynamics_results ]
+        t1 = time.time()
+        separate_time = t1 - t0
+
+        print(f"Combined: {combined_time}. Separate: {separate_time}")
+
+        # unzip results
+        combined_results = list(zip(*combined_results))
+        dynamics_results = list(zip(*dynamics_results))
+        predict_results = list(zip(*predict_results))
+
+        np.testing.assert_array_almost_equal(combined_results[0], dynamics_results[0])
+        np.testing.assert_array_almost_equal(combined_results[1], dynamics_results[1])
+        np.testing.assert_array_almost_equal(combined_results[2], predict_results[0])
+        np.testing.assert_array_almost_equal(combined_results[3], predict_results[1])
+
+
+
 
 
 class TestSelfPlay(unittest.TestCase):

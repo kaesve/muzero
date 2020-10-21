@@ -158,6 +158,25 @@ class MuZeroNeuralNet:
             v: a float that gives the value of the current board
         """
         pass
+    
+    def recurrent(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
+        """
+        Combines the prediction and dynamics models into one call. This reduces
+        overhead and results in a significant speed up.
+
+        Input:
+            latent_state: A neural encoding of the environment at step k: s_k.
+            action: A (encoded) action to perform on the latent state
+
+        Returns:
+            r: The immediate predicted reward of the environment
+            s_(k+1): A new 'latent_state' resulting from performing the 'action' in
+                the latent_state.
+            pi: a policy vector for the current board- a numpy array of length
+                game.getActionSize
+            v: a float that gives the value of the current board
+        """
+        pass
 
     def save_checkpoint(self, folder: str, filename: str) -> None:
         """

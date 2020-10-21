@@ -45,6 +45,9 @@ class HexNNet:
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v])
 
+        self.pi2, self.v2 = self.predictor(self.s_next)
+        self.recurrent = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next, self.pi2, self.v2])
+
     def conv_block(self, n, x):  # Recursively builds a convolutional tower of height n.
         if n > 0:
             return self.conv_block(n - 1, Activation('relu')(BatchNormalization()(Conv2D(

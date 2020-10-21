@@ -119,6 +119,20 @@ class NNetWrapper(MuZeroNeuralNet):
 
         return pi[0], np.ndarray.item(v_real)
 
+    def recurrent(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray, np.ndarray, float]:
+        a_plane = np.zeros(self.action_size)
+        a_plane[action] = 1
+
+        latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
+        a_plane = a_plane[np.newaxis, ...]
+
+        r, s_next, pi, v = self.neural_net.recurrent.predict([latent_state, a_plane])
+
+        r_real = support_to_scalar(r, self.net_args.support_size)
+        v_real = support_to_scalar(v, self.net_args.support_size)
+
+        return np.ndarray.item(r_real), s_next[0], pi[0], np.ndarray.item(v_real)
+
     def save_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
         """
 

@@ -44,6 +44,9 @@ class AtariNNet:
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v])
 
+        self.pi2, self.v2 = self.predictor(self.s_next)
+        self.recurrent = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next, self.pi2, self.v2])
+
     def build_model(self, tensor_in):
         def conv_block(n, x):  # Recursively builds a convolutional tower of height n.
             if n > 0:
