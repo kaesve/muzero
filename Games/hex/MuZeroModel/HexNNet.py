@@ -36,9 +36,9 @@ class HexNNet:
         action_plane = Reshape((self.board_x, self.board_y, 1))(action_plane)
         latent_state = Reshape((self.board_x, self.board_y, 1))(self.latent_state)
 
-        self.s = self.encoder(self.observation_history)
-        self.r, self.s_next = self.dynamics(latent_state, action_plane)
-        self.pi, self.v = self.predictor(latent_state)
+        self.s = self.build_encoder(self.observation_history)
+        self.r, self.s_next = self.build_dynamics(latent_state, action_plane)
+        self.pi, self.v = self.build_predictor(latent_state)
 
         self.encoder = Model(inputs=self.observation_history, outputs=self.s)
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])
@@ -54,7 +54,7 @@ class HexNNet:
                 self.args.num_channels, 3, padding='same', use_bias=False)(x))))
         return x
 
-    def encoder(self, observations):
+    def build_encoder(self, observations):
         out_tensor = self.conv_block(self.args.num_towers, observations)
 
         latent_state = Activation('relu')(Conv2D(1, 3, padding='same', use_bias=False)(out_tensor))
@@ -62,7 +62,7 @@ class HexNNet:
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
 
-    def dynamics(self, encoded_state, action_plane):
+    def build_dynamics(self, encoded_state, action_plane):
         stacked = Concatenate(axis=-1)([encoded_state, action_plane])
         reshaped = Reshape((self.board_x, self.board_y, -1))(stacked)
         out_tensor = self.conv_block(self.args.num_towers, reshaped)
@@ -77,7 +77,7 @@ class HexNNet:
 
         return r, latent_state
 
-    def predictor(self, latent_state):
+    def build_predictor(self, latent_state):
         out_tensor = self.conv_block(self.args.num_towers, latent_state)
 
         flat = Flatten()(out_tensor)

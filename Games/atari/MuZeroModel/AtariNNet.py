@@ -35,17 +35,18 @@ class AtariNNet:
         action_plane = Reshape((self.latent_x, self.latent_y, 1))(self.action_plane)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(self.latent_state)
 
-        self.s = self.encoder(self.observation_history)
-        self.r, self.s_next = self.dynamics(latent_state, action_plane)
+        self.s = self.build_encoder(self.observation_history)
+        self.r, self.s_next = self.build_dynamics(latent_state, action_plane)
 
-        self.pi, self.v = self.predictor(latent_state)
+        self.pi, self.v = self.build_predictor(latent_state)
 
         self.encoder = Model(inputs=self.observation_history, outputs=self.s)
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])
         self.predictor = Model(inputs=self.latent_state, outputs=[self.pi, self.v])
 
-        self.pi2, self.v2 = self.predictor(self.s_next)
-        self.recurrent = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next, self.pi2, self.v2])
+        self.forward = Model(inputs=self.observation_history, outputs=[self.s, *self.predictor(self.s)])
+        self.recurrent = Model(inputs=[self.latent_state, self.action_plane],
+                               outputs=[self.r, self.s_next, *self.predictor(self.s_next)])
 
     def build_model(self, tensor_in):
         def conv_block(n, x):  # Recursively builds a convolutional tower of height n.
@@ -65,7 +66,7 @@ class AtariNNet:
         fc_sequence = dense_sequence(self.args.len_dense, flattened)
         return fc_sequence
 
-    def encoder(self, observations):
+    def build_encoder(self, observations):
 
         downsampled = Activation('relu')(BatchNormalization()(Conv2D(64, 3, 2)(observations)))
         downsampled = Activation('relu')(BatchNormalization()(Conv2D(128, 3, 2)(downsampled)))
@@ -75,19 +76,19 @@ class AtariNNet:
         out_tensor = self.build_model(downsampled)
 
         s_fc_latent = Dense(self.latent_x * self.latent_y, activation='linear', name='s_0')(out_tensor)
-        latent_state = MinMaxScaler(safe=True)(s_fc_latent)
+        latent_state = MinMaxScaler()(s_fc_latent)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
 
-    def dynamics(self, encoded_state, action_plane):
+    def build_dynamics(self, encoded_state, action_plane):
         stacked = Concatenate(axis=-1)([encoded_state, action_plane])
         reshaped = Reshape((self.latent_x, self.latent_y, -1))(stacked)
         out_tensor = self.build_model(reshaped)
 
         s_fc_latent = Dense(self.latent_x * self.latent_y, activation='linear', name='s_next')(out_tensor)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(s_fc_latent)
-        latent_state = MinMaxScaler(safe=True)(latent_state)
+        latent_state = MinMaxScaler()(latent_state)
 
         r = Dense(1, activation='linear', name='r')(out_tensor) \
             if self.args.support_size == 0 else \
@@ -95,7 +96,7 @@ class AtariNNet:
 
         return r, latent_state
 
-    def predictor(self, latent_state):
+    def build_predictor(self, latent_state):
         out_tensor = self.build_model(latent_state)
 
         pi = Dense(self.action_size, activation='softmax', name='pi')(out_tensor)
