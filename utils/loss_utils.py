@@ -76,7 +76,7 @@ def support_to_scalar(x: np.ndarray, support_size: int,
         return x
 
     bins = np.arange(-support_size, support_size + 1)
-    y = x.dot(bins)
+    y = np.dot(x, bins)
 
     value = reward_transformer(y, **kwargs)
 

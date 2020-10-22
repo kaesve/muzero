@@ -8,7 +8,7 @@ import tensorflow as tf
 import numpy as np
 
 from utils import DotDict
-from utils.loss_utils import scalar_loss, scale_gradient
+from utils.loss_utils import scalar_loss, scale_gradient, inverse_atari_reward_transform
 
 
 class MuZeroNeuralNet:
@@ -79,13 +79,32 @@ class MuZeroNeuralNet:
                 v_loss = scalar_loss(vs, t_vs)
                 pi_loss = scalar_loss(pis, t_pis)
 
+                step_loss = r_loss + v_loss + pi_loss
+                total_loss += tf.reduce_sum(step_loss * loss_scale)
+
+                # LOGGING
+                bins = tf.range(-self.net_args.support_size, self.net_args.support_size + 1, dtype=tf.float32)
+
+                v_scalars = tf.tensordot(vs, bins, axes=[[1], [0]])
+                r_scalars = tf.tensordot(rs, bins, axes=[[1], [0]]) if t > 0 else tf.zeros_like(v_scalars)
+                tv_scalars = tf.tensordot(t_vs, bins, axes=[[1], [0]])
+                tr_scalars = tf.tensordot(t_rs, bins, axes=[[1], [0]]) if t > 0 else tf.zeros_like(v_scalars)
+
+                v_ae = tf.reduce_mean(tf.abs(v_scalars - tv_scalars))
+                r_ae = tf.reduce_mean(tf.abs(r_scalars - tr_scalars))
+
+                tf.summary.histogram(f"v_predicted_{t}", data=v_scalars, step=self.steps)
+                tf.summary.histogram(f"v_target_{t}", data=tv_scalars, step=self.steps)
+                tf.summary.histogram(f"r_predicted_{t}", data=r_scalars, step=self.steps)
+                tf.summary.histogram(f"r_target_{t}", data=tr_scalars, step=self.steps)
+
+                tf.summary.scalar(f"v_mae_{t}", data=v_ae, step=self.steps)
+                tf.summary.scalar(f"r_mae_{t}", data=r_ae, step=self.steps)
+
                 # Logging loss of each unrolled head.
                 tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * loss_scale), step=self.steps)
                 tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * loss_scale), step=self.steps)
                 tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * loss_scale), step=self.steps)
-
-                step_loss = r_loss + v_loss + pi_loss
-                total_loss += tf.reduce_sum(step_loss * loss_scale)
 
             tf.summary.scalar("loss", data=total_loss, step=self.steps)
 
