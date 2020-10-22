@@ -35,7 +35,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
         :return:
         """
-        parts = (self.neural_net.encoder, self.neural_net.predictor, self.neural_net.dynamics)
+        parts = (self.neural_net.build_encoder, self.neural_net.build_predictor, self.neural_net.build_dynamics)
         return [v for v_list in map(lambda n: n.weights, parts) for v in v_list]
 
     def train(self, examples: typing.List) -> None:
@@ -74,7 +74,7 @@ class NNetWrapper(MuZeroNeuralNet):
         :return:
         """
         observations = observations[np.newaxis, ...]
-        latent_state = self.neural_net.encoder.predict(observations)
+        latent_state = self.neural_net.build_encoder.predict(observations)
         return latent_state[0]
 
     def forward(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
@@ -90,7 +90,7 @@ class NNetWrapper(MuZeroNeuralNet):
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
         a_plane = a_plane[np.newaxis, ...]
 
-        _, s_next = self.neural_net.dynamics.predict([latent_state, a_plane])
+        _, s_next = self.neural_net.build_dynamics.predict([latent_state, a_plane])
 
         return 0, s_next[0]
 
@@ -101,7 +101,7 @@ class NNetWrapper(MuZeroNeuralNet):
         :return:
         """
         latent_state = latent_state.reshape((-1, self.board_x, self.board_y))
-        pi, v = self.neural_net.predictor.predict(latent_state)
+        pi, v = self.neural_net.build_predictor.predict(latent_state)
 
         v_real = support_to_scalar(v, self.net_args.support_size)
 
@@ -143,9 +143,9 @@ class NNetWrapper(MuZeroNeuralNet):
             os.mkdir(folder)
         else:
             print("Checkpoint Directory exists! ")
-        self.neural_net.encoder.save_weights(representation_path)
-        self.neural_net.dynamics.save_weights(dynamics_path)
-        self.neural_net.predictor.save_weights(predictor_path)
+        self.neural_net.build_encoder.save_weights(representation_path)
+        self.neural_net.build_dynamics.save_weights(dynamics_path)
+        self.neural_net.build_predictor.save_weights(predictor_path)
 
     def load_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
         """
@@ -165,6 +165,6 @@ class NNetWrapper(MuZeroNeuralNet):
         if not os.path.exists(predictor_path):
             raise FileNotFoundError("No AlphaZeroModel in path {}".format(predictor_path))
 
-        self.neural_net.encoder.load_weights(representation_path)
-        self.neural_net.dynamics.load_weights(dynamics_path)
-        self.neural_net.predictor.load_weights(predictor_path)
+        self.neural_net.build_encoder.load_weights(representation_path)
+        self.neural_net.build_dynamics.load_weights(dynamics_path)
+        self.neural_net.build_predictor.load_weights(predictor_path)

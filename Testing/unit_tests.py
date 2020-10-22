@@ -377,7 +377,7 @@ class TestTreeSearch(unittest.TestCase):
             def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
                 r, s, pi, v = super().recurrent_inference(latent_state, action)
                 self.count += 1
-                return 0, np.ones_like(latent_state) * self.count, np.array([6/8 - 1e-8, 2/8 + 1e-8]), 1 * action
+                return 0, np.ones_like(latent_state) * self.count, np.array([6/8 - 1e-8, 2/8 + 1e-8]), action
 
         memory_net = self.net
         memory_search = self.mcts

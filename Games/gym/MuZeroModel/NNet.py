@@ -35,7 +35,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
         :return:
         """
-        parts = (self.neural_net.encoder, self.neural_net.predictor, self.neural_net.dynamics)
+        parts = (self.neural_net.build_encoder, self.neural_net.build_predictor, self.neural_net.build_dynamics)
         return [v for v_list in map(lambda n: n.weights, parts) for v in v_list]
 
     def train(self, examples: typing.List) -> float:
@@ -106,9 +106,9 @@ class NNetWrapper(MuZeroNeuralNet):
             os.mkdir(folder)
         else:
             print("Checkpoint Directory exists! ")
-        self.neural_net.encoder.save_weights(representation_path)
-        self.neural_net.dynamics.save_weights(dynamics_path)
-        self.neural_net.predictor.save_weights(predictor_path)
+        self.neural_net.build_encoder.save_weights(representation_path)
+        self.neural_net.build_dynamics.save_weights(dynamics_path)
+        self.neural_net.build_predictor.save_weights(predictor_path)
 
     def load_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
         """
@@ -128,6 +128,6 @@ class NNetWrapper(MuZeroNeuralNet):
         if not os.path.exists(predictor_path):
             raise FileNotFoundError("No AlphaZeroModel in path {}".format(predictor_path))
 
-        self.neural_net.encoder.load_weights(representation_path)
-        self.neural_net.dynamics.load_weights(dynamics_path)
-        self.neural_net.predictor.load_weights(predictor_path)
+        self.neural_net.build_encoder.load_weights(representation_path)
+        self.neural_net.build_dynamics.load_weights(dynamics_path)
+        self.neural_net.build_predictor.load_weights(predictor_path)

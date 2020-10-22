@@ -103,12 +103,12 @@ class MuZeroMCTS:
         self.minmax.refresh()
 
         # Aggregate root state value over MCTS back-propagated values
-        #v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims)])
-        v_search = list()
-        for _ in range(self.args.numMCTSSims):
-            print(f"new search: {_}")
-            v_search.append(self._search(latent_state))
-        v_search = sum(v_search)
+        v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims)])
+        # v_search = list()
+        # for _ in range(self.args.numMCTSSims):
+        #     print(f"new search: {_}")
+        #     v_search.append(self._search(latent_state))
+        # v_search = sum(v_search)
         v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.numMCTSSims
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.
@@ -136,7 +136,7 @@ class MuZeroMCTS:
         confidence_bounds = [self.compute_ucb(s_k, a, exploration_factor) for a in range(self.game.getActionSize())]
         a = np.argmax(confidence_bounds).item()  # Get argmax as scalar
 
-        print(len(path), path + (a, ), confidence_bounds, latent_state[0, 0])
+        print(len(path), path + (a, ), confidence_bounds, 's1: {:.4f}, s2: {:.4f}, s3: {:.4f} s4: {:.4f}'.format(*np.ravel(latent_state)))
 
         ### ROLLOUT
         if (s_k, a) not in self.Ssa:

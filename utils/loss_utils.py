@@ -99,7 +99,7 @@ def scalar_to_support(x: np.ndarray, support_size: int,
     # Reduce the scale
     transformed = reward_transformer(x, **kwargs)
     floored = np.floor(transformed).astype(int)  # Lower-bound support integer
-    prob = transformed - floored     # Proportion between adjacent integers
+    prob = transformed - floored                 # Proportion between adjacent integers
 
     bins = np.zeros((len(x), 2 * support_size + 1))
 

@@ -65,10 +65,10 @@ class MuZeroNeuralNet:
             predictions = [(sample_weights, v_0, None, pi_0)]
 
             for t in range(actions.shape[1]):
-                s = scale_gradient(s, 1/2)  # Scale the gradient at the start of the dynamics function by 1/2
                 r, s, pi, v = self.neural_net.recurrent([s[..., 0], actions[:, t, :]])
-
                 predictions.append((tf.divide(sample_weights, len(actions)), v, r, pi))
+
+                s = scale_gradient(s, 1/2)  # Scale the gradient at the start of the dynamics function by 1/2
 
             # Perform loss computation
             for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
