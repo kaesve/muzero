@@ -35,7 +35,7 @@ class NNetWrapper(MuZeroNeuralNet):
 
         :return:
         """
-        parts = (self.neural_net.build_encoder, self.neural_net.build_predictor, self.neural_net.build_dynamics)
+        parts = (self.neural_net.encoder, self.neural_net.predictor, self.neural_net.dynamics)
         return [v for v_list in map(lambda n: n.weights, parts) for v in v_list]
 
     def train(self, examples: typing.List) -> None:
