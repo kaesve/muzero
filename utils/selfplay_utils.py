@@ -136,6 +136,36 @@ class MinMaxStats(object):
         return value
 
 
+class TemperatureScheduler:
+
+    def __init__(self, args):
+        self.args = args
+
+    def build(self):
+        indices, values = list(zip(*self.args.schedule_points))
+
+        schedulers = {
+            'linear': self.linear_schedule,
+            'stepwise': self.step_wise_decrease
+        }
+        return schedulers[self.args.method](np.array(indices), np.array(values))
+
+    @staticmethod
+    def linear_schedule(indices: np.ndarray, values: np.ndarray):
+        def scheduler(training_steps):
+            return np.interp(training_steps, indices, values)
+
+        return scheduler
+
+    @staticmethod
+    def step_wise_decrease(indices: np.ndarray, values: np.ndarray):
+        def scheduler(training_steps):
+            current_pos = np.sum(np.cumsum(training_steps > indices))
+            return values[current_pos] if current_pos < len(values) else values[-1]
+
+        return scheduler
+
+
 def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize: bool = False, alpha: float = 1.0,
                  beta: float = 1.0) -> typing.Tuple[typing.List[typing.Tuple[int, int]], typing.List[float]]:
     """

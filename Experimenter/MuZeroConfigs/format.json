@@ -9,7 +9,6 @@
     "pitting": "(bool) Whether to test the newly trained model against the old model in a trial",
     "pitting_trials": "(int > 1) Number of trials to test the new model against the old",
     "pit_acceptance_ratio": "(double: [0, 1]) Win/loss ratio for whether to accept the new model over the old model ",
-    "tempThreshold": "(double) A boundary for the exploration temperature when exponentiating visit counts in MCTS",
     "dirichlet_alpha": "(double) Alpha parameter of the dirichlet distribution to sample noise from for exploration",
     "exploration_fraction": "(double: [0, 1]) Fraction to sample based on noise of the dirichlet for exploration vs the network prior",
     "maxlenOfQueue": "(int) Maximum number of game examples to train the neural networks on",
@@ -29,7 +28,13 @@
     "checkpoint": "(path: string) Directory to store sampled experiences and fitted parameters in",
     "load_model": "(bool) Whether to load in a previously trained model from the checkpoint directory",
     "load_folder_file": "(Array, ['directory', 'file']) Specify which model to load in",
-    "numItersForTrainExamplesHistory": "(int) Maximum number of self play iterations kept in the deque"
+    "numItersForTrainExamplesHistory": "(int) Maximum number of self play iterations kept in the deque",
+
+    "temperature_schedule": {
+      "method": "(string) choice between 'stepwise' and 'linear'.",
+      "by_weight_update": "(bool) Whether to adjust the temperature according to weight updates OR episode steps",
+      "schedule_points": "[[step, value], [step, value]]: Array to govern the temperature schedule"
+    }
   },
 
   "net_args": {

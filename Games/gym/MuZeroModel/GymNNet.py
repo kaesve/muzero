@@ -21,7 +21,7 @@ class GymNNet:
     def __init__(self, game, args):
         # Network arguments
         self.inputs = game.getDimensions()
-        self.latents = 4
+        self.latents = 8
         self.action_size = game.getActionSize()
         self.args = args
 

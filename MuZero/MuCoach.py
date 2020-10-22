@@ -15,7 +15,7 @@ from Arena import Arena
 from Experimenter.Players import MuZeroPlayer
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
-from utils.selfplay_utils import GameHistory, sample_batch
+from utils.selfplay_utils import GameHistory, TemperatureScheduler, sample_batch
 
 
 class MuZeroCoach:
@@ -39,6 +39,8 @@ class MuZeroCoach:
         self.opponent_mcts = MuZeroMCTS(self.game, self.opponent_net, self.args)
         self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
         self.observation_encoding = game.Representation.HEURISTIC
+        self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
+        self.update_temperature = self.temp_schedule.build()
 
         self.arena_player = MuZeroPlayer(self.game, self.mcts, self.neural_net, DotDict({'name': 'player'}))
         self.arena_opponent = MuZeroPlayer(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'op'}))
@@ -115,14 +117,13 @@ class MuZeroCoach:
         """
         history = GameHistory()
         state = self.game.getInitialState()  # Always from perspective of player 1 for boardgames.
-        current_player = temp = 1
+        current_player = 1
         z = step = 0
 
         while not z:  # Boardgames: If loop ends => current player lost
             # Turn action selection to greedy as an episode progresses.
             step += 1
-            if step > self.args.tempThreshold:
-                temp = 0  # TODO Temperature Schedule
+            temp = self.update_temperature(self.neural_net.steps if self.temp_schedule.args.by_weight_update else step)
 
             # Construct an observation array (o_1, ..., o_t).
             o_t = self.game.buildObservation(state, current_player, self.observation_encoding)

@@ -9,7 +9,6 @@
     "pitting": true,
     "pitting_trials": 20,
     "pit_acceptance_ratio": 0.6,
-    "tempThreshold": 20,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
@@ -29,7 +28,13 @@
     "checkpoint": "./MuZeroOut/",
     "load_model": false,
     "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 20
+    "numItersForTrainExamplesHistory": 20,
+
+    "temperature_schedule": {
+      "method": "stepwise",
+      "by_weight_update": false,
+      "schedule_points": [[20, 1], [20, 0]]
+    }
   },
 
   "net_args": {
