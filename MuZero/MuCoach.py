@@ -150,9 +150,6 @@ class MuZeroCoach:
         history.terminate(o_terminal, current_player, (z if self.game.n_players > 1 else 0))
         history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
 
-        print(history.rewards)
-        print(history.observed_returns)
-
         return history
 
     def learn(self) -> None:

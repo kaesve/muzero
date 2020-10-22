@@ -5,6 +5,8 @@ import time
 
 import numpy as np
 
+from Games.gym.GymGame import GymGame
+from Games.gym.MuZeroModel.NNet import NNetWrapper as GymNet
 from Games.hex.HexGame import HexGame
 from Games.hex.MuZeroModel.NNet import NNetWrapper as HexNet
 
@@ -336,8 +338,75 @@ class TestHexMuZero(unittest.TestCase):
 
 class TestTreeSearch(unittest.TestCase):
 
-    def test_tree_search(self):
-        pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Setup required for unit tests.
+        print("Unit testing CWD:", os.getcwd())
+        self.config = DotDict.from_json("../Experimenter/MuZeroConfigs/singleplayergames.json")
+        self.g = GymGame('CartPole-v1')
+        self.net = GymNet(self.g, self.config.net_args)
+        self.mcts = MuZeroMCTS(self.g, self.net, self.config.args)
+
+    def test_tree_search(self) -> None:
+        """
+        This is a behaviour example of MuZero's MCTS procedure that was worked out analytically.
+        Model with fixed prior [3/4 - e, 1/4 + e] where e is a small epsilon term to break ties.
+        If action 0 is take reward 0 is given, if action 1 is taken, reward 1 is given.
+        The Tree MinMax scaling should adjust to the [0, 1] bounds autonomously.
+
+        The proposed model creates a motif in the tree search of the following action trajectories:
+         - (a_0), (a_0, a_0), (a_1,)
+        i.e., at some node at first a_0 will be chosen two times, afterwards a_1 will be chosen.
+        This pattern reoccurs, however, in the recursive fashion of MCTS.
+
+        Hence, for 4 MCTS simulations (ignoring the root), we get the following path:
+         - (0), (0, 0), (1,), (1, 0)
+        pi, v = MuMCTS should then return pi = [1/2, 1/2] and v = 1/4
+        For 8 MCTS simulations (ignoring the root), we should get:
+         - (0), (0, 0), (1,), (1, 0), (1, 0, 0), (0, 0, 0), (0, 1), (0, 1, 0)
+        pi, v = MuMCTS should then return pi = [5/8, 3/8] and v = 2/8 = 1/4
+        """
+        class DumbModel(GymNet):
+            count: int = 0
+
+            def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
+                s, pi, v = super().initial_inference(observations)
+                self.count += 1
+                return np.ones_like(s) * self.count, np.array([6/8 - 1e-8, 2/8 + 1e-8]), 0
+
+            def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray]:
+                r, s, pi, v = super().recurrent_inference(latent_state, action)
+                self.count += 1
+                return 0, np.ones_like(latent_state) * self.count, np.array([6/8 - 1e-8, 2/8 + 1e-8]), 1 * action
+
+        memory_net = self.net
+        memory_search = self.mcts
+
+        # Swap class variables
+        self.net = DumbModel(self.g, self.config.net_args)
+        self.mcts = MuZeroMCTS(self.g, self.net, self.config.args)
+
+        # No discounting and no exploration to ensure deterministic behaviour.
+        self.config.args.gamma = 1
+        self.config.args.exploration_fraction = 0
+
+        # Experiment 1
+        self.config.args.numMCTSSims = 4
+        pi_1, v_1 = self.mcts.runMCTS(np.zeros(4), np.ones(2))
+        np.testing.assert_array_almost_equal(pi_1, [1/2, 1/2])
+        np.testing.assert_almost_equal(v_1, 1/4)
+        self.mcts.clear_tree()
+
+        # Experiment 2
+        self.config.args.numMCTSSims = 8
+        pi_2, v_2 = self.mcts.runMCTS(np.zeros(4), np.ones(2))
+        np.testing.assert_array_almost_equal(pi_2, [5/8, 3/8])
+        np.testing.assert_almost_equal(v_2, 1/4)
+        self.mcts.clear_tree()
+
+        # Undo class variables swap
+        self.net = memory_net
+        self.mcts = memory_search
 
 
 class TestSelfPlay(unittest.TestCase):
