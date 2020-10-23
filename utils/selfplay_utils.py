@@ -72,7 +72,12 @@ class GameHistory:
                           t: typing.Optional[int] = None) -> np.ndarray:
         """Stack the most recent 'length' elements from the observation list along the end of the observation axis"""
         if length <= 1:
-            return current_observation if current_observation is not None else self.observations[-1]
+            if current_observation is not None:
+                return current_observation
+            elif t is not None:
+                return self.observations[t]
+            else:
+                return self.observations[-1]
 
         if t is None:
             # If current observation is also None, then t needs to both index and slice self.observations:
