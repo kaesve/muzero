@@ -20,24 +20,24 @@ class GymNNet:
 
     def __init__(self, game, args):
         # Network arguments
-        self.inputs = game.getDimensions()
+        self.x, self.y, self.planes = game.getDimensions()
         self.latents = 8
         self.action_size = game.getActionSize()
         self.args = args
 
         # s: batch_size x time x state_x x state_y
-        self.observation_history = Input(shape=self.inputs)
+        self.observation_history = Input(shape=(self.x, self.y, self.planes))
         # a: one hot encoded vector of shape batch_size x (state_x * state_y)
         self.action_tensor = Input(shape=(self.action_size, ))
         # s': batch_size  x board_x x board_y x 1
         self.latent_state = Input(shape=(self.latents, 1))
 
-        action_tensor = Reshape((self.action_size, 1))(self.action_tensor)
+        observations = Reshape((self.x * self.y * self.planes, ))(self.observation_history)
         latent_state = Reshape((self.latents, ))(self.latent_state)
 
         # Build tensorflow computation graph
-        self.s = self.build_encoder(self.observation_history)
-        self.r, self.s_next = self.build_dynamics(latent_state, action_tensor)
+        self.s = self.build_encoder(observations)
+        self.r, self.s_next = self.build_dynamics(latent_state, self.action_tensor)
         self.pi, self.v = self.build_predictor(latent_state)
 
         self.encoder = Model(inputs=self.observation_history, outputs=self.s, name="r")
@@ -64,7 +64,7 @@ class GymNNet:
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
 
     def build_dynamics(self, encoded_state, action_plane):
-        stacked = Concatenate()([Reshape((self.latents, ))(encoded_state), Reshape((self.action_size, ))(action_plane)])
+        stacked = Concatenate()([encoded_state, action_plane])
         fc_sequence = self.dense_sequence(self.args.num_dense, stacked)
 
         s_fc_latent = Dense(self.latents, activation='linear', name='s_next')(fc_sequence)
@@ -81,7 +81,7 @@ class GymNNet:
         fc_sequence = self.dense_sequence(self.args.num_dense, latent_state)
 
         pi = Dense(self.action_size, activation='softmax', name='pi')(fc_sequence)
-        v = Dense(1, activation='tanh', name='v')(fc_sequence) \
+        v = Dense(1, activation='linear', name='v')(fc_sequence) \
             if self.args.support_size == 0 else \
             Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(fc_sequence)
 

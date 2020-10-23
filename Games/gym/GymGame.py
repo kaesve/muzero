@@ -30,18 +30,20 @@ class GymGame(Game):
         self.actions = dummy.action_space.n
 
     def getDimensions(self, form: Game.Representation = Game.Representation.CANONICAL) -> typing.Tuple[int, ...]:
-        return self.dimensions
+        return self.dimensions if len(self.dimensions) > 1 else (1, 1, *self.dimensions)
 
     def getActionSize(self) -> int:
         return self.actions
 
     def getInitialState(self) -> np.ndarray:
         env = gym.make(self.env_name)
-        return GymState(env, env.reset(), -1, False)
+        observation = env.reset() if len(self.dimensions) > 1 else [[env.reset()]]
+        return GymState(env, observation, -1, False)
 
     def getNextState(self, state: GymState, action: int, player: int,
                      form: Game.Representation = Game.Representation.CANONICAL) -> typing.Tuple[GymState, float, int]:
         observation, reward, done, info = state.env.step(action)
+        observation = observation if len(self.dimensions) > 1 else [[observation]]
         return GymState(state.env, observation, action, done), reward, player
 
     def getLegalMoves(self, state: np.ndarray, player: int,

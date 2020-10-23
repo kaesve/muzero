@@ -6,6 +6,7 @@ import os
 import sys
 from collections import deque
 from pickle import Pickler, Unpickler
+from datetime import datetime
 
 import numpy as np
 from tqdm import trange
@@ -44,6 +45,10 @@ class MuZeroCoach:
 
         self.arena_player = MuZeroPlayer(self.game, self.mcts, self.neural_net, DotDict({'name': 'player'}))
         self.arena_opponent = MuZeroPlayer(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'op'}))
+
+        self.logdir = "logs/scalars/" + datetime.now().strftime("%Y%m%d-%H%M%S")  # TODO specify path in file
+        self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
+        self.file_writer.set_as_default()
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
@@ -121,8 +126,9 @@ class MuZeroCoach:
         z = step = 0
 
         while not z:  # Boardgames: If loop ends => current player lost
-            # Turn action selection to greedy as an episode progresses.
             step += 1
+
+            # Update MCTS visit count temperature according to an episode or weight update schedule.
             temp = self.update_temperature(self.neural_net.steps if self.temp_schedule.args.by_weight_update else step)
 
             # Construct an observation array (o_1, ..., o_t).
@@ -141,8 +147,6 @@ class MuZeroCoach:
             # Update state of control
             current_player = next_player
             z = self.game.getGameEnded(state, current_player)
-
-            self.mcts.clear_tree()
 
         # Capture terminal state and compute z_t for each observation == N-step returns for general MDPs
         o_terminal = self.game.buildObservation(state, current_player, self.observation_encoding)

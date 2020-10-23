@@ -2,13 +2,12 @@
 
 """
 import typing
-import datetime
 
 import tensorflow as tf
 import numpy as np
 
 from utils import DotDict
-from utils.loss_utils import scalar_loss, scale_gradient, inverse_atari_reward_transform
+from utils.loss_utils import scalar_loss, scale_gradient
 
 
 class MuZeroNeuralNet:
@@ -35,10 +34,6 @@ class MuZeroNeuralNet:
         self.optimizer = tf.optimizers.Adam(self.net_args.lr)
         self.steps = 0
 
-        self.logdir = "logs/scalars/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")  # TODO specify path in file
-        self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
-        self.file_writer.set_as_default()
-
     def loss_function(self, observations: tf.Tensor, actions: tf.Tensor, target_vs: tf.Tensor, target_rs: tf.Tensor,
                       target_pis: tf.Tensor, sample_weights: tf.Tensor) -> tf.function:
         """
@@ -62,7 +57,7 @@ class MuZeroNeuralNet:
 
             # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
             s, pi_0, v_0 = self.neural_net.forward(observations)
-            predictions = [(tf.divide(sample_weights, len(actions)), v_0, None, pi_0)]
+            predictions = [(sample_weights, v_0, None, pi_0)]
 
             for t in range(actions.shape[1]):
                 r, s, pi, v = self.neural_net.recurrent([s[..., 0], actions[:, t, :]])
@@ -80,7 +75,7 @@ class MuZeroNeuralNet:
                 pi_loss = scalar_loss(pis, t_pis)
 
                 step_loss = r_loss + v_loss + pi_loss
-                total_loss += tf.reduce_sum(step_loss * loss_scale)
+                total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale))  # loss_scale includes a 1 / N term.
 
                 # LOGGING
                 bins = tf.range(-self.net_args.support_size, self.net_args.support_size + 1, dtype=tf.float32)
@@ -102,9 +97,9 @@ class MuZeroNeuralNet:
                 tf.summary.scalar(f"r_mae_{t}", data=r_ae, step=self.steps)
 
                 # Logging loss of each unrolled head.
-                tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(r_loss * loss_scale), step=self.steps)
-                tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(v_loss * loss_scale), step=self.steps)
-                tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss * loss_scale), step=self.steps)
+                tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(scale_gradient(r_loss, loss_scale)), step=self.steps)
+                tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(scale_gradient(v_loss, loss_scale)), step=self.steps)
+                tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(scale_gradient(pi_loss, loss_scale)), step=self.steps)
 
             tf.summary.scalar("loss", data=total_loss, step=self.steps)
 
