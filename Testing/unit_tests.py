@@ -66,6 +66,18 @@ class TestStaticFunctions(unittest.TestCase):
         # Scalar to support and back to scalars should be equal.
         np.testing.assert_array_almost_equal(scalars, inverted)
 
+        # Test bin creation explicitly against manually calculated example.
+        scalars = [-2.5, -0.75, 0.2, 1.38, 2.99]
+        expected = [
+            [0.5, 0.5, 0, 0, 0, 0, 0],
+            [0, 0, 0.75, 0.25, 0, 0, 0],
+            [0, 0, 0, 0.8, 0.2, 0, 0],
+            [0, 0, 0, 0, 0.62, 0.38, 0],
+            [0, 0, 0, 0, 0, 0.01, 0.99]
+        ]
+        bins = scalar_to_support(scalars, 3, reward_transformer=lambda x: x)
+        np.testing.assert_array_almost_equal(expected, bins)
+
     def test_n_step_return_estimation_MDP(self):
         horizon = 3  # n-step lookahead for computing z_t
         gamma = 1 / 2  # discount factor for future rewards and bootstrap
