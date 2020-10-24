@@ -33,7 +33,6 @@ class GameHistory:
         self.probabilities.append(pi)
         self.rewards.append(r)
         self.search_returns.append(v)
-        self.observed_returns.append(None)
 
     def terminate(self, observation: np.ndarray, player: int, z: typing.Union[int, float]) -> None:
         """Take a snapshot of the terminal state of the environment"""
@@ -41,9 +40,8 @@ class GameHistory:
         self.actions.append(np.random.choice(len(self.probabilities[-1])))
         self.players.append(player)
         self.probabilities.append(np.full_like(self.probabilities[-1], fill_value=1/len(self.probabilities[-1])))
-        self.rewards.append(self.rewards[-1])  # r is repeated
-        self.search_returns.append(0)          # v set to 0
-        self.observed_returns.append(z)        # terminal rewards receive terminal value
+        self.rewards.append(z)         # u_T
+        self.search_returns.append(0)  # Future possible reward = 0
         self.terminated = True
 
     def refresh(self) -> None:
@@ -53,13 +51,15 @@ class GameHistory:
 
     def compute_returns(self, gamma: float = 1, n: typing.Optional[int] = None) -> None:
         """Computes the n-step returns assuming that the last recorded snapshot was a terminal state"""
+        self.observed_returns = list()
         if n is None:
             # Boardgames
-            for i in reversed(range(len(self) - 1)):
-                self.observed_returns[i] = -self.observed_returns[i + 1]
+            self.observed_returns.append(self.rewards[-1])       # Append values to list in order T, T-1, ..., 2, 1
+            self.observed_returns += [-self.observed_returns[i - 1] for i in range(1, len(self))]
+            self.observed_returns = self.observed_returns[::-1]  # Reverse back to chronological order
         else:
             # General MDPs. Symbols follow notation from the paper.
-            for t in range(len(self) - 1):
+            for t in range(len(self)):
                 horizon = np.min([t + n, len(self) - 1])
 
                 # u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon
@@ -67,7 +67,7 @@ class GameHistory:
                 # gamma ^ k * v_t+horizon
                 bootstrap = (np.power(gamma, horizon - t) * self.search_returns[horizon]) if horizon <= t + n else 0
                 # z_t for all (t - 1) = 1... len(self) - 1
-                self.observed_returns[t] = np.sum(discounted_rewards) + bootstrap
+                self.observed_returns.append(np.sum(discounted_rewards) + bootstrap)
 
     def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,
                           t: typing.Optional[int] = None) -> np.ndarray:

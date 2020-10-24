@@ -166,7 +166,6 @@ class MuZeroCoach:
         """
         for i in range(1, self.args.numIters + 1):
             print(f'------ITER {i}------')
-
             # Self-play/ Gather training data.
             iteration_train_examples = list()
             for _ in trange(self.args.numEps, desc="Self Play", file=sys.stdout):
@@ -211,15 +210,14 @@ class MuZeroCoach:
                     wins, draws = np.sum(p1_score > p2_score), np.sum(p1_score == p2_score)
                     losses = self.args.pitting_trials - (wins + draws)
 
-                    tf.summary.scalar("Scalar: Average Cumulative Trial Rewards", data=p1_score.mean(), step=i)
-                    tf.summary.histogram("Dist: Average Cumulative Trial Rewards", data=p1_score, step=i)
+                    self.neural_net.monitor.log(p1_score.mean(), "Average Trial Reward")
+                    self.neural_net.monitor.log_distribution(p1_score, "Trial Reward")
 
-                    print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}, '
-                          f'AVERAGE NEW SCORE: {p1_score.mean()} ; AVERAGE OLD SCORE: {p2_score.mean()}')
+                    print(f'AVERAGE NEW SCORE: {p1_score.mean()} ; AVERAGE OLD SCORE: {p2_score.mean()}')
                 else:
                     losses, wins, draws = arena.playGames(self.args.pitting_trials)
-                    print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}')
 
+                print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}')
                 if losses + wins == 0 or float(wins) / (losses + wins) < self.args.pit_acceptance_ratio:
                     print('REJECTING NEW MODEL')
                     self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
@@ -238,7 +236,7 @@ class MuZeroCoach:
             os.makedirs(folder)
         filename = os.path.join(folder, self.getCheckpointFile(iteration) + ".examples")
         with open(filename, "wb+") as f:
-            Pickler(f).dump(self.trainExamplesHistory)
+            Pickler(f).dump(self.trainExamplesHistory)  # TODO: Change to h5py
 
         # Don't hog up storage space and clean up old (never to be used again) data.
         old_checkpoint = os.path.join(folder, self.getCheckpointFile(iteration - 1) + '.examples')

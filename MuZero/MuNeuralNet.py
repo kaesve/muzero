@@ -8,6 +8,7 @@ import numpy as np
 
 from utils import DotDict
 from utils.loss_utils import scalar_loss, scale_gradient
+from utils.debugging import MuZeroMonitor
 
 
 class MuZeroNeuralNet:
@@ -30,6 +31,7 @@ class MuZeroNeuralNet:
         self.fit_rewards = (game.n_players == 1)
         self.net_args = net_args
         self.neural_net = builder(game, net_args)
+        self.monitor = MuZeroMonitor(self)
 
         self.optimizer = tf.optimizers.Adam(self.net_args.lr)
         self.steps = 0
@@ -59,58 +61,35 @@ class MuZeroNeuralNet:
             s, pi_0, v_0 = self.neural_net.forward(observations)
             predictions = [(sample_weights, v_0, None, pi_0)]
 
-            for t in range(actions.shape[1]):
-                r, s, pi, v = self.neural_net.recurrent([s[..., 0], actions[:, t, :]])
+            for k in range(actions.shape[1]):
+                r, s, pi, v = self.neural_net.recurrent([s[..., 0], actions[:, k, :]])
                 predictions.append((tf.divide(sample_weights, len(actions)), v, r, pi))
 
                 s = scale_gradient(s, 1/2)  # Scale the gradient at the start of the dynamics function by 1/2
 
             # Perform loss computation
-            for t in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
-                loss_scale, vs, rs, pis = predictions[t]
-                t_vs, t_rs, t_pis = target_vs[t, ...], target_rs[t, ...], target_pis[t, ...]
+            for k in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
+                loss_scale, vs, rs, pis = predictions[k]
+                t_vs, t_rs, t_pis = target_vs[k, ...], target_rs[k, ...], target_pis[k, ...]
 
-                r_loss = scalar_loss(rs, t_rs) if (t > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
+                r_loss = scalar_loss(rs, t_rs) if (k > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
                 v_loss = scalar_loss(vs, t_vs)
                 pi_loss = scalar_loss(pis, t_pis)
 
                 step_loss = r_loss + v_loss + pi_loss
                 total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale))  # loss_scale includes a 1 / N term.
 
-                # LOGGING
-                bins = tf.range(-self.net_args.support_size, self.net_args.support_size + 1, dtype=tf.float32)
-
-                v_scalars = tf.tensordot(vs, bins, axes=[[1], [0]])
-                r_scalars = tf.tensordot(rs, bins, axes=[[1], [0]]) if t > 0 else tf.zeros_like(v_scalars)
-                tv_scalars = tf.tensordot(t_vs, bins, axes=[[1], [0]])
-                tr_scalars = tf.tensordot(t_rs, bins, axes=[[1], [0]]) if t > 0 else tf.zeros_like(v_scalars)
-
-                v_ae = tf.reduce_mean(tf.abs(v_scalars - tv_scalars))
-                r_ae = tf.reduce_mean(tf.abs(r_scalars - tr_scalars))
-
-                tf.summary.histogram(f"v_predicted_{t}", data=v_scalars, step=self.steps)
-                tf.summary.histogram(f"v_target_{t}", data=tv_scalars, step=self.steps)
-                tf.summary.histogram(f"r_predicted_{t}", data=r_scalars, step=self.steps)
-                tf.summary.histogram(f"r_target_{t}", data=tr_scalars, step=self.steps)
-
-                tf.summary.scalar(f"v_mae_{t}", data=v_ae, step=self.steps)
-                tf.summary.scalar(f"r_mae_{t}", data=r_ae, step=self.steps)
-
                 # Logging loss of each unrolled head.
-                tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(scale_gradient(r_loss, loss_scale)), step=self.steps)
-                tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(scale_gradient(v_loss, loss_scale)), step=self.steps)
-                tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(scale_gradient(pi_loss, loss_scale)), step=self.steps)
-
-            tf.summary.scalar("loss", data=total_loss, step=self.steps)
+                self.monitor.log_recurrent_losses(k, loss_scale, v_loss, r_loss, pi_loss)
 
             # Penalize magnitude of weights using l2 norm
             l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.get_variables()])
-            tf.summary.scalar("l2_norm", data=l2_norm, step=self.steps)
-
             total_loss += self.net_args.l2 * l2_norm
 
-            return total_loss
+            self.monitor.log(total_loss, "total loss")
+            self.monitor.log(l2_norm, "l2 norm")
 
+            return total_loss
         return loss
 
     def train(self, examples: typing.List) -> None:

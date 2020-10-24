@@ -58,6 +58,12 @@ class NNetWrapper(MuZeroNeuralNet):
                               for t in range(target_rs.shape[-1])])
         target_pis = np.swapaxes(target_pis, 0, 1)
 
+        print()
+        obs = np.array(observations).reshape((128, -1))
+        print(obs)
+        print(np.unique(obs, axis=0, return_counts=True))
+        print(np.unique(obs, axis=0).shape)
+
         # Pack formatted inputs as tensors.
         data = [cast_to_tensor(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
 

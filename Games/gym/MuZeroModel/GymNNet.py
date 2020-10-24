@@ -50,8 +50,7 @@ class GymNNet:
 
     def dense_sequence(self, n, x):  # Recursively builds a Fully Connected sequence of length n.
         if n > 0:
-            return self.dense_sequence(n - 1, Dropout(self.args.dropout)(Activation(self.args.dense_activation)(
-                Dense(self.args.size_dense)(x))))
+            return self.dense_sequence(n - 1, Activation(self.args.dense_activation)(Dense(self.args.size_dense)(x)))
         return x
 
     def build_encoder(self, observations):

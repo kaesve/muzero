@@ -2,7 +2,7 @@
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
 # Suppress verbose warnings in stdout
-from utils.tensorflow_init import *
+from utils.debugging import *
 
 from utils.storage import DotDict
 from AlphaZero.Coach import Coach
