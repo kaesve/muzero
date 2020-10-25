@@ -44,8 +44,8 @@ class Game:
         """
         pass
 
-    def getNextState(self, state: np.ndarray, action: int, player: int,
-                     form: Representation = Representation.CANONICAL) -> typing.Tuple[np.ndarray, float, int]:
+    def getNextState(self, state: np.ndarray, action: int, player: int, form: Representation = Representation.CANONICAL,
+                     **kwargs) -> typing.Tuple[np.ndarray, float, int]:
         """
         Input:
             state: current state
@@ -100,7 +100,8 @@ class Game:
         """
         pass
 
-    def buildObservation(self, state: np.ndarray, player: int, form: Representation = Representation.CANONICAL) -> np.ndarray:
+    def buildObservation(self, state: np.ndarray, player: int,
+                         form: Representation = Representation.CANONICAL) -> np.ndarray:
         """
         Input:
             state: current state
@@ -127,13 +128,12 @@ class Game:
         """
         pass
 
-    def stringRepresentation(self, state: np.ndarray) -> str:
+    def getHash(self, state: np.ndarray) -> str:
         """
         Input:
             state: current state
 
         Returns:
-            stateString: a quick conversion of state to a string format.
-                         Required by MCTS for hashing.
+            stateString: a quick conversion of state to a string format. Required by MCTS for hashing.
         """
         pass

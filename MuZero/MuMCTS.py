@@ -69,13 +69,7 @@ class MuZeroMCTS:
         return s_0, latent_state, v_0
 
     def compute_ucb(self, s: typing.Tuple[bytes, tuple], a: int, exploration_factor: float) -> float:
-        """
-
-        :param s:
-        :param a:
-        :param exploration_factor:
-        :return:
-        """
+        # Compute the PUCT formula
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
         q_value = self.minmax.normalize(self.Qsa[(s, a)]) if (s, a) in self.Qsa else 0
         c_children = np.max([self.Ns[s], 1e-8])  # Ensure that prior doesn't collapse to 0 if s is new.
@@ -88,8 +82,7 @@ class MuZeroMCTS:
                 temp: int = 1) -> typing.Tuple[np.ndarray, float]:
         """
         This function performs numMCTSSims simulations of MCTS starting from
-        a history (array) of past observations. The current state observation must
-        be at the front of the observations array! observations[-1] == o_t
+        a history (array) of past observations.
 
         Returns:
             move_probabilities: a policy vector where the probability of the ith action is
@@ -104,25 +97,17 @@ class MuZeroMCTS:
 
         # Aggregate root state value over MCTS back-propagated values
         v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims)])
-        # v_search = list()
-        # for _ in range(self.args.numMCTSSims):
-        #     print(f"new search: {_}")
-        #     v_search.append(self._search(latent_state))
-        # v_search = sum(v_search)
         v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.numMCTSSims
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.
         counts = np.array([self.Nsa[(s_0, a)] if (s_0, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
 
         if temp == 0:  # Greedy selection. One hot encode the most visited paths (uniformly random break ties).
-            a_star = np.random.choice(np.flatnonzero(counts == np.max(counts)))
             move_probabilities = np.zeros(len(counts))
-            move_probabilities[a_star] = 1
+            move_probabilities[np.argmax(counts + np.random.randn(len(counts)) * 1e-8)] = 1
         else:
             counts = np.power(counts, 1. / temp)
             move_probabilities = counts / np.sum(counts)
-
-        print("MCTS Result,", move_probabilities, v)
 
         return move_probabilities, v
 
@@ -138,10 +123,7 @@ class MuZeroMCTS:
         confidence_bounds = [self.compute_ucb(s_k, a, exploration_factor) for a in range(self.game.getActionSize())]
         a = np.argmax(confidence_bounds).item()  # Get argmax as scalar
 
-        # print(len(path), path + (a, ), confidence_bounds, 's1: {:.4f}, s2: {:.4f}, s3: {:.4f} s4: {:.4f}'.format(*np.ravel(latent_state)[:4]))
-
-        ### ROLLOUT
-        if (s_k, a) not in self.Ssa:
+        if (s_k, a) not in self.Ssa:  ### ROLLOUT
             # Perform a forward pass in the dynamics function.
             reward, next_latent, prior, value = self.neural_net.recurrent_inference(latent_state, a)
             s_k_next = (next_latent.tobytes(), path + (a, ))  # Hashable representation.
@@ -150,8 +132,7 @@ class MuZeroMCTS:
             self.Ps[s_k_next], self.Ns[s_k_next] = prior, 0               # Next depth statistics
             value = value if self.game.n_players == 1 else -value         # Alternate value perspective for adversary.
 
-        ### EXPANSION
-        else:
+        else:  ### EXPANSION
             value = self._search(self.Ssa[(s_k, a)], path + (a, ))        # 1-step look ahead state value
 
         ### BACKUP
@@ -163,7 +144,6 @@ class MuZeroMCTS:
         else:
             self.Qsa[(s_k, a)] = gk
             self.Nsa[(s_k, a)] = 1
-        # print('value', self.Qsa[(s_k, a)])
 
         self.minmax.update(self.Qsa[(s_k, a)])
         self.Ns[s_k] += 1

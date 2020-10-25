@@ -13,12 +13,12 @@ from Games.othello.OthelloGame import OthelloGame
 from Games.gym.GymGame import GymGame
 from Games.atari.AtariGame import AtariGame
 
-from Experimenter.Players import *
-from Games.hex.MuZeroModel.NNet import NNetWrapper as HexMuZero
+from Experimenter.players import *
+from MuZero.models.DefaultMuZero import MuZeroDefault as HexMuZero  # TODO
 from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexAlphaZero
 from Games.othello.AlphaZeroModel.NNet import NNetWrapper as OthelloAlphaZero
 
-from AlphaZero.MCTS import MCTS
+from AlphaZero.AlphaMCTS import MCTS
 from MuZero.MuMCTS import MuZeroMCTS
 
 

@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 from utils.storage import DotDict
-from AlphaZero.AlphaZeroNeuralNet import AlphaZeroNeuralNet
+from AlphaZero.AlphaNeuralNet import AlphaZeroNeuralNet
 from .OthelloNNet import OthelloNNet as NetBuilder
 
 sys.path.append('../../..')

@@ -27,26 +27,26 @@ class OthelloGame(Game):
         b = Board(self.n)
         return np.array(b.pieces)
 
-    def getDimensions(self):
+    def getDimensions(self, **kwargs):
         # (a,b) tuple
-        return (self.n, self.n)
+        return self.n, self.n
 
     def getActionSize(self):
         # return number of actions
         return self.n * self.n + 1
 
-    def getNextState(self, state, action, player):
+    def getNextState(self, state, action, player, **kwargs):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n * self.n:
-            return (state, -player)
+            return state, -player
         b = Board(self.n)
         b.pieces = np.copy(state)
         move = (int(action / self.n), action % self.n)
         b.execute_move(move, player)
         return b.pieces, 0, -player
 
-    def getLegalMoves(self, state, player):
+    def getLegalMoves(self, state, player, **kwargs):
         # return a fixed size binary vector
         valids = [0] * self.getActionSize()
         b = Board(self.n)
@@ -59,7 +59,7 @@ class OthelloGame(Game):
             valids[self.n * x + y] = 1
         return np.array(valids)
 
-    def getGameEnded(self, state, player):
+    def getGameEnded(self, state, player, **kwargs):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = Board(self.n)
@@ -76,7 +76,7 @@ class OthelloGame(Game):
         # return state if player==1, else return -state if player==-1
         return player * state
 
-    def getSymmetries(self, board, pi):
+    def getSymmetries(self, board, pi, **kwargs):
         # mirror, rotational
         assert (len(pi) == self.n ** 2 + 1)  # 1 for pass
         pi_board = np.reshape(pi[:-1], (self.n, self.n))
@@ -92,8 +92,8 @@ class OthelloGame(Game):
                 l += [(newB, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-    def stringRepresentation(self, state):
-        return state.tostring()
+    def getHash(self, state):
+        return state.tobytes()
 
     def stringRepresentationReadable(self, board):
         board_s = "".join(self.square_content[square] for row in board for square in row)

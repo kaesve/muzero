@@ -2,6 +2,8 @@
 
 """
 import typing
+import os
+from abc import ABC, abstractmethod
 
 import tensorflow as tf
 import numpy as np
@@ -11,14 +13,12 @@ from utils.loss_utils import scalar_loss, scale_gradient
 from utils.debugging import MuZeroMonitor
 
 
-class MuZeroNeuralNet:
+class MuZeroNeuralNet(ABC):
     """
     This class specifies the base NeuralNet class. To define your own neural
     network, subclass this class and implement the functions below. The neural
     network does not consider the current player, and instead only deals with
     the canonical form of the board.
-
-    See othello/NNet.py for an example implementation.
     """
 
     def __init__(self, game, net_args: DotDict, builder: typing.Callable) -> None:
@@ -92,6 +92,7 @@ class MuZeroNeuralNet:
             return total_loss
         return loss
 
+    @abstractmethod
     def train(self, examples: typing.List) -> None:
         """
         This function trains the neural network with examples obtained from
@@ -104,6 +105,7 @@ class MuZeroNeuralNet:
         """
         pass
 
+    @abstractmethod
     def get_variables(self) -> typing.List:
         """
         Yield a list of all trainable variables within the model
@@ -113,6 +115,7 @@ class MuZeroNeuralNet:
         """
         pass
 
+    @abstractmethod
     def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
         """
         Combines the prediction and representation models into one call. This reduces
@@ -128,7 +131,8 @@ class MuZeroNeuralNet:
             v: a float that gives the value of the current board
         """
         pass
-    
+
+    @abstractmethod
     def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray,
                                                                                          np.ndarray, float]:
         """
@@ -149,15 +153,33 @@ class MuZeroNeuralNet:
         """
         pass
 
-    def save_checkpoint(self, folder: str, filename: str) -> None:
-        """
-        Saves the current neural network (with its parameters) in
-        folder/filename
-        """
-        pass
+    def save_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
+        """ Saves the current neural network (with its parameters) in folder/filename """
+        representation_path = os.path.join(folder, 'r_' + filename)
+        dynamics_path = os.path.join(folder, 'd_' + filename)
+        predictor_path = os.path.join(folder, 'p_' + filename)
+        if not os.path.exists(folder):
+            print(f"Checkpoint Directory does not exist! Making directory {folder}")
+            os.mkdir(folder)
+        else:
+            print("Checkpoint Directory exists! ")
+        self.neural_net.encoder.save_weights(representation_path)
+        self.neural_net.dynamics.save_weights(dynamics_path)
+        self.neural_net.predictor.save_weights(predictor_path)
 
-    def load_checkpoint(self, folder: str, filename: str) -> None:
-        """
-        Loads parameters of the neural network from folder/filename
-        """
-        pass
+    def load_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
+        """ Loads parameters of each neural network model from given folder/filename """
+        representation_path = os.path.join(folder, 'r_' + filename)
+        dynamics_path = os.path.join(folder, 'd_' + filename)
+        predictor_path = os.path.join(folder, 'p_' + filename)
+
+        if not os.path.exists(representation_path):
+            raise FileNotFoundError(f"No MuZero Representation Model in path {representation_path}")
+        if not os.path.exists(dynamics_path):
+            raise FileNotFoundError(f"No MuZero Dynamics Model in path {dynamics_path}")
+        if not os.path.exists(predictor_path):
+            raise FileNotFoundError(f"No MuZero Predictor Model in path {predictor_path}")
+
+        self.neural_net.encoder.load_weights(representation_path)
+        self.neural_net.dynamics.load_weights(dynamics_path)
+        self.neural_net.predictor.load_weights(predictor_path)

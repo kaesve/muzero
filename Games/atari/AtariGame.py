@@ -1,4 +1,5 @@
 from __future__ import print_function
+import typing
 import sys
 
 from Game import Game
@@ -6,8 +7,8 @@ import numpy as np
 
 import gym
 
-
 sys.path.append('../../..')
+
 
 class GymState:
     def __init__(self, env, observation, action, done):
@@ -29,7 +30,6 @@ class AtariGame(Game):
     """
 
     def __init__(self, env_name):
-        #TODO: check if this name is valid?
         super().__init__()
         self.env_name = env_name
         self.action_size = gym.make(env_name).action_space.n
@@ -41,26 +41,24 @@ class AtariGame(Game):
                         that will be the input to your neural network)
         """
         env = gym.make(self.env_name)
-        env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False, terminal_on_life_loss=True,
-            noop_max=10)
+        env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False,
+                                              terminal_on_life_loss=True,
+                                              noop_max=10)
         return GymState(env, env.reset(), 0, False)
 
-    def getDimensions(self):
+    def getDimensions(self, **kwargs) -> typing.Tuple[int, int, int]:
         """
         Returns:
             (x,y,z): a tuple of the state dimensions
         """
 
-        return (96, 96, 4)
+        return 96, 96, 4
 
-    def getActionSize(self):
-        """
-        Returns:
-            actionSize: number of all possible actions
-        """
+    def getActionSize(self) -> int:
+        """ Return the number of possible actions """
         return self.action_size
 
-    def getNextState(self, state, action, player):
+    def getNextState(self, state: GymState, action: int, player: int, **kwargs):
         """
         Input:
             state: current state
@@ -72,16 +70,17 @@ class AtariGame(Game):
             reward: Immediate observed reward (default should be 0 for most boardgames)
             nextPlayer: player who plays in the next turn
         """
-
         # reorder actions so that we can have NOOP at the end
         action = (action + 1) % self.getActionSize()
-
         observation, reward, done, info = state.env.step(action)
-        next_state = GymState(state.env, observation, action, done)
 
-        return (next_state, reward, 1)
+        def nextEnv(old_state, clone: bool = False):  # Macro for cloning the state
+            return old_state.env.clone_full_state() if clone else old_state
 
-    def getLegalMoves(self, state, player):
+        env = nextEnv(state, **kwargs)
+        return GymState(env, observation, action, done), reward, 1
+
+    def getLegalMoves(self, state: GymState, player: int, **kwargs):
         """
         Input:
             board: current state
@@ -93,7 +92,7 @@ class AtariGame(Game):
         """
         return np.ones(self.getActionSize())
 
-    def getGameEnded(self, state, player):
+    def getGameEnded(self, state: GymState, player: int, close: bool = False) -> int:
         """
         Input:
             state: current state
@@ -105,12 +104,12 @@ class AtariGame(Game):
                
         """
 
-        if state.done:
+        if state.done and close:
             state.env.close()
 
-        return state.done
+        return int(state.done)
 
-    def getCanonicalForm(self, state, player):
+    def getCanonicalForm(self, state: np.ndarray, player: int):
         """
         Input:
             state: current state
@@ -126,36 +125,18 @@ class AtariGame(Game):
         """
         return state
 
-    def buildObservation(self, state, player: int, form: Game.Representation = Game.Representation.HEURISTIC) -> np.ndarray:
+    def buildObservation(self, state: GymState, player: int,
+                         form: Game.Representation = Game.Representation.HEURISTIC) -> np.ndarray:
         if form == Game.Representation.CANONICAL:
-            return self.getCanonicalForm(state, player)
+            return self.getCanonicalForm(state, player).observation
 
         elif form == Game.Representation.HEURISTIC:
             action_plane = np.ones(state.observation.shape[:2]) * state.action / self.getActionSize()
             action_plane = action_plane.reshape((*action_plane.shape, 1))
             return np.concatenate((state.observation, action_plane), axis=2)
 
+    def getSymmetries(self, state: GymState, pi: np.ndarray, **kwargs):
+        return [(state.observation, pi)]
 
-    def getSymmetries(self, state, pi):
-        """
-        Input:
-            state: current state
-            pi: policy vector of size self.getActionSize()
-
-        Returns:
-            symmForms: a list of [(state,pi)] where each tuple is a symmetrical
-                       form of the state and the corresponding pi vector. This
-                       is used when training AlphaZero from examples.
-        """
-        pass
-
-    def stringRepresentation(self, state):
-        """
-        Input:
-            state: current state
-
-        Returns:
-            stateString: a quick conversion of state to a string format.
-                         Required by MCTS for hashing.
-        """
-        return state.observation.tostring()
+    def getHash(self, state: GymState):
+        return state.observation.tobytes()

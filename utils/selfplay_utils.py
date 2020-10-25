@@ -1,6 +1,7 @@
 """
 
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 import typing
 
@@ -13,6 +14,7 @@ class GameHistory:
     Data container for keeping track of game trajectories.
     """
     observations: list = field(default_factory=list)        # o_t: State Observations
+    symmetries: list = field(default_factory=list)          # o_t': Alternate/ Symmetric forms of State Observations
     players: list = field(default_factory=list)             # p_t: Current player
     probabilities: list = field(default_factory=list)       # pi_t: Probability vector of MCTS for the action
     search_returns: list = field(default_factory=list)      # v_t: MCTS value estimation
@@ -24,6 +26,10 @@ class GameHistory:
     def __len__(self) -> int:
         """Get length of current stored trajectory"""
         return len(self.observations)
+
+    @property
+    def symmetric_observations(self):
+        return len(self.symmetries) > 0
 
     def capture(self, observation: np.ndarray, action: int, player: int, pi: np.ndarray, r: float, v: float) -> None:
         """Take a snapshot of the current state of the environment and the search results"""
@@ -43,6 +49,11 @@ class GameHistory:
         self.rewards.append(z)         # u_T
         self.search_returns.append(0)  # Future possible reward = 0
         self.terminated = True
+
+    def find_symmetries(self, game, t: typing.Optional[int] = None) -> None:
+        t = t if t is not None else len(self) - 1
+        symmetries = [(plane, prob) for plane, prob in game.getSymmetries(self.observations[t], self.probabilities[t])]
+        self.symmetries.append(symmetries)
 
     def refresh(self) -> None:
         """Clear all statistics within the class"""
@@ -76,7 +87,7 @@ class GameHistory:
             if current_observation is not None:
                 return current_observation
             elif t is not None:
-                return self.observations[t]
+                return self.observations[t]  # TODO: rework
             else:
                 return self.observations[-1]
 
@@ -98,6 +109,18 @@ class GameHistory:
             trajectory = prefix + trajectory
 
         return np.concatenate(trajectory, axis=-1)  # Concatenate along channel dimension.
+
+    @staticmethod
+    def print_statistics(histories: typing.List[typing.List[GameHistory]]) -> None:
+        flat = [item for sublist in histories for item in sublist]
+
+        n_self_play_iterations = len(histories)
+        n_episodes = len(flat)
+        n_samples = sum([len(x) for x in flat])
+
+        print("=== Replay Buffer Statistics ===")
+        print(f"Replay buffer filled with data from {n_self_play_iterations} self play iterations")
+        print(f"In total {n_episodes} episodes have been played amounting to {n_samples} data samples")
 
 
 class MinMaxStats(object):

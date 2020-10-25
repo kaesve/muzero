@@ -22,7 +22,7 @@ from ast import literal_eval
 
 import numpy as np
 
-from AlphaZero.MCTS import MCTS
+from AlphaZero.AlphaMCTS import MCTS
 from Games.hex.HexGame import HexGame
 
 from .hex_search import MinimaxSearcher, MCTSSearcher
@@ -300,7 +300,7 @@ class AlphaZeroPolicy(Policy):
         # The returned move is of course transformed to the perspective of the
         # board that was provided in the function's argument.
         search_board = self.game.getCanonicalForm(np.copy(hex_board.board), self.perspective)
-        pi = self.searcher.getActionProb(search_board, temp=self.temperature)
+        pi = self.searcher.runMCTS(search_board, temp=self.temperature)
         move_idx = np.argmax(pi)
 
         move = (move_idx // hex_board.size, move_idx % hex_board.size)

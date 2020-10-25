@@ -24,7 +24,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # Edit to select GPU!
 # TENSORFLOW GPU CONFIGURATION
 
 from utils.storage import DotDict
-from AlphaZero.Coach import Coach
+from AlphaZero.AlphaCoach import AlphaZeroCoach
 from Games.hex.HexGame import HexGame as Game
 from Games.hex.AlphaZeroModel.NNet import NNetWrapper as nn
 

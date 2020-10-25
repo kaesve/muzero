@@ -49,7 +49,7 @@ class HexGame(Game):
         # return number of actions
         return self.n * self.n + 1
 
-    def getNextState(self, state, action, player, form: Game.Representation = Game.Representation.CANONICAL):
+    def getNextState(self, state, action, player, form=Game.Representation.CANONICAL, **kwargs):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n * self.n:
@@ -86,7 +86,7 @@ class HexGame(Game):
 
         return valid_moves
 
-    def getGameEnded(self, state, player):
+    def getGameEnded(self, state, player, **kwargs):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = HexBoard(self.n)
@@ -134,7 +134,7 @@ class HexGame(Game):
 
         return symmetries
 
-    def stringRepresentation(self, state):
+    def getHash(self, state):
         return state.tostring()
 
     def stringRepresentationReadable(self, board):

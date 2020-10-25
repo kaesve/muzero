@@ -6,7 +6,8 @@ from tqdm import trange
 
 from Game import Game
 from utils.selfplay_utils import GameHistory
-from Experimenter.Players import Player
+from utils import DotDict
+from utils.debugging import MuZeroMonitor
 
 
 class Arena:
@@ -140,3 +141,23 @@ class Arena:
         two_won += np.sum(np.array(results) == 1).item()
 
         return one_won, two_won, (one_won + two_won - num_games * 2)
+
+    def pitting(self, args: DotDict, logger: MuZeroMonitor) -> bool:
+        print("Pitting against previous version...")
+
+        if self.game.n_players == 1:
+            p1_score, p2_score = self.playTrials(args.pitting_trials)
+
+            wins, draws = np.sum(p1_score > p2_score), np.sum(p1_score == p2_score)
+            losses = args.pitting_trials - (wins + draws)
+
+            logger.log(p1_score.mean(), "Average Trial Reward")
+            logger.log_distribution(p1_score, "Trial Reward")
+
+            print(f'AVERAGE NEW SCORE: {p1_score.mean()} ; AVERAGE OLD SCORE: {p2_score.mean()}')
+        else:
+            losses, wins, draws = self.playGames(args.pitting_trials)
+
+        print(f'NEW/OLD WINS : {wins} / {losses} ; DRAWS : {draws} ; ACCEPTANCE RATIO : {args.pit_acceptance_ratio}')
+
+        return losses + wins > 0 and wins / (args.pitting_trials - draws) >= args.pit_acceptance_ratio

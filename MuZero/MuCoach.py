@@ -2,24 +2,22 @@
 
 """
 import typing
-import os
 import sys
-from collections import deque
-from pickle import Pickler, Unpickler
 from datetime import datetime
 
 import numpy as np
 from tqdm import trange
 import tensorflow as tf
 
+from Coach import Coach
 from Arena import Arena
-from Experimenter.Players import MuZeroPlayer
+from Experimenter.players import MuZeroPlayer
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, TemperatureScheduler, sample_batch
 
 
-class MuZeroCoach:
+class MuZeroCoach(Coach):
     """
     This class executes the self-play + learning. It uses the functions defined
     in Game and NeuralNet. args are specified in main.py.
@@ -32,27 +30,24 @@ class MuZeroCoach:
         :param neural_net:
         :param args:
         """
-        self.game = game
-        self.neural_net = neural_net
-        self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args)  # the competitor network
-        self.args = args
-        self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
-        self.opponent_mcts = MuZeroMCTS(self.game, self.opponent_net, self.args)
-        self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
+        super().__init__(game, args)
         self.observation_encoding = game.Representation.HEURISTIC
+
+        self.neural_net = neural_net
+        self.mcts = MuZeroMCTS(self.game, self.neural_net, self.args)
+        self.arena_player = MuZeroPlayer(self.game, self.mcts, self.neural_net, DotDict({'name': 'p1'}))
+
+        if self.args.pitting:
+            self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args, self.neural_net.architecture)
+            self.opponent_mcts = MuZeroMCTS(self.game, self.opponent_net, self.args)
+            self.arena_opponent = MuZeroPlayer(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'p2'}))
+
         self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
         self.update_temperature = self.temp_schedule.build()
 
-        self.arena_player = MuZeroPlayer(self.game, self.mcts, self.neural_net, DotDict({'name': 'player'}))
-        self.arena_opponent = MuZeroPlayer(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'op'}))
-
-        self.logdir = "logs/scalars/" + datetime.now().strftime("%Y%m%d-%H%M%S")  # TODO specify path in file
+        self.logdir = "logs/MuZero/" + datetime.now().strftime("%Y%m%d-%H%M%S")  # TODO specify path in file
         self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
         self.file_writer.set_as_default()
-
-    @staticmethod
-    def getCheckpointFile(iteration: int) -> str:
-        return f'checkpoint_{iteration}.pth.tar'
 
     def buildHypotheticalSteps(self, history: GameHistory, t: int, k: int) -> \
             typing.Tuple[np.ndarray, typing.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
@@ -85,7 +80,7 @@ class MuZeroCoach:
         enc_actions = np.zeros([len(actions), self.game.getActionSize()])
         enc_actions[np.arange(len(actions)), actions] = 1
 
-        return enc_actions, (np.array(vs), np.array(rewards), np.array(pis))  # (Actions, Targets)
+        return enc_actions, (np.asarray(vs), np.asarray(rewards), np.asarray(pis))  # (Actions, Targets)
 
     def sampleBatch(self, histories: typing.List[GameHistory]) -> typing.List:
         """
@@ -132,7 +127,7 @@ class MuZeroCoach:
             temp = self.update_temperature(self.neural_net.steps if self.temp_schedule.args.by_weight_update else step)
 
             # Construct an observation array (o_1, ..., o_t).
-            o_t = self.game.buildObservation(state, current_player, self.observation_encoding)
+            o_t = self.game.buildObservation(state, current_player, form=self.observation_encoding)
             stacked_observations = history.stackObservations(self.neural_net.net_args.observation_length, o_t)
 
             # Compute the move probability vector and state value using MCTS for the current state of the environment.
@@ -146,10 +141,10 @@ class MuZeroCoach:
 
             # Update state of control
             current_player = next_player
-            z = self.game.getGameEnded(state, current_player)
+            z = self.game.getGameEnded(state, current_player, close=True)
 
         # Capture terminal state and compute z_t for each observation == N-step returns for general MDPs
-        o_terminal = self.game.buildObservation(state, current_player, self.observation_encoding)
+        o_terminal = self.game.buildObservation(state, current_player, form=self.observation_encoding)
 
         # Terminal reward for board games is -1 or 1. For general games the bootstrap value is 0 (future rewards = 0)
         history.terminate(o_terminal, current_player, (z if self.game.n_players > 1 else 0))
@@ -175,83 +170,40 @@ class MuZeroCoach:
                 if sum(map(len, iteration_train_examples)) > self.args.maxlenOfQueue:
                     iteration_train_examples.pop(0)
 
-            # Store data from previous self-play iterations into the history
+            # Store data from previous self-play iterations into the history and print out statistics.
             self.trainExamplesHistory.append(iteration_train_examples)
-
-            n = len(self.trainExamplesHistory)
-            print(f"Replay buffer filled with data from {n} self play iterations, at "
-                  f"{100 * n / self.args.numItersForTrainExamplesHistory}% of maximum capacity.")
+            GameHistory.print_statistics(self.trainExamplesHistory)
 
             # Backup history to a file
             self.saveTrainExamples(i - 1)
 
             # Flatten examples over self-play episodes and sample a training batch.
-            complete_history = list()
-            for episode_history in self.trainExamplesHistory:
-                complete_history += episode_history
+            complete_history = [subitem for item in self.trainExamplesHistory for subitem in item]
 
-            # training new network, keeping a copy of the old one
+            # Training new network, keeping a copy of the old one
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-            self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
             # Backpropagation
             for _ in trange(self.args.numTrainingSteps, desc="Backpropagation", file=sys.stdout):
                 batch = self.sampleBatch(complete_history)
+
+                self.neural_net.monitor.log_batch(batch)
                 self.neural_net.train(batch)
 
             # Pitting
+            accept = True
             if self.args.pitting:
-                print("Pitting against previous version...")
+                # Load in the old network.
+                self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
+                # Perform trials with the new network against the old network.
                 arena = Arena(self.game, self.arena_player, self.arena_opponent)
-                if self.game.n_players == 1:
-                    p1_score, p2_score = arena.playTrials(self.args.pitting_trials)
+                accept = arena.pitting(self.args, self.neural_net.monitor)
 
-                    wins, draws = np.sum(p1_score > p2_score), np.sum(p1_score == p2_score)
-                    losses = self.args.pitting_trials - (wins + draws)
-
-                    self.neural_net.monitor.log(p1_score.mean(), "Average Trial Reward")
-                    self.neural_net.monitor.log_distribution(p1_score, "Trial Reward")
-
-                    print(f'AVERAGE NEW SCORE: {p1_score.mean()} ; AVERAGE OLD SCORE: {p2_score.mean()}')
-                else:
-                    losses, wins, draws = arena.playGames(self.args.pitting_trials)
-
-                print(f'NEW/PREV WINS : {wins} / {losses} ; DRAWS : {draws}')
-                if losses + wins == 0 or float(wins) / (losses + wins) < self.args.pit_acceptance_ratio:
-                    print('REJECTING NEW MODEL')
-                    self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
-                else:
-                    print('ACCEPTING NEW MODEL')
-                    self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
-                    self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
-            else:
-                print('Storing a snapshot of the new model')
+            if accept:
+                print('ACCEPTING NEW MODEL')
                 self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(i))
                 self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename=self.args.load_folder_file[-1])
-
-    def saveTrainExamples(self, iteration: int) -> None:
-        folder = self.args.checkpoint
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        filename = os.path.join(folder, self.getCheckpointFile(iteration) + ".examples")
-        with open(filename, "wb+") as f:
-            Pickler(f).dump(self.trainExamplesHistory)  # TODO: Change to h5py
-
-        # Don't hog up storage space and clean up old (never to be used again) data.
-        old_checkpoint = os.path.join(folder, self.getCheckpointFile(iteration - 1) + '.examples')
-        if os.path.isfile(old_checkpoint):
-            os.remove(old_checkpoint)
-
-    def loadTrainExamples(self) -> None:
-        model_file = os.path.join(self.args.load_folder_file[0], self.args.load_folder_file[1])
-        examples_file = model_file + ".examples"
-        if not os.path.isfile(examples_file):
-            print(examples_file)
-            r = input("File with trainExamples not found. Continue? [y|n]")
-            if r != "y":
-                sys.exit()
-        else:
-            print("File with trainExamples found. Read it.")
-            with open(examples_file, "rb") as f:
-                self.trainExamplesHistory = Unpickler(f).load()
+            else:
+                print('REJECTING NEW MODEL')
+                self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')

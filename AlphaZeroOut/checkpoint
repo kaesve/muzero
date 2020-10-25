@@ -1,0 +1,2 @@
+model_checkpoint_path: "temp.pth.tar"
+all_model_checkpoint_paths: "temp.pth.tar"
