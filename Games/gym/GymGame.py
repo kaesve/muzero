@@ -44,13 +44,14 @@ class GymGame(Game):
     def getNextState(self, state: GymState, action: int, player: int, **kwargs) -> typing.Tuple[GymState, float, int]:
         # Gym may raise warnings that .step() is called even though the environment is done.
         # This however doesn't happen and may be a results of DeepCopy in the AlphaMCTS procedure.
-        observation, reward, done, info = state.env.step(action)
-        observation = observation if len(self.dimensions) > 1 else [[observation]]
-
         def nextEnv(old_state, clone: bool = False):  # Macro for cloning the state
             return deepcopy(old_state) if clone else old_state
 
         env = nextEnv(state.env, **kwargs)
+
+        observation, reward, done, info = env.step(action)
+        observation = observation if len(self.dimensions) > 1 else [[observation]]
+
         return GymState(env, observation, action, done), reward, player
 
     def getLegalMoves(self, state: np.ndarray, player: int,

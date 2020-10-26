@@ -60,7 +60,7 @@ class AlphaZeroCoach(Coach):
         for history in flat_history:
             examples += [[*symmetry, history.observed_returns[t]]
                          for t in range(len(history)) for symmetry in history.symmetries[t]]
-        # TODO: Priority sampling?
+        # TODO: Priority sampling? Check how data sampling and backprop was done for AlphaZero
         return examples
 
     def executeEpisode(self) -> GameHistory:

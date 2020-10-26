@@ -6,8 +6,8 @@
   
   "args": {
     "numIters": 100,
-    "numEps": 100,
-    "numTrainingSteps": 50,
+    "numEps": 50,
+    "numTrainingSteps": 75,
     "pitting": true,
     "pitting_trials": 20,
     "pit_acceptance_ratio": 0.2,
@@ -29,12 +29,12 @@
     "checkpoint": "./AlphaZeroOut/",
     "load_model": false,
     "load_folder_file": ["./AlphaZeroOut/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 20,
+    "numItersForTrainExamplesHistory": 5,
 
     "temperature_schedule": {
       "method": "stepwise",
       "by_weight_update": true,
-      "schedule_points": [[5000, 1], [7500, 0.5], [10000, 0.25]]
+      "schedule_points": [[1000, 1], [2500, 0.5], [5000, 0.25]]
     }
   },
   
