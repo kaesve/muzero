@@ -121,7 +121,7 @@ class MCTS:
                 self.Rsa[(s, a)] = 0
             else:
                 # Build network input for inference
-                o_t = self.game.buildObservation(next_state, 1)  # TODO Stacked obs
+                o_t = self.game.buildObservation(next_state, 1)
 
                 prior, value = self.neural_net.predict(o_t)
                 s_next = self.game.getHash(next_state)

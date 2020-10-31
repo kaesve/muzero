@@ -1,3 +1,6 @@
+"""
+TODO: Development
+"""
 from dataclasses import dataclass
 from itertools import combinations
 import sys
@@ -14,9 +17,8 @@ from Games.gym.GymGame import GymGame
 from Games.atari.AtariGame import AtariGame
 
 from Experimenter.players import *
-from MuZero.models.DefaultMuZero import MuZeroDefault as HexMuZero  # TODO
-from Games.hex.AlphaZeroModel.NNet import NNetWrapper as HexAlphaZero
-from Games.othello.AlphaZeroModel.NNet import NNetWrapper as OthelloAlphaZero
+from MuZero.models.DefaultMuZero import DefaultMuZero
+from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero
 
 from AlphaZero.AlphaMCTS import MCTS
 from MuZero.MuMCTS import MuZeroMCTS
@@ -53,10 +55,10 @@ class ExperimentConfig(object):
     })
 
     games = DotDict({
-        "HEX": GameConfig("HEX", HexGame, HexAlphaZero, HexMuZero),
-        "OTHELLO": GameConfig("OTHELLO", OthelloGame, OthelloAlphaZero, None),
-        "GYM": GameConfig("GYM", GymGame, None, None),
-        "ATARI": GameConfig("GYM", AtariGame, None, None)
+        "HEX": GameConfig("HEX", HexGame, DefaultAlphaZero, DefaultMuZero),
+        "OTHELLO": GameConfig("OTHELLO", OthelloGame, DefaultAlphaZero, DefaultMuZero),
+        "GYM": GameConfig("GYM", GymGame, DefaultAlphaZero, DefaultMuZero),
+        "ATARI": GameConfig("GYM", AtariGame, DefaultAlphaZero, DefaultMuZero)
     })
 
     def __init__(self, experiment_file: str):
@@ -84,7 +86,7 @@ class ExperimentConfig(object):
             if config.name == self.players.ALPHAZERO.name:
                 algorithm_config = DotDict.from_json(config.config)
 
-                model = self.game_config.alpha_zero(self.game, algorithm_config.net_args)
+                model = self.game_config.alpha_zero(self.game, algorithm_config.net_args, algorithm_config.architecture)
                 search = MCTS(self.game, model, algorithm_config.args)
 
                 self.player_configs.append(self.players.ALPHAZERO.player(
@@ -93,7 +95,7 @@ class ExperimentConfig(object):
             elif config.name == self.players.MUZERO.name:
                 algorithm_config = DotDict.from_json(config.config)
 
-                model = self.game_config.mu_zero(self.game, algorithm_config.net_args)
+                model = self.game_config.mu_zero(self.game, algorithm_config.net_args, algorithm_config.architecture)
                 search = MuZeroMCTS(self.game, model, algorithm_config.args)
 
                 self.player_configs.append(self.players.MUZERO.player(

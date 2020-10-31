@@ -3,12 +3,9 @@
 """
 import typing
 
-from keras.layers import Layer, Activation, BatchNormalization, Conv2D, Dropout, Dense, Flatten
-from keras.callbacks import Callback
-from keras import backend as k
-
-import tensorflow as tf
 import numpy as np
+from keras.layers import Layer, Activation, BatchNormalization, Conv2D, Dropout, Dense, Flatten
+from keras import backend as k
 
 
 class MinMaxScaler(Layer):
@@ -44,21 +41,6 @@ class MinMaxScaler(Layer):
         tensor_max = k.max(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
 
         return (inputs - tensor_min) / (tensor_max - tensor_min + 1e-8)
-
-
-class CustomTensorBoard(Callback):
-
-    def __init__(self, reference):
-        super().__init__()
-        self.reference = reference
-
-    def on_epoch_end(self, epoch, logs=None):
-        l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.model.get_weights()])
-
-        tf.summary.scalar('v_loss', data=logs['v_loss'], step=self.reference.steps + epoch)
-        tf.summary.scalar('pi_loss', data=logs['pi_loss'], step=self.reference.steps + epoch)
-        tf.summary.scalar('total loss', data=logs['loss'], step=self.reference.steps + epoch)
-        tf.summary.scalar("l2 norm", data=l2_norm, step=self.reference.steps + epoch)
 
 
 class Crafter:

@@ -1,47 +1,46 @@
 {
   "name": "boardgames",
   "algorithm": "ALPHAZERO",
-  "architecture": "Hex",
-  "debug": false,
+  "architecture": "Gym",
   
   "args": {
     "numIters": 100,
-    "numEps": 100,
-    "numTrainingSteps": 50,
+    "numEps": 50,
+    "numTrainingSteps": 75,
     "pitting": true,
     "pitting_trials": 20,
-    "pit_acceptance_ratio": 0.6,
+    "pit_acceptance_ratio": 0.2,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
-    "numMCTSSims": 50,
-    "prioritize": false,
+    "numMCTSSims": 25,
+    "prioritize": true,
     "prioritize_alpha": 1,
     "prioritize_beta": 1,
     "n_steps": 10,
     "c1": 1.25,
     "c2": 19652,
-    "gamma": 1,
+    "gamma": 0.997,
 
-    "minimum_reward": -1,
-    "maximum_reward": 1,
+    "minimum_reward": null,
+    "maximum_reward": null,
 
     "checkpoint": "./AlphaZeroOut/",
     "load_model": false,
     "load_folder_file": ["./AlphaZeroOut/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 20,
+    "numItersForTrainExamplesHistory": 5,
 
     "temperature_schedule": {
       "method": "stepwise",
-      "by_weight_update": false,
-      "schedule_points": [[20, 1], [20, 0]]
+      "by_weight_update": true,
+      "schedule_points": [[1000, 1], [2500, 0.5], [5000, 0.25]]
     }
   },
   
   "net_args": {
     "lr": 0.001,
     "l2": 1e-4,
-    "dropout": 0.0,
+    "dropout": 0.2,
     "batch_size": 128,
     "cuda": false,
     "num_channels": 256,

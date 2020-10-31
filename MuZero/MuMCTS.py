@@ -96,7 +96,7 @@ class MuZeroMCTS:
         self.minmax.refresh()
 
         # Aggregate root state value over MCTS back-propagated values
-        v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims)])
+        v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims - 1)])
         v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.numMCTSSims
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.

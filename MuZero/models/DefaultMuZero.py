@@ -1,7 +1,6 @@
 """
 
 """
-import os
 import numpy as np
 import sys
 import typing
@@ -14,7 +13,6 @@ from utils.storage import DotDict
 
 sys.path.append('../../..')
 
-
 models = {
     "Gym": BuildGymNet,
     "Hex": BuildHexNet,
@@ -22,7 +20,7 @@ models = {
 }
 
 
-class MuZeroDefault(MuZeroNeuralNet):
+class DefaultMuZero(MuZeroNeuralNet):
     """
 
     """
@@ -51,15 +49,15 @@ class MuZeroDefault(MuZeroNeuralNet):
         # Unpack and transform data for loss computation.
         observations, actions, targets, sample_weight = list(zip(*examples))
 
-        actions, sample_weight = np.array(actions), np.array(sample_weight)
+        actions, sample_weight = np.asarray(actions), np.asarray(sample_weight)
 
         # Unpack and encode targets. All target shapes are of the form [time, batch_size, categories]
-        target_vs, target_rs, target_pis = list(map(np.array, zip(*targets)))
+        target_vs, target_rs, target_pis = list(map(np.asarray, zip(*targets)))
 
-        target_vs = np.array([scalar_to_support(target_vs[:, t], self.net_args.support_size)
-                              for t in range(target_vs.shape[-1])])
-        target_rs = np.array([scalar_to_support(target_rs[:, t], self.net_args.support_size)
-                              for t in range(target_rs.shape[-1])])
+        target_vs = np.asarray([scalar_to_support(target_vs[:, t], self.net_args.support_size)
+                                for t in range(target_vs.shape[-1])])
+        target_rs = np.asarray([scalar_to_support(target_rs[:, t], self.net_args.support_size)
+                                for t in range(target_rs.shape[-1])])
         target_pis = np.swapaxes(target_pis, 0, 1)
 
         # Pack formatted inputs as tensors.

@@ -7,7 +7,7 @@ from tqdm import trange
 from Game import Game
 from utils.selfplay_utils import GameHistory
 from utils import DotDict
-from utils.debugging import MuZeroMonitor
+from utils.debugging import Monitor
 
 
 class Arena:
@@ -44,7 +44,7 @@ class Arena:
             or
                 draw result returned from the game that is neither 1, -1, nor 0.
         """
-        all([x.refresh() for x in self.trajectories])
+        all([x.refresh() for x in self.trajectories])  # TODO: Testing/ debugging stacked observations Alpha vs Mu.
         players = [self.player2, None, self.player1]
         cur_player = 1
         state = self.game.getInitialState()
@@ -142,7 +142,7 @@ class Arena:
 
         return one_won, two_won, (one_won + two_won - num_games * 2)
 
-    def pitting(self, args: DotDict, logger: MuZeroMonitor) -> bool:
+    def pitting(self, args: DotDict, logger: Monitor) -> bool:
         print("Pitting against previous version...")
 
         if self.game.n_players == 1:
