@@ -22,6 +22,7 @@ tf.autograph.set_verbosity(1)
 
 DEBUG_MODE = False
 LOG_RATE = 1
+RENDER = False
 
 
 class Monitor:

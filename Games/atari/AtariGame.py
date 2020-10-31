@@ -32,6 +32,7 @@ class AtariGame(Game):
     def __init__(self, env_name):
         super().__init__()
         self.env_name = env_name
+        env = gym.make(env_name)
         self.action_size = gym.make(env_name).action_space.n
 
     def getInitialState(self):
@@ -44,7 +45,15 @@ class AtariGame(Game):
         env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False,
                                               terminal_on_life_loss=True,
                                               noop_max=30)
-        return GymState(env, env.reset(), 0, False)
+
+        obs = env.reset()
+
+        if env.unwrapped.get_action_meanings()[0] == "FIRE":
+            # TODO: Could it happen that the game is done immeditaely after the first fire action?
+            # The wrapper from the baseline repo implies so: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+            obs, reward, done, info = env.step(1)
+
+        return GymState(env, obs, 0, False)
 
     def getDimensions(self, **kwargs) -> typing.Tuple[int, int, int]:
         """
@@ -77,7 +86,7 @@ class AtariGame(Game):
 
         env = nextEnv(state, **kwargs)
         # reorder actions so that we can have NOOP at the end
-        action = (action + 1) % self.action_size
+        action = (action - 1 + self.action_size) % self.action_size
         observation, reward, done, info = env.step(action)
 
         return GymState(env, observation, action, done), reward, 1
@@ -144,3 +153,7 @@ class AtariGame(Game):
 
     def getHash(self, state: GymState):
         return state.observation.tobytes()
+
+
+    def render(self, state: GymState):
+        state.env.render()

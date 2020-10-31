@@ -137,3 +137,6 @@ class Game:
             stateString: a quick conversion of state to a string format. Required by MCTS for hashing.
         """
         pass
+
+    def render(self, state):
+        pass

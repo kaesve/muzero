@@ -1,12 +1,13 @@
 {
   "name": "singleplayergames",
   "algorithm": "MUZERO",
-  "architecture": "Gym",
+  "architecture": "Atari",
+  "debug": true,
 
   "args": {
     "numIters": 100,
-    "numEps": 5,
-    "numTrainingSteps": 50,
+    "numEps": 50,
+    "numTrainingSteps": 75,
     "pitting": true,
     "pitting_trials": 20,
     "pit_acceptance_ratio": 0.2,
@@ -40,9 +41,9 @@
 
   "net_args": {
     "lr": 0.001,
-    "l2": 1e-4,
+    "l2": 1e-3,
     "dropout": 0.0,
-    "batch_size": 10,
+    "batch_size": 64,
     "cuda": false,
     "num_channels": 256,
     "num_towers": 3,
@@ -50,6 +51,6 @@
     "size_dense": 64,
     "dense_activation": "tanh",
     "support_size": 20,
-    "observation_length": 1
+    "observation_length": 10
   }
 }

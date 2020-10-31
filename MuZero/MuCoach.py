@@ -13,6 +13,8 @@ from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, TemperatureScheduler, sample_batch
 
+import utils.debugging as debugger
+
 
 class MuZeroCoach(Coach):
     """
@@ -110,6 +112,9 @@ class MuZeroCoach(Coach):
 
         while not z:  # Boardgames: If loop ends => current player lost
             step += 1
+
+            if debugger.RENDER:
+                self.game.render(state)
 
             # Update MCTS visit count temperature according to an episode or weight update schedule.
             temp = self.update_temperature(self.neural_net.steps if self.temp_schedule.args.by_weight_update else step)
