@@ -2,7 +2,6 @@
   "name": "format",
   "algorithm": "Algorithm name @see experimenter Enum",
   "architecture": "What neural architecture to use. For the currently implemented ones @see DefaultMuZero",
-  "debug": "Whether to store additional statistics and variables during training for debugging",
 
   "args": {
     "numIters": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",

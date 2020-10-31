@@ -23,7 +23,7 @@ class AlphaZeroNeuralNet(ABC):
         self.steps = 0
 
     @abstractmethod
-    def train(self, examples, steps):
+    def train(self, examples):
         """
         This function trains the neural network with examples obtained from
         self-play.

@@ -122,6 +122,10 @@ class GameHistory:
         print(f"Replay buffer filled with data from {n_self_play_iterations} self play iterations")
         print(f"In total {n_episodes} episodes have been played amounting to {n_samples} data samples")
 
+    @staticmethod
+    def flatten(nested_histories):
+        return [subitem for item in nested_histories for subitem in item]
+
 
 class MinMaxStats(object):
     """A class that holds the min-max values of the tree."""
@@ -159,9 +163,9 @@ class MinMaxStats(object):
         :param value:
         :return:
         """
-        if self.maximum > self.minimum:
+        if self.maximum >= self.minimum:
             # We normalize only when we have set the maximum and minimum values.
-            return (value - self.minimum) / (self.maximum - self.minimum)
+            return (value - self.minimum) / (self.maximum - self.minimum + 1e-8)
         return value
 
 
@@ -248,4 +252,4 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
     # Extract the corresponding IS loss scalars for each sample (or simply N x 1 / N if non-prioritized)
     sample_weights = [sample_weight[lengths[c[0]] + c[1]] for c in sample_coordinates]
 
-    return sample_coordinates, sample_weights
+    return sample_coordinates, sample_weights  # TODO Samples indices with 0 priority?

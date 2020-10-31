@@ -1,31 +1,30 @@
 {
-  "name": "singleplayergames",
+  "name": "boardgames",
   "algorithm": "MUZERO",
-  "architecture": "Gym",
-  "debug": false,
+  "architecture": "Hex",
 
   "args": {
-    "numIters": 100,
-    "numEps": 100,
-    "numTrainingSteps": 50,
+    "numIters": 10,
+    "numEps": 5,
+    "numTrainingSteps": 10,
     "pitting": true,
     "pitting_trials": 20,
-    "pit_acceptance_ratio": 0.2,
+    "pit_acceptance_ratio": 0.6,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
-    "numMCTSSims": 50,
-    "prioritize": true,
-    "prioritize_alpha": 0.5,
+    "numMCTSSims": 25,
+    "prioritize": false,
+    "prioritize_alpha": 1,
     "prioritize_beta": 1,
     "K": 5,
     "n_steps": 10,
     "c1": 1.25,
     "c2": 19652,
-    "gamma": 0.997,
+    "gamma": 1,
 
-    "minimum_reward": null,
-    "maximum_reward": null,
+    "minimum_reward": -1,
+    "maximum_reward": 1,
 
     "checkpoint": "./MuZeroOut/",
     "load_model": false,
@@ -34,22 +33,22 @@
 
     "temperature_schedule": {
       "method": "stepwise",
-      "by_weight_update": true,
-      "schedule_points": [[5000, 1], [7500, 0.5], [10000, 0.25]]
+      "by_weight_update": false,
+      "schedule_points": [[20, 1], [20, 0]]
     }
   },
 
   "net_args": {
     "lr": 0.001,
-    "l2": 1e-4,
+    "l2": 1e-3,
     "dropout": 0.0,
-    "batch_size": 128,
+    "batch_size": 64,
     "cuda": false,
     "num_channels": 256,
     "num_towers": 3,
     "num_dense": 2,
-    "size_dense": 64,
-    "dense_activation": "tanh",
+    "size_dense": 256,
+    "dense_activation": "relu",
     "support_size": 20,
     "observation_length": 1
   }

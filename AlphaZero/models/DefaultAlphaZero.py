@@ -2,10 +2,10 @@ import sys
 import typing
 
 import numpy as np
+import tensorflow as tf
 
 from AlphaZero.AlphaNeuralNet import AlphaZeroNeuralNet
 from utils.loss_utils import support_to_scalar, scalar_to_support
-from utils.network_utils import CustomTensorBoard
 from utils import DotDict
 from .architectures import *
 
@@ -30,29 +30,33 @@ class DefaultAlphaZero(AlphaZeroNeuralNet):
         super().__init__(game, net_args, models[architecture])
         self.action_size = game.getActionSize()
         self.architecture = architecture
-        self.callbacks = [CustomTensorBoard(self)]
 
-    def train(self, examples: typing.List, steps: int) -> None:
+    def train(self, examples: typing.List) -> None:
         """
-        examples: list of examples, each example is of form (board, pi, v)
+        examples: list of examples, each example is of form (state, (pi, v), loss_scale)
         """
-        observations, target_pis, target_vs = list(zip(*examples))
+        observations, targets, loss_scale = list(zip(*examples))
+        target_pis, target_vs = list(map(np.asarray, zip(*targets)))
 
         # ```np.asarray``` does not copy data contained within iterable
         observations = np.asarray(observations)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
+        priorities = np.asarray(loss_scale) * self.net_args.batch_size  # Undo 1/N normalization.
 
         # Cast to distribution
         target_vs = scalar_to_support(target_vs, self.net_args.support_size)
 
-        self.neural_net.model.fit(
-            x=observations, y=[target_pis, target_vs],
-            batch_size=self.net_args.batch_size, epochs=steps,
-            verbose=0, callbacks=self.callbacks
-        )
+        total_loss, pi_loss, v_loss = self.neural_net.model.train_on_batch(
+            x=observations, y=[target_pis, target_vs], sample_weight=[priorities, priorities])
+        l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.neural_net.model.get_weights()])
 
-        self.steps += steps
+        self.monitor.log(total_loss, "total loss")
+        self.monitor.log(pi_loss, "pi_loss")
+        self.monitor.log(v_loss, "v_loss")
+        self.monitor.log(l2_norm, "l2_norm")
+
+        self.steps += 1
 
     def predict(self, observation: np.ndarray) -> typing.Tuple[np.ndarray, float]:
         """

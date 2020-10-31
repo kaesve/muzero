@@ -1,6 +1,7 @@
 """
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
+import utils.debugging as debugger
 from utils.debugging import *
 from utils.storage import DotDict
 
@@ -8,7 +9,7 @@ from AlphaZero.AlphaCoach import AlphaZeroCoach
 from MuZero.MuCoach import MuZeroCoach
 
 from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero as ANet
-from MuZero.models.DefaultMuZero import MuZeroDefault as MNet
+from MuZero.models.DefaultMuZero import DefaultMuZero as MNet
 
 from Games.hex.HexGame import HexGame
 from Games.gym.GymGame import GymGame
@@ -19,10 +20,10 @@ from Experimenter.experimenter import ExperimentConfig, tournament_final
 logger = tf.get_logger()
 logger.setLevel(logging.ERROR)
 
-ALPHAZERO_DEFAULTS = "Configurations/AlphaZeroConfigs/singleplayergames.json"
-ALPHAZERO_BOARD = "Configurations/AlphaZeroConfigs/boardgames.json"
-MUZERO_DEFAULTS = "Configurations/MuZeroConfigs/singleplayergames.json"
-MUZERO_BOARD = "Configurations/MuZeroConfigs/boardgames.json"
+ALPHAZERO_DEFAULTS = "Configurations/ModelConfigs/AlphazeroCartpole.json"
+ALPHAZERO_BOARD = "Configurations/ModelConfigs/AlphazeroHex.json"
+MUZERO_DEFAULTS = "Configurations/ModelConfigs/MuzeroCartpole.json"
+MUZERO_BOARD = "Configurations/ModelConfigs/MuzeroHex.json"
 
 MUZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json"
 
@@ -65,12 +66,15 @@ def learnM0(g, config):
 
 
 if __name__ == "__main__":
-    # learnA0()
-    learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
-    # learnM0(HexGame(BOARD_SIZE), MuHexNet, MUZERO_BOARD)
-    #learnM0(GymGame('CartPole-v1'), MUZERO_DEFAULTS)
-    # learnM0(AtariGame("BreakoutNoFrameskip-v4"), MuAtariNet)
-    
+    # Set debugging/ logging settings.
+    debugger.DEBUG_MODE = True
+    debugger.LOG_RATE = 1
+
+    # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
+
+    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    learnM0(GymGame('CartPole-v1'), MUZERO_DEFAULTS)
+
     # b = ExperimentConfig(MUZERO_RANDOM)
     # b.construct()
     # print(b.game_config)
