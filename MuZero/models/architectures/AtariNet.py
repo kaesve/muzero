@@ -27,17 +27,17 @@ class AtariNNet:
         self.args = args
         self.crafter = Crafter(args)
 
+        assert self.action_size == self.latent_x * self.latent_y, "The action space should be the same size as the latent space"
+
         # s: batch_size x time x state_x x state_y
         self.observation_history = Input(shape=(self.board_x, self.board_y, self.planes * self.args.observation_length))
         # a: one hot encoded vector of shape batch_size x (state_x * state_y)
         self.action_plane = Input(shape=(self.action_size,))
         # s': batch_size  x board_x x board_y x 1
-        self.latent_state = Input(shape=(self.latent_x, self.latent_y))
+        self.latent_state = Input(shape=(self.latent_x, self.latent_y, 1))
 
-        action_tiled = tile(0, (self.latent_x * self.latent_y - self.action_size))
-        actions_full = Concatenate()([self.action_plane, action_tiled])
 
-        action_plane = Reshape((self.latent_x, self.latent_y, 1))(actions_full)
+        action_plane = Reshape((self.latent_x, self.latent_y, 1))(self.action_plane)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(self.latent_state)
 
         self.s = self.build_encoder(self.observation_history)

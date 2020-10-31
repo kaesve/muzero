@@ -43,7 +43,7 @@ class AtariGame(Game):
         env = gym.make(self.env_name)
         env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False,
                                               terminal_on_life_loss=True,
-                                              noop_max=10)
+                                              noop_max=30)
         return GymState(env, env.reset(), 0, False)
 
     def getDimensions(self, **kwargs) -> typing.Tuple[int, int, int]:
@@ -56,7 +56,9 @@ class AtariGame(Game):
 
     def getActionSize(self) -> int:
         """ Return the number of possible actions """
-        return self.action_size
+
+        # The latent space is hard coded to be 6x6 = 36
+        return 36
 
     def getNextState(self, state: GymState, action: int, player: int, **kwargs):
         """
@@ -71,11 +73,11 @@ class AtariGame(Game):
             nextPlayer: player who plays in the next turn
         """
         def nextEnv(old_state, clone: bool = False):  # Macro for cloning the state
-            return old_state.env.clone_full_state() if clone else old_state
+            return old_state.env.clone_full_state() if clone else old_state.env
 
         env = nextEnv(state, **kwargs)
         # reorder actions so that we can have NOOP at the end
-        action = (action + 1) % self.getActionSize()
+        action = (action + 1) % self.action_size
         observation, reward, done, info = env.step(action)
 
         return GymState(env, observation, action, done), reward, 1
@@ -90,7 +92,9 @@ class AtariGame(Game):
             validMoves: a binary vector of length self.getActionSize(), 1 for
                         moves that are legal 0 for invalid moves
         """
-        return np.ones(self.getActionSize())
+        res = np.arange(self.getActionSize()) < self.action_size
+        res = res.astype(int)
+        return res
 
     def getGameEnded(self, state: GymState, player: int, close: bool = False) -> int:
         """
@@ -131,7 +135,7 @@ class AtariGame(Game):
             return self.getCanonicalForm(state, player).observation
 
         elif form == Game.Representation.HEURISTIC:
-            action_plane = np.ones(state.observation.shape[:2]) * state.action / self.getActionSize()
+            action_plane = np.ones(state.observation.shape[:2]) * state.action / self.action_size
             action_plane = action_plane.reshape((*action_plane.shape, 1))
             return np.concatenate((state.observation, action_plane), axis=2)
 
