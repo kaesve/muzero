@@ -228,7 +228,7 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
     lengths = list(map(len, list_of_histories))   # Map the trajectory length of each Game
 
     sampling_probability = None                   # None defaults to uniform in np.random.choice
-    sample_weight = np.ones(np.sum(lengths)) / n  # 1 / N. Uniform weight update strength over batch.
+    sample_weight = np.ones(np.sum(lengths))      # 1 / N. Uniform weight update strength over batch.
 
     if prioritize or alpha == 0:
         errors = np.array([np.abs(h.search_returns[i] - h.observed_returns[i])
@@ -244,12 +244,12 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
     flat_indices = np.random.choice(a=np.sum(lengths), size=n, replace=False, p=sampling_probability)
 
     # Map the flat indices to the correct histories and history indices.
-    history_index_borders = np.cumsum([0] + lengths)
+    history_index_borders = np.cumsum(lengths)
     history_indices = [(np.sum(i >= history_index_borders), i) for i in flat_indices]
 
     # Of the form [(history_i, t), ...] \equiv history_it
-    sample_coordinates = [(h_i - 1, i - history_index_borders[h_i - 1]) for h_i, i in history_indices]
+    sample_coordinates = [(h_i, i - np.r_[0, history_index_borders][h_i]) for h_i, i in history_indices]
     # Extract the corresponding IS loss scalars for each sample (or simply N x 1 / N if non-prioritized)
-    sample_weights = [sample_weight[lengths[c[0]] + c[1]] for c in sample_coordinates]
+    sample_weights = sample_weight[flat_indices]
 
-    return sample_coordinates, sample_weights  # TODO Samples indices with 0 priority?
+    return sample_coordinates, sample_weights

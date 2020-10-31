@@ -70,7 +70,7 @@ if __name__ == "__main__":
     debugger.DEBUG_MODE = True
     debugger.LOG_RATE = 1
 
-    # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
+    learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
 
     # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
     learnM0(GymGame('CartPole-v1'), MUZERO_DEFAULTS)
