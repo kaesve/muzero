@@ -48,8 +48,8 @@ class AtariGame(Game):
 
         obs = env.reset()
 
-        if env.unwrapped.get_action_meanings()[0] == "FIRE":
-            # TODO: Could it happen that the game is done immeditaely after the first fire action?
+        if env.unwrapped.get_action_meanings()[1] == "FIRE":
+            # TODO: Could it happen that the game is done immediately after the first fire action?
             # The wrapper from the baseline repo implies so: https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
             obs, reward, done, info = env.step(1)
 
