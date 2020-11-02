@@ -4,7 +4,7 @@ import numpy as np
 
 from AlphaZero.AlphaNeuralNet import AlphaZeroNeuralNet
 from utils import DotDict
-from utils.selfplay_utils import MinMaxStats
+from utils.selfplay_utils import MinMaxStats, GameHistory, GameState
 
 EPS = 1e-8
 
@@ -35,24 +35,24 @@ class MCTS:
     def clear_tree(self) -> None:
         self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Es, self.Vs = [{} for _ in range(8)]
 
-    def initialize_root(self, state) -> typing.Tuple[bytes, float]:
-        o_t = self.game.buildObservation(state, 1)
-        s_0 = self.game.getHash(state)
+    def initialize_root(self, state: GameState, trajectory: GameHistory) -> typing.Tuple[bytes, float]:
+        network_input = trajectory.stackObservations(self.neural_net.net_args.observation_length, state.observation)
+        pi_0, v_0 = self.neural_net.predict(network_input)
 
-        # Initialize root of the tree
-        pi_0, v_0 = self.neural_net.predict(o_t)
+        s_0 = self.game.getHash(state)
 
         # Add Dirichlet Exploration noise
         noise = np.random.dirichlet([self.args.dirichlet_alpha] * len(pi_0))
         self.Ps[s_0] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * pi_0
 
         # Mask the prior for illegal moves, and re-normalize accordingly.
-        self.Ps[s_0] *= self.game.getLegalMoves(state, 1)
+        self.Vs[s_0] = self.game.getLegalMoves(state)
+
+        self.Ps[s_0] *= self.Vs[s_0]
         self.Ps[s_0] = self.Ps[s_0] / np.sum(self.Ps[s_0])
 
         # Sum of visit counts of the edges/ children and legal moves.
         self.Ns[s_0] = 0
-        self.Vs[s_0] = self.game.getLegalMoves(state, 1)
 
         return s_0, v_0
 
@@ -66,7 +66,7 @@ class MCTS:
         ucb += q_value                                                                      # Exploitation
         return ucb
 
-    def runMCTS(self, state, temp: int = 1) -> typing.Tuple[np.ndarray, float]:
+    def runMCTS(self, state: GameState, trajectory: GameHistory, temp: int = 1) -> typing.Tuple[np.ndarray, float]:
         """
         This function performs numMCTSSims simulations of MCTS starting from
         a history (array) of past observations.
@@ -76,13 +76,13 @@ class MCTS:
                    proportional to Nsa[(s_0,a)]**(1./temp)
             v: (float) Estimated value of the root state.
         """
-        s_0, v_0 = self.initialize_root(state)
+        s_0, v_0 = self.initialize_root(state, trajectory)
 
         # Refresh value bounds in the tree
         self.minmax.refresh()
 
         # Aggregate root state value over MCTS back-propagated values
-        v_search = sum([self._search(state) for _ in range(self.args.numMCTSSims)])
+        v_search = sum([self._search(state, trajectory) for _ in range(self.args.numMCTSSims)])
         v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.numMCTSSims
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.
@@ -97,7 +97,7 @@ class MCTS:
 
         return move_probabilities, v
 
-    def _search(self, state, path: typing.Tuple[int, ...] = tuple()) -> float:
+    def _search(self, state: GameState, trajectory: GameHistory, path: typing.Tuple[int, ...] = tuple()) -> float:
         """
 
         """
@@ -110,30 +110,31 @@ class MCTS:
         a = np.argmax(self.Vs[s] * np.asarray(confidence_bounds)).item()  # Get argmax as scalar
 
         if (s, a) not in self.Ssa:  ### ROLLOUT
-            next_state, reward, next_player = self.game.getNextState(state, a, 1, clone=True)
-            next_state = self.game.getCanonicalForm(next_state, next_player)
+            next_state, reward = self.game.getNextState(state, a, clone=True)
+            s_next = self.game.getHash(next_state)
 
-            if next_state not in self.Es:
-                self.Es[next_state] = self.game.getGameEnded(next_state, 1)
+            if s_next not in self.Es:
+                self.Es[s_next] = self.game.getGameEnded(next_state)
 
-            if self.Es[next_state]:  # Leaf node
-                value = 0 if self.game.n_players == 1 else -1
+            if self.Es[s_next]:  # Leaf node
+                value = 0 if self.game.n_players == 1 else -self.Es[s_next]
                 self.Rsa[(s, a)] = 0
             else:
                 # Build network input for inference
-                o_t = self.game.buildObservation(next_state, 1)
-
-                prior, value = self.neural_net.predict(o_t)
-                s_next = self.game.getHash(next_state)
+                network_input = trajectory.stackObservations(self.neural_net.net_args.observation_length,
+                                                             state.observation)
+                prior, value = self.neural_net.predict(network_input)
 
                 # Current depth statistics
-                self.Rsa[(s, a)], self.Ssa[(s, a)] = reward, (next_state, next_player)
+                self.Rsa[(s, a)], self.Ssa[(s, a)] = reward, next_state
                 # Next depth statistics
-                self.Ps[s_next], self.Ns[s_next], self.Vs[s_next] = prior, 0, self.game.getLegalMoves(next_state, 1)
+                self.Ps[s_next], self.Ns[s_next], self.Vs[s_next] = prior, 0, self.game.getLegalMoves(next_state)
                 value = value if self.game.n_players == 1 else -value  # Alternate value perspective for adversary.
 
         else:  ### EXPANSION
-            value = self._search(self.Ssa[(s, a)][0], path + (a,))  # 1-step look ahead state value
+            trajectory.observations.append(state.observation)   # Build up an observation trajectory inside the tree
+            value = self._search(self.Ssa[(s, a)], trajectory, path + (a,))
+            trajectory.observations.pop()  # Clear tree observation trajectory when backing up
 
         ### BACKUP
         gk = self.Rsa[(s, a)] + self.args.gamma * value  # (Discounted) Value of the current node

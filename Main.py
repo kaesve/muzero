@@ -17,15 +17,13 @@ from Games.atari.AtariGame import AtariGame
 
 from Experimenter.experimenter import ExperimentConfig, tournament_final
 
-logger = tf.get_logger()
-logger.setLevel(logging.ERROR)
-
 ALPHAZERO_DEFAULTS = "Configurations/ModelConfigs/AlphazeroCartpole.json"
 ALPHAZERO_BOARD = "Configurations/ModelConfigs/AlphazeroHex.json"
 MUZERO_DEFAULTS = "Configurations/ModelConfigs/MuzeroCartpole.json"
 MUZERO_BOARD = "Configurations/ModelConfigs/MuzeroHex.json"
 
 MUZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json"
+ALPHAZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json"
 
 BOARD_SIZE = 5
 
@@ -71,13 +69,14 @@ if __name__ == "__main__":
     debugger.LOG_RATE = 1
 
     learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
+    # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
 
-    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
-    learnM0(GymGame('CartPole-v1'), MUZERO_DEFAULTS)
+    learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    # learnM0(GymGame('CartPole-v1'), MUZERO_DEFAULTS)
 
-    # b = ExperimentConfig(MUZERO_RANDOM)
-    # b.construct()
-    # print(b.game_config)
-    # print(b.player_configs)
+    b = ExperimentConfig(ALPHAZERO_RANDOM)
+    b.construct()
+    print(b.game_config)
+    print(b.player_configs)
 
-    # tournament_final(experiment=b)
+    tournament_final(experiment=b)

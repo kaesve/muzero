@@ -7,7 +7,7 @@ from keras.optimizers import Adam
 sys.path.append('..')
 
 
-class OthelloNNet:
+class OthelloNNet:  # DEPRECATED
     def __init__(self, game, args):
         # game params
         self.board_x, self.board_y = game.getDimensions()

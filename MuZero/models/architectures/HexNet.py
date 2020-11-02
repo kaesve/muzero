@@ -30,16 +30,15 @@ class HexNNet:
         # a: one hot encoded vector of shape batch_size x (state_x * state_y)
         self.action_plane = Input(shape=(self.action_size,))
         # s': batch_size  x board_x x board_y x 1
-        self.latent_state = Input(shape=(self.board_x, self.board_y))
+        self.latent_state = Input(shape=(self.board_x, self.board_y, 1))
 
         action_plane = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_y,),
                               input_shape=(self.action_size,))(self.action_plane)  # Omit resignation
         action_plane = Reshape((self.board_x, self.board_y, 1))(action_plane)
-        latent_state = Reshape((self.board_x, self.board_y, 1))(self.latent_state)
 
         self.s = self.build_encoder(self.observation_history)
-        self.r, self.s_next = self.build_dynamics(latent_state, action_plane)
-        self.pi, self.v = self.build_predictor(latent_state)
+        self.r, self.s_next = self.build_dynamics(self.latent_state, action_plane)
+        self.pi, self.v = self.build_predictor(self.latent_state)
 
         self.encoder = Model(inputs=self.observation_history, outputs=self.s)
         self.dynamics = Model(inputs=[self.latent_state, self.action_plane], outputs=[self.r, self.s_next])

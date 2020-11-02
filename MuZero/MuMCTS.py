@@ -7,7 +7,7 @@ import numpy as np
 
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from utils import DotDict
-from utils.selfplay_utils import MinMaxStats
+from utils.selfplay_utils import MinMaxStats, GameHistory, GameState
 
 EPS = 1e-8
 
@@ -44,15 +44,12 @@ class MuZeroMCTS:
         """Clear all statistics stored in the current search tree"""
         self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
-    def initialize_root(self, observations: np.ndarray,
-                        legal_moves: np.ndarray) -> typing.Tuple[typing.Tuple[bytes, tuple], np.ndarray, float]:
-        """
+    def initialize_root(self, state: GameState, trajectory: GameHistory) -> typing.Tuple[typing.Tuple[bytes, tuple], np.ndarray, float]:
+        # Perform initial inference on o_t-l, ... o_t
+        o_t = self.game.buildObservation(state)
+        stacked_observations = trajectory.stackObservations(self.neural_net.net_args.observation_length, o_t)
+        latent_state, pi_0, v_0 = self.neural_net.initial_inference(stacked_observations)
 
-        :param observations:
-        :param legal_moves:
-        :return:
-        """
-        latent_state, pi_0, v_0 = self.neural_net.initial_inference(observations)
         s_0 = (latent_state.tobytes(), tuple())  # Hashable representation
 
         # Add Dirichlet Exploration noise
@@ -60,7 +57,9 @@ class MuZeroMCTS:
         self.Ps[s_0] = noise * self.args.exploration_fraction + (1 - self.args.exploration_fraction) * pi_0
 
         # Mask the prior for illegal moves, and re-normalize accordingly.
-        self.Ps[s_0] *= legal_moves
+        self.Vs[s_0] = self.game.getLegalMoves(state)
+
+        self.Ps[s_0] *= self.Vs[s_0]
         self.Ps[s_0] = self.Ps[s_0] / np.sum(self.Ps[s_0])
 
         # Sum of visit counts of the edges/ children
@@ -70,6 +69,9 @@ class MuZeroMCTS:
 
     def compute_ucb(self, s: typing.Tuple[bytes, tuple], a: int, exploration_factor: float) -> float:
         # Compute the PUCT formula
+        if s in self.Vs and not self.Vs[s][a]:
+            return 0  # Illegal move masked at a root state.
+
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
         q_value = self.minmax.normalize(self.Qsa[(s, a)]) if (s, a) in self.Qsa else 0
         c_children = np.max([self.Ns[s], 1e-8])  # Ensure that prior doesn't collapse to 0 if s is new.
@@ -78,8 +80,7 @@ class MuZeroMCTS:
         ucb += q_value                                                                      # Exploitation
         return ucb
 
-    def runMCTS(self, observations: np.ndarray, legal_moves: np.ndarray,
-                temp: int = 1) -> typing.Tuple[np.ndarray, float]:
+    def runMCTS(self, state: GameState, trajectory: GameHistory, temp: int = 1) -> typing.Tuple[np.ndarray, float]:
         """
         This function performs numMCTSSims simulations of MCTS starting from
         a history (array) of past observations.
@@ -90,7 +91,7 @@ class MuZeroMCTS:
             v: (float) Estimated value of the root state.
         """
         # Get a hashable latent state representation 's_0', the predicted value of the root, and the numerical root s_0.
-        s_0, latent_state, v_0 = self.initialize_root(observations, legal_moves)
+        s_0, latent_state, v_0 = self.initialize_root(state, trajectory)
 
         # Refresh value bounds in the tree
         self.minmax.refresh()

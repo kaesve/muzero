@@ -11,11 +11,14 @@ For documentation we refer to the game-logic class and the parent-class:
 
 from __future__ import print_function
 import sys
+import typing
+
 import numpy as np
 
 from Game import Game
 from .src_joery.hex_skeleton import HexBoard
 from .src_joery.hex_utils import available_moves, make_move
+from utils.game_utils import GameState
 
 sys.path.append('../../..')
 
@@ -27,102 +30,90 @@ class HexGame(Game):
         HexBoard.BLUE: "b"
     }
 
-    def __init__(self, n):
+    def __init__(self, n: int) -> None:
         super().__init__(n_players=2)
         self.n = n
+        self.n_symmetries = 2
 
-    def getInitialState(self):
-        # return initial board (numpy board)
+    def getInitialState(self) -> GameState:
         b = HexBoard(self.n)
-        return b.board
+        next_state = GameState(canonical_state=b.board, observation=None, action=-1, player=1, done=False)
+        next_state.observation = self.buildObservation(next_state)
+        return next_state
 
-    def getDimensions(self, form: Game.Representation = Game.Representation.CANONICAL):
+    def getDimensions(self) -> typing.Tuple[int, int, int]:
         # (a,b) tuple
-        if form == Game.Representation.CANONICAL:
-            return self.n, self.n, 1
-        elif form == Game.Representation.HEURISTIC:
-            return self.n, self.n, 4
+        return self.n, self.n, 3
 
-        raise NotImplementedError("Did not specify a valid observation encoding.")
-
-    def getActionSize(self):
+    def getActionSize(self) -> int:
         # return number of actions
         return self.n * self.n + 1
 
-    def getNextState(self, state, action, player, form=Game.Representation.CANONICAL, **kwargs):
+    def getNextState(self, state: GameState, action: int, **kwargs) -> typing.Tuple[GameState, float]:
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         if action == self.n * self.n:
-            return state, -player
+            state.done = True
+            state.player = -state.player
+            return state, 0
+
         b = HexBoard(self.n)
         b.board = np.copy(state)
 
         move = (action // self.n, action % self.n)
-        # Make the move on the transposed (== Canonical) board given this state representation.
-        if player == -1 and form == Game.Representation.CANONICAL:
-            move = move[::-1]
-
         assert b.board[move] == HexBoard.EMPTY
+        make_move(b, move, state.player)
 
-        make_move(b, move, player)
+        next_state = GameState(canonical_state=b.board, observation=None, action=action,
+                               player=-state.player, done=False)
+        next_state.observation = self.buildObservation(state)
 
-        return b.board, 0, -player
+        return next_state, 0
 
-    def getLegalMoves(self, state, player, form: Game.Representation = Game.Representation.CANONICAL) -> np.ndarray:
+    def getLegalMoves(self, state: GameState) -> np.ndarray:
         # return a fixed size binary vector
         b = HexBoard(self.n)
-        b.board = np.copy(state)
+        b.board = np.copy(state.canonical_state)
 
-        # Order of raveling is done in normal order C or in transposed order F depending on the player.
-        # If the game representation does not use Canonical form, ravelling is done in an uniform way.
-        order = 'C' if (player == 1 or form == Game.Representation.HEURISTIC) else 'F'
-        valid_moves = np.append(1 - np.abs(b.board.ravel(order=order)), 0)
+        valid_moves = np.append(1 - np.abs(b.board.ravel()), 0)
 
         if np.sum(valid_moves) == 0:  # or self.getGameEnded(board, player) != 0:
             valid_moves[-1] = 1
             return valid_moves
 
-        assert np.all([np.array(valid_moves[:-1]).reshape((self.n, self.n), order=order) + np.abs(b.board) == 1])
+        assert np.all([np.array(valid_moves[:-1]).reshape((self.n, self.n)) + np.abs(b.board) == 1])
 
         return valid_moves
 
-    def getGameEnded(self, state, player, **kwargs):
+    def getGameEnded(self, state: GameState, **kwargs) -> int:
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = HexBoard(self.n)
-        b.board = np.copy(state)
+        b.board = np.copy(state.canonical_state)
 
         if b.check_win(1):
-            return 1 if player == 1 else -1
+            state.done = True
+            return 1 if state.player == 1 else -1
 
         if b.check_win(-1):
-            return 1 if player == -1 else -1
+            state.done = True
+            return 1 if state.player == -1 else -1
 
         return 0
 
-    def getCanonicalForm(self, state, player):
-        return state if player == 1 else -state.T
+    def buildObservation(self, state: GameState) -> np.ndarray:
+        # Observation consists of three planes concatenated along the last dimension.
+        # The first plane is an elementwise indicator for the board where player 1 is.
+        # The second plane is identical to the first plane, but for player -1.
+        # The third plane is a bias plane indicating whose turn it is (p1=1, p2=-1).
+        # Output shape = (board_x, board_y, 3)
+        s_p1 = np.where(state == 1, 1.0, 0.0)
+        s_p2 = np.where(state == -1, 1.0, 0.0)
+        to_play = np.full_like(state, state.player)
 
-    def buildObservation(self, state: np.ndarray, player: int,
-                         form: Game.Representation = Game.Representation.CANONICAL) -> np.ndarray:
-        if form == self.Representation.CANONICAL:
-            return self.getCanonicalForm(state, player)
+        return np.stack([s_p1, s_p2, to_play], axis=-1)
 
-        elif form == self.Representation.HEURISTIC:
-            # Observation consists of three planes concatenated along the last dimension.
-            # The first plane is an elementwise indicator for the board where player 1 is.
-            # The second plane is identical to the first plane, but for player -1.
-            # The third plane is a bias plane indicating whose turn it is (p1=1, p2=-1).
-            # Output shape = (board_x, board_y, 3)
-            s_p1 = np.where(state == 1, 1.0, 0.0)
-            s_p2 = np.where(state == -1, 1.0, 0.0)
-            to_play = np.full_like(state, player)
-
-            return np.stack([s_p1, s_p2, to_play, self.getCanonicalForm(state, player)], axis=-1)
-
-        raise NotImplementedError("Did not find an observation encoding.")
-
-    def getSymmetries(self, board, pi, form: Game.Representation = Game.Representation.CANONICAL):
+    def getSymmetries(self, board: GameState, pi: np.ndarray) -> typing.List:
         # mirror, rotational
         assert (len(pi) == self.n ** 2 + 1)  # 1 for pass
         pi_board = np.reshape(pi[:-1], (self.n, self.n))
@@ -134,18 +125,18 @@ class HexGame(Game):
 
         return symmetries
 
-    def getHash(self, state):
-        return state.tostring()
+    def getHash(self, state: GameState) -> bytes:
+        return state.observation.tobytes()
 
-    def stringRepresentationReadable(self, board):
-        board_s = "".join(self.square_content[square] for row in board for square in row)
+    def stringRepresentationReadable(self, state: GameState):
+        board_s = "".join(self.square_content[square] for row in state.canonical_state for square in row)
         return board_s
 
-    def getScore(self, board, player):
-        return len(available_moves(board))
+    def getScore(self, state: GameState):
+        return len(available_moves(state.canonical_state))
 
     @staticmethod
-    def display(board):
-        board_cls = HexBoard(board.shape[0])
-        board_cls.board = board
+    def display(state: GameState):
+        board_cls = HexBoard(state.canonical_state.shape[0])
+        board_cls.board = state.canonical_state
         board_cls.print()

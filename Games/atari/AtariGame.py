@@ -2,23 +2,16 @@ from __future__ import print_function
 import typing
 import sys
 
-from Game import Game
 import numpy as np
-
 import gym
+
+from Games.gym.GymGame import GymGame
+from utils.game_utils import AtariState
 
 sys.path.append('../../..')
 
 
-class GymState:
-    def __init__(self, env, observation, action, done):
-        self.env = env
-        self.observation = observation
-        self.action = action
-        self.done = done
-
-
-class AtariGame(Game):
+class AtariGame(GymGame):
     """
     This class specifies the base Game class. To define your own game, subclass
     this class and implement the functions below. This works when the game is
@@ -29,12 +22,10 @@ class AtariGame(Game):
     See hex/HexGame.py for an example implementation.
     """
 
-    def __init__(self, env_name):
-        super().__init__()
-        self.env_name = env_name
-        self.action_size = gym.make(env_name).action_space.n
+    def __init__(self, env_name: str) -> None:
+        super().__init__(env_name)
 
-    def getInitialState(self):
+    def getInitialState(self) -> AtariState:
         """
         Returns:
             startState: a representation of the initial state (ideally this is the form
@@ -42,9 +33,13 @@ class AtariGame(Game):
         """
         env = gym.make(self.env_name)
         env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False,
-                                              terminal_on_life_loss=True,
-                                              noop_max=10)
-        return GymState(env, env.reset(), 0, False)
+                                              terminal_on_life_loss=True, noop_max=10)
+
+        next_state = AtariState(canonical_state=env.reset(), observation=None,
+                                action=-1, done=False, player=1, env=env)
+        next_state.observation = self.buildObservation(next_state)
+
+        return next_state
 
     def getDimensions(self, **kwargs) -> typing.Tuple[int, int, int]:
         """
@@ -56,9 +51,9 @@ class AtariGame(Game):
 
     def getActionSize(self) -> int:
         """ Return the number of possible actions """
-        return self.action_size
+        return 36
 
-    def getNextState(self, state: GymState, action: int, player: int, **kwargs):
+    def getNextState(self, state: AtariState, action: int, **kwargs) -> typing.Tuple[AtariState, float]:
         """
         Input:
             state: current state
@@ -70,17 +65,21 @@ class AtariGame(Game):
             reward: Immediate observed reward (default should be 0 for most boardgames)
             nextPlayer: player who plays in the next turn
         """
-        def nextEnv(old_state, clone: bool = False):  # Macro for cloning the state
-            return old_state.env.clone_full_state() if clone else old_state
+        def nextEnv(old_state: AtariState, clone: bool = False):  # Macro for cloning the state
+            return old_state.env.clone_full_state() if clone else old_state.env
 
         env = nextEnv(state, **kwargs)
         # reorder actions so that we can have NOOP at the end
         action = (action + 1) % self.getActionSize()
-        observation, reward, done, info = env.step(action)
+        raw_observation, reward, done, info = env.step(action)
 
-        return GymState(env, observation, action, done), reward, 1
+        next_state = AtariState(canonical_state=raw_observation, observation=None,
+                                action=action, done=done, player=1, env=env)
+        next_state.observation = self.buildObservation(next_state)
 
-    def getLegalMoves(self, state: GymState, player: int, **kwargs):
+        return next_state, reward
+
+    def getLegalMoves(self, state: AtariState, **kwargs) -> np.ndarray:
         """
         Input:
             board: current state
@@ -92,51 +91,7 @@ class AtariGame(Game):
         """
         return np.ones(self.getActionSize())
 
-    def getGameEnded(self, state: GymState, player: int, close: bool = False) -> int:
-        """
-        Input:
-            state: current state
-            player: current player (1 or -1)
-
-        Returns:
-            r: 0 if game has not ended. 1 if player won, -1 if player lost,
-               small non-zero value for draw.
-               
-        """
-
-        if state.done and close:
-            state.env.close()
-
-        return int(state.done)
-
-    def getCanonicalForm(self, state: np.ndarray, player: int):
-        """
-        Input:
-            state: current state
-            player: current player (1 or -1)
-
-        Returns:
-            canonicalBoard: returns canonical form of the state. The canonical form
-                            should be independent of the player. For e.g. in chess,
-                            the canonical form can be chosen to be from the pov
-                            of white. When the player is white, we can return
-                            board as is. When the player is black, we can invert
-                            the colors and return the board.
-        """
-        return state
-
-    def buildObservation(self, state: GymState, player: int,
-                         form: Game.Representation = Game.Representation.HEURISTIC) -> np.ndarray:
-        if form == Game.Representation.CANONICAL:
-            return self.getCanonicalForm(state, player).observation
-
-        elif form == Game.Representation.HEURISTIC:
-            action_plane = np.ones(state.observation.shape[:2]) * state.action / self.getActionSize()
-            action_plane = action_plane.reshape((*action_plane.shape, 1))
-            return np.concatenate((state.observation, action_plane), axis=2)
-
-    def getSymmetries(self, state: GymState, pi: np.ndarray, **kwargs):
-        return [(state.observation, pi)]
-
-    def getHash(self, state: GymState):
-        return state.observation.tobytes()
+    def buildObservation(self, state: AtariState, **kwargs) -> np.ndarray:
+        action_plane = np.ones(state.canonical_state.shape[:2]) * state.action / self.getActionSize()
+        action_plane = action_plane.reshape((*action_plane.shape, 1))
+        return np.concatenate((state.canonical_state, action_plane), axis=-1)

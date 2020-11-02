@@ -7,11 +7,12 @@ import typing
 from pickle import Pickler, Unpickler, HIGHEST_PROTOCOL
 from collections import deque
 
+import numpy as np
 from tqdm import trange
 
 from Arena import Arena
 from utils import DotDict
-from utils.selfplay_utils import GameHistory
+from utils.selfplay_utils import GameHistory, TemperatureScheduler
 
 
 class Coach:
@@ -42,6 +43,9 @@ class Coach:
             self.opponent_mcts = search_engine(self.game, self.opponent_net, self.args)
             self.arena_opponent = player(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'p2'}))
 
+        self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
+        self.update_temperature = self.temp_schedule.build()
+
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
         return f'checkpoint_{iteration}.pth.tar'
@@ -53,7 +57,7 @@ class Coach:
         Returns:
             A list of sample statistics of the form (observation, targets, meta_data)
         """
-        pass
+        raise NotImplementedError("Coach.py has no default batch sample procedure.")
 
     def executeEpisode(self) -> GameHistory:
         """
@@ -66,7 +70,33 @@ class Coach:
                      from the perspective of the past current players.
                      The structure is of the form (s_t, a_t, player_t, pi_t, r_t, v_t, z_t)
         """
-        pass
+        history = GameHistory()
+        state = self.game.getInitialState()  # Always from perspective of player 1 for boardgames.
+        z = step = 0
+
+        while not state.done:  # Boardgames: If loop ends => current player lost
+            step += 1
+
+            # Update MCTS visit count temperature according to an episode or weight update schedule.
+            temp = self.update_temperature(self.neural_net.steps if self.temp_schedule.args.by_weight_update else step)
+
+            # Compute the move probability vector and state value using MCTS for the current state of the environment.
+            pi, v = self.mcts.runMCTS(state, history, temp=temp)
+
+            # Take a step in the environment and observe the transition and store necessary statistics.
+            state.action = np.random.choice(len(pi), p=pi)
+            next_state, r = self.game.getNextState(state, state.action)
+            history.capture(state, pi, r, v)
+
+            # Update state of control
+            state = next_state
+            z = self.game.getGameEnded(state, close=True)
+
+        # Terminal reward for board games is -1 or 1. For general games the bootstrap value is 0 (future rewards = 0)
+        history.terminate(state, (z if self.game.n_players > 1 else 0))
+        history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
+
+        return history
 
     def learn(self) -> None:
         """
@@ -109,8 +139,8 @@ class Coach:
             for _ in trange(self.args.numTrainingSteps, desc="Backpropagation", file=sys.stdout):
                 batch = self.sampleBatch(complete_history)
 
-                self.neural_net.monitor.log_batch(batch)
                 self.neural_net.train(batch)
+                self.neural_net.monitor.log_batch(batch)
 
             # Pitting
             accept = True

@@ -48,13 +48,14 @@ class DefaultAlphaZero(AlphaZeroNeuralNet):
         target_vs = scalar_to_support(target_vs, self.net_args.support_size)
 
         total_loss, pi_loss, v_loss = self.neural_net.model.train_on_batch(
-            x=observations, y=[target_pis, target_vs], sample_weight=[priorities, priorities])
+            x=observations, y=[target_pis, target_vs], sample_weight=[priorities, priorities], reset_metrics=True)
         l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.neural_net.model.get_weights()])
 
-        self.monitor.log(total_loss, "total loss")
         self.monitor.log(pi_loss, "pi_loss")
         self.monitor.log(v_loss, "v_loss")
-        self.monitor.log(l2_norm, "l2_norm")
+
+        self.monitor.log(total_loss, "total loss")
+        self.monitor.log(l2_norm, "l2 norm")
 
         self.steps += 1
 

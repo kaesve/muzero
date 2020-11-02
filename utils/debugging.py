@@ -60,7 +60,8 @@ class MuZeroMonitor(Monitor):
             actions, sample_weight = np.asarray(actions), np.asarray(sample_weight)
             target_vs, target_rs, target_pis = list(map(np.asarray, zip(*targets)))
 
-            tf.summary.histogram(f"loss scale", data=sample_weight, step=self.reference.steps)
+            priority = sample_weight * len(data_batch)  # Undo 1/n scaling to get priority
+            tf.summary.histogram(f"sample probability", data=priority, step=self.reference.steps)
 
             s, pi, v = self.reference.neural_net.forward.predict_on_batch(np.asarray(observations))
 
@@ -77,7 +78,7 @@ class MuZeroMonitor(Monitor):
                     (support_to_scalar(v, self.reference.net_args.support_size),
                      support_to_scalar(r, self.reference.net_args.support_size)))
 
-            for t, (r, v) in enumerate(collect):
+            for t, (v, r) in enumerate(collect):
                 k = t + 1
 
                 tf.summary.histogram(f"r_predict_{k}", data=r, step=self.reference.steps)
@@ -97,14 +98,15 @@ class AlphaZeroMonitor(Monitor):
 
     def log_batch(self, data_batch: typing.List) -> None:
         if DEBUG_MODE and self.reference.steps % LOG_RATE == 0:
-            observations, targets, loss_scale = list(zip(*data_batch))
+            observations, targets, sample_weight = list(zip(*data_batch))
             target_pis, target_vs = list(map(np.asarray, zip(*targets)))
             observations = np.asarray(observations)
 
-            tf.summary.histogram(f"loss scale", data=loss_scale, step=self.reference.steps)
+            priority = sample_weight * len(data_batch)  # Undo 1/n scaling to get priority
+            tf.summary.histogram(f"sample probability", data=priority, step=self.reference.steps)
 
             pis, vs = self.reference.neural_net.model.predict_on_batch(observations)
-            v_reals = support_to_scalar(vs, self.reference.net_args.support_size)[0]
+            v_reals = support_to_scalar(vs, self.reference.net_args.support_size)
 
             tf.summary.histogram(f"v_targets", data=target_vs, step=self.reference.steps)
             tf.summary.histogram(f"v_predict", data=v_reals, step=self.reference.steps)

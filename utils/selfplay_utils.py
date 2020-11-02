@@ -7,6 +7,8 @@ import typing
 
 import numpy as np
 
+from utils.game_utils import GameState
+
 
 @dataclass
 class GameHistory:
@@ -14,7 +16,6 @@ class GameHistory:
     Data container for keeping track of game trajectories.
     """
     observations: list = field(default_factory=list)        # o_t: State Observations
-    symmetries: list = field(default_factory=list)          # o_t': Alternate/ Symmetric forms of State Observations
     players: list = field(default_factory=list)             # p_t: Current player
     probabilities: list = field(default_factory=list)       # pi_t: Probability vector of MCTS for the action
     search_returns: list = field(default_factory=list)      # v_t: MCTS value estimation
@@ -27,33 +28,24 @@ class GameHistory:
         """Get length of current stored trajectory"""
         return len(self.observations)
 
-    @property
-    def symmetric_observations(self):
-        return len(self.symmetries) > 0
-
-    def capture(self, observation: np.ndarray, action: int, player: int, pi: np.ndarray, r: float, v: float) -> None:
+    def capture(self, state: GameState, pi: np.ndarray, r: float, v: float) -> None:
         """Take a snapshot of the current state of the environment and the search results"""
-        self.observations.append(observation)
-        self.actions.append(action)
-        self.players.append(player)
+        self.observations.append(state.observation)
+        self.actions.append(state.action)
+        self.players.append(state.player)
         self.probabilities.append(pi)
         self.rewards.append(r)
         self.search_returns.append(v)
 
-    def terminate(self, observation: np.ndarray, player: int, z: typing.Union[int, float]) -> None:
+    def terminate(self, state: GameState, z: typing.Union[int, float]) -> None:
         """Take a snapshot of the terminal state of the environment"""
-        self.observations.append(observation)
+        self.observations.append(state.observation)
         self.actions.append(np.random.choice(len(self.probabilities[-1])))
-        self.players.append(player)
+        self.players.append(state.player)
         self.probabilities.append(np.full_like(self.probabilities[-1], fill_value=1/len(self.probabilities[-1])))
         self.rewards.append(z)         # u_T
         self.search_returns.append(0)  # Future possible reward = 0
         self.terminated = True
-
-    def find_symmetries(self, game, t: typing.Optional[int] = None) -> None:
-        t = t if t is not None else len(self) - 1
-        symmetries = [(plane, prob) for plane, prob in game.getSymmetries(self.observations[t], self.probabilities[t])]
-        self.symmetries.append(symmetries)
 
     def refresh(self) -> None:
         """Clear all statistics within the class"""
@@ -66,7 +58,8 @@ class GameHistory:
         if n is None:
             # Boardgames
             self.observed_returns.append(self.rewards[-1])       # Append values to list in order T, T-1, ..., 2, 1
-            self.observed_returns += [-self.observed_returns[i - 1] for i in range(1, len(self))]
+            for i in range(1, len(self)):
+                self.observed_returns.append(-self.observed_returns[i - 1])
             self.observed_returns = self.observed_returns[::-1]  # Reverse back to chronological order
         else:
             # General MDPs. Symbols follow notation from the paper.
@@ -81,13 +74,13 @@ class GameHistory:
                 self.observed_returns.append(np.sum(discounted_rewards) + bootstrap)
 
     def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,
-                          t: typing.Optional[int] = None) -> np.ndarray:
+                          t: typing.Optional[int] = None) -> np.ndarray:  # TODO: rework function.
         """Stack the most recent 'length' elements from the observation list along the end of the observation axis"""
         if length <= 1:
             if current_observation is not None:
                 return current_observation
             elif t is not None:
-                return self.observations[t]  # TODO: rework
+                return self.observations[t]
             else:
                 return self.observations[-1]
 

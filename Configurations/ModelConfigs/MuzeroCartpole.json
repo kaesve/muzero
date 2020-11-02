@@ -26,7 +26,7 @@
     "minimum_reward": null,
     "maximum_reward": null,
 
-    "checkpoint": "./MuZeroOut/",
+    "checkpoint": "./out/MuZeroOut/",
     "load_model": false,
     "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
     "numItersForTrainExamplesHistory": 20,

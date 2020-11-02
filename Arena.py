@@ -5,7 +5,6 @@ import numpy as np
 from tqdm import trange
 
 from Game import Game
-from utils.selfplay_utils import GameHistory
 from utils import DotDict
 from utils.debugging import Monitor
 
@@ -32,7 +31,6 @@ class Arena:
         self.player2 = player2
         self.game = game
         self.display = display
-        self.trajectories = [GameHistory(), GameHistory()]
 
     def playGame(self, verbose: bool = False) -> int:
         """
@@ -44,55 +42,56 @@ class Arena:
             or
                 draw result returned from the game that is neither 1, -1, nor 0.
         """
-        all([x.refresh() for x in self.trajectories])  # TODO: Testing/ debugging stacked observations Alpha vs Mu.
         players = [self.player2, None, self.player1]
         cur_player = 1
         state = self.game.getInitialState()
-        it = 0
+        it = z = 0
 
-        while not self.game.getGameEnded(state, cur_player):
+        while not state.done:
             it += 1
 
             if verbose:
                 print(f"Turn {it} Player {cur_player}")
                 self.display(state)
 
-            action = players[cur_player + 1].act(state, cur_player)
+            state.action = players[cur_player + 1].act(state, cur_player)
 
-            valid_moves = self.game.getLegalMoves(self.game.getCanonicalForm(state, cur_player), 1)
-            if valid_moves[action] == 0:
-                action = len(valid_moves)  # Resign.
+            valid_moves = self.game.getLegalMoves(state)
+            if valid_moves[state.action] == 0:
+                state.action = len(valid_moves)  # Resign, will result in state.done = True
 
-            # Ensure that the opponent also observes the environment
-            players[1 - cur_player].capture(state, action, cur_player)
+            # Capture an observation for both players
+            players[cur_player + 1].observe(state)
+            players[1 - cur_player].observe(state)
 
-            state, r, cur_player = self.game.getNextState(state, action, cur_player)
+            state, _ = self.game.getNextState(state, state.action)
+            z = self.game.getGameEnded(state)
 
         if verbose:
-            print(f"Game over: Turn {it} Result {self.game.getGameEnded(state, 1)}")
+            print(f"Game over: Turn {it} Result {z}")
             self.display(state)
 
-        return cur_player * self.game.getGameEnded(state, cur_player)
+        return cur_player * z
 
     def playTrial(self, player, verbose: bool = False) -> float:
-        all([x.refresh() for x in self.trajectories])
         state = self.game.getInitialState()
         it = score = 0
 
-        while not self.game.getGameEnded(state, 1):
+        while not state.done:
             it += 1
 
             if verbose:
                 self.display(state)
 
-            action = player.act(state, 1)
+            state.action = player.act(state)
 
             # Ensure that the opponent also observes the environment
-            player.capture(state, action, 1)
-            state, r, cur_player = self.game.getNextState(state, action, 1)
+            player.observe(state)
+            state, r = self.game.getNextState(state, state.action)
             score += r
 
         if verbose:
+            print(f"Game over: Step {it} Result {score}")
             self.display(state)
 
         return score
@@ -101,8 +100,8 @@ class Arena:
         p1_scores, p2_scores = list(), list()
 
         for _ in trange(num_trials, desc="Pitting", file=sys.stdout):
-            self.player1.search_engine.clear_tree()
-            self.player2.search_engine.clear_tree()
+            self.player1.refresh()
+            self.player2.refresh()
 
             p1_scores.append(self.playTrial(self.player1, verbose=verbose))
             p2_scores.append(self.playTrial(self.player2, verbose=verbose))
@@ -121,24 +120,26 @@ class Arena:
         results = list()
 
         for _ in trange(num_games, desc="Pitting Player 1 first", file=sys.stdout):
-            self.player1.search_engine.clear_tree()
-            self.player2.search_engine.clear_tree()
+            self.player1.refresh()
+            self.player2.refresh()
 
-        results.append(self.playGame(verbose=verbose))
+            results.append(self.playGame(verbose=verbose))
 
         one_won = np.sum(np.array(results) == 1).item()
         two_won = np.sum(np.array(results) == -1).item()
 
-        self.player1, self.player2 = self.player2, self.player1
-
+        self.player1, self.player2 = self.player2, self.player1  # Swap
+        results = list()
         for _ in trange(num_games, desc="Pitting Player 2 first", file=sys.stdout):
-            self.player1.search_engine.clear_tree()
-            self.player2.search_engine.clear_tree()
+            self.player1.refresh()
+            self.player2.refresh()
 
             results.append(self.playGame(verbose=verbose))
 
         one_won += np.sum(np.array(results) == -1).item()
         two_won += np.sum(np.array(results) == 1).item()
+
+        self.player1, self.player2 = self.player2, self.player1  # Swap back.
 
         return one_won, two_won, (one_won + two_won - num_games * 2)
 
@@ -160,4 +161,4 @@ class Arena:
 
         print(f'NEW/OLD WINS : {wins} / {losses} ; DRAWS : {draws} ; ACCEPTANCE RATIO : {args.pit_acceptance_ratio}')
 
-        return losses + wins > 0 and wins / (args.pitting_trials - draws) >= args.pit_acceptance_ratio
+        return losses + wins > 0 and wins / (losses + wins) >= args.pit_acceptance_ratio

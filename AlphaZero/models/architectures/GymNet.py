@@ -28,11 +28,12 @@ class GymNNet:
         self.crafter = Crafter(args)
 
         # s: batch_size x time x state_x x state_y
-        self.observation_history = Input(shape=(self.x, self.y, self.planes))
+        self.observation_history = Input(shape=(self.x, self.y, self.planes * self.args.observation_length))
         # a: one hot encoded vector of shape batch_size x (state_x * state_y)
         self.action_tensor = Input(shape=(self.action_size, ))
 
-        observations = Reshape((self.x * self.y * self.planes, ))(self.observation_history)
+        observations = Reshape((self.x * self.y * self.planes * self.args.observation_length, ))(
+            self.observation_history)
 
         self.pi, self.v = self.build_predictor(observations)
 

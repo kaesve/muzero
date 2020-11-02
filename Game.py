@@ -1,10 +1,12 @@
+from abc import ABC, abstractmethod
 import typing
-from enum import Enum
 
 import numpy as np
 
+from utils.game_utils import GameState
 
-class Game:
+
+class Game(ABC):
     """
     This class specifies the base Game class. To define your own game, subclass
     this class and implement the functions below. This works when the game is
@@ -15,37 +17,34 @@ class Game:
     See hex/HexGame.py for an example implementation.
     """
 
-    class Representation(Enum):
-        CANONICAL: int = 1
-        HEURISTIC: int = 2
-
     def __init__(self, n_players: int = 1) -> None:
         self.n_players = n_players
+        self.n_symmetries = 1
 
-    def getInitialState(self) -> np.ndarray:
+    @abstractmethod
+    def getInitialState(self) -> GameState:
         """
         Returns:
             startState: a representation of the initial state (ideally this is the form
                         that will be the input to your neural network)
         """
-        pass
 
-    def getDimensions(self, form: Representation = Representation.CANONICAL) -> typing.Tuple[int, ...]:
+    @abstractmethod
+    def getDimensions(self) -> typing.Tuple[int, ...]:
         """
         Returns:
             (x,y): a tuple of the state dimensions
         """
-        pass
 
+    @abstractmethod
     def getActionSize(self) -> int:
         """
         Returns:
             actionSize: number of all possible actions
         """
-        pass
 
-    def getNextState(self, state: np.ndarray, action: int, player: int, form: Representation = Representation.CANONICAL,
-                     **kwargs) -> typing.Tuple[np.ndarray, float, int]:
+    @abstractmethod
+    def getNextState(self, state: GameState, action: int, **kwargs) -> typing.Tuple[GameState, float]:
         """
         Input:
             state: current state
@@ -55,11 +54,10 @@ class Game:
         Returns:
             nextState: State after applying action
             reward: Immediate observed reward (default should be 0 for most boardgames)
-            nextPlayer: player who plays in the next turn
         """
-        pass
 
-    def getLegalMoves(self, state: np.ndarray, player: int, form: Representation = Representation.CANONICAL) -> np.ndarray:
+    @abstractmethod
+    def getLegalMoves(self, state: GameState) -> np.ndarray:
         """
         Input:
             board: current state
@@ -69,9 +67,9 @@ class Game:
             validMoves: a binary vector of length self.getActionSize(), 1 for
                         moves that are legal 0 for invalid moves
         """
-        pass
 
-    def getGameEnded(self, state: np.ndarray, player: int) -> typing.Union[float, int]:
+    @abstractmethod
+    def getGameEnded(self, state: GameState) -> typing.Union[float, int]:
         """
         Input:
             state: current state
@@ -82,26 +80,9 @@ class Game:
                small non-zero value for draw.
                
         """
-        pass
 
-    def getCanonicalForm(self, state: np.ndarray, player: int) -> np.ndarray:
-        """
-        Input:
-            state: current state
-            player: current player (1 or -1)
-
-        Returns:
-            canonicalBoard: returns canonical form of the state. The canonical form
-                            should be independent of the player. For e.g. in chess,
-                            the canonical form can be chosen to be from the pov
-                            of white. When the player is white, we can return
-                            board as is. When the player is black, we can invert
-                            the colors and return the board.
-        """
-        pass
-
-    def buildObservation(self, state: np.ndarray, player: int,
-                         form: Representation = Representation.CANONICAL) -> np.ndarray:
+    @abstractmethod
+    def buildObservation(self, state: GameState) -> np.ndarray:
         """
         Input:
             state: current state
@@ -112,10 +93,9 @@ class Game:
             observation: Game specific implementation for what the neural network observes
                          at the state provided as an argument.
         """
-        pass
 
-    def getSymmetries(self, state: np.ndarray, pi: np.ndarray,
-                      form: Representation = Representation.CANONICAL) -> typing.List:
+    @abstractmethod
+    def getSymmetries(self, state: GameState, pi: np.ndarray) -> typing.List:
         """
         Input:
             state: current state
@@ -126,9 +106,9 @@ class Game:
                        form of the state and the corresponding pi vector. This
                        is used when training AlphaZero from examples.
         """
-        pass
 
-    def getHash(self, state: np.ndarray) -> str:
+    @abstractmethod
+    def getHash(self, state: GameState) -> str:
         """
         Input:
             state: current state
@@ -136,4 +116,3 @@ class Game:
         Returns:
             stateString: a quick conversion of state to a string format. Required by MCTS for hashing.
         """
-        pass

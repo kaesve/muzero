@@ -1,0 +1,25 @@
+{
+  "name": "Hex_AlphaZeroVsRandom",
+  "output_dir": "./Results/",
+
+  "num_repeat": 1,
+  "num_trials": 5,
+
+  "environment": {
+    "name": "HEX",
+    "args": {
+      "n": 5
+    }
+  },
+
+  "players": [
+    {
+      "name": "ALPHAZERO",
+      "config": "Configurations/ModelConfigs/AlphazeroHex.json"
+    },
+    {
+      "name": "RANDOM",
+      "config": null
+    }
+  ]
+}

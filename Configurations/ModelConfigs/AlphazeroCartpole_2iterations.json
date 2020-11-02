@@ -25,7 +25,7 @@
     "minimum_reward": null,
     "maximum_reward": null,
 
-    "checkpoint": "./AlphaZeroOut/",
+    "checkpoint": "./out/AlphaZeroOut/",
     "load_model": false,
     "load_folder_file": ["./AlphaZeroOut/", "latest.pth.tar"],
     "numItersForTrainExamplesHistory": 5,

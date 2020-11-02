@@ -4,25 +4,17 @@ import typing
 from copy import deepcopy
 
 import numpy as np
-
-from Game import Game
 import gym
 
-
-class GymState:
-    def __init__(self, env, observation: np.ndarray, action: int, done: bool):
-        self.env = env
-        self.observation = observation
-        self.action = action
-        self.done = done
-
+from Game import Game
+from utils.game_utils import GymState
 
 sys.path.append('../../..')
 
 
 class GymGame(Game):
 
-    def __init__(self, env_name):
+    def __init__(self, env_name: str) -> None:
         super().__init__(n_players=1)
         self.env_name = env_name
 
@@ -36,42 +28,43 @@ class GymGame(Game):
     def getActionSize(self) -> int:
         return self.actions
 
-    def getInitialState(self) -> np.ndarray:
+    def getInitialState(self) -> GymState:
         env = gym.make(self.env_name)
-        observation = env.reset() if len(self.dimensions) > 1 else np.asarray([[env.reset()]])
-        return GymState(env, observation, -1, False)
 
-    def getNextState(self, state: GymState, action: int, player: int, **kwargs) -> typing.Tuple[GymState, float, int]:
+        next_state = GymState(canonical_state=env.reset(), observation=None, action=-1, done=False, player=1, env=env)
+        next_state.observation = self.buildObservation(next_state)
+
+        return next_state
+
+    def getNextState(self, state: GymState, action: int, **kwargs) -> typing.Tuple[GymState, float]:
         # Gym may raise warnings that .step() is called even though the environment is done.
         # This however doesn't happen and may be a results of DeepCopy in the AlphaMCTS procedure.
-        def nextEnv(old_state, clone: bool = False):  # Macro for cloning the state
-            return deepcopy(old_state) if clone else old_state
+        def nextEnv(old_state: GymState, clone: bool = False):  # Macro for cloning the state
+            return deepcopy(old_state.env) if clone else old_state.env
 
-        env = nextEnv(state.env, **kwargs)
+        env = nextEnv(state, **kwargs)
+        raw_observation, reward, done, info = env.step(action)
 
-        observation, reward, done, info = env.step(action)
-        observation = observation if len(self.dimensions) > 1 else [[observation]]
+        next_state = GymState(canonical_state=raw_observation, observation=None,
+                              action=action, done=done, player=1, env=env)
+        next_state.observation = self.buildObservation(next_state)
 
-        return GymState(env, observation, action, done), reward, player
+        return next_state, reward
 
-    def getLegalMoves(self, state: np.ndarray, player: int,
-                      form: Game.Representation = Game.Representation.CANONICAL) -> np.ndarray:
+    def getLegalMoves(self, state: GymState) -> np.ndarray:
         return np.ones(self.actions)
 
-    def getGameEnded(self, state: GymState, player: int, close: bool = False) -> typing.Union[float, int]:
+    def getGameEnded(self, state: GymState, close: bool = False) -> int:
         if state.done and close:
             state.env.close()
 
         return int(state.done)
 
-    def getSymmetries(self, state: np.ndarray, pi: np.ndarray, **kwargs) -> typing.List:
-        return [(state, pi)]
+    def getSymmetries(self, state: GymState, pi: np.ndarray, **kwargs) -> typing.List:
+        return [(state.observation, pi)]
 
-    def getCanonicalForm(self, state: GymState, player: int) -> np.ndarray:
-        return state
+    def buildObservation(self, state: GymState, **kwargs) -> np.ndarray:
+        return state.canonical_state if len(self.dimensions) > 1 else np.asarray([[state.canonical_state]])
 
-    def buildObservation(self, state: GymState, player: int, **kwargs) -> np.ndarray:
-        return np.array(state.observation)
-
-    def getHash(self, state: GymState) -> str:
+    def getHash(self, state: GymState) -> bytes:
         return np.asarray(state.observation).tobytes()
