@@ -13,6 +13,7 @@ from tqdm import trange
 from Arena import Arena
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, TemperatureScheduler
+from utils.debugging import RENDER
 
 
 class Coach:
@@ -76,6 +77,9 @@ class Coach:
 
         while not state.done:  # Boardgames: If loop ends => current player lost
             step += 1
+
+            if RENDER:  # Display visualization of the environment if specified.
+                self.game.render(state)
 
             # Update MCTS visit count temperature according to an episode or weight update schedule.
             temp = self.update_temperature(self.neural_net.steps if self.temp_schedule.args.by_weight_update else step)
