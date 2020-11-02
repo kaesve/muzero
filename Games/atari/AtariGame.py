@@ -34,8 +34,14 @@ class AtariGame(GymGame):
         env = gym.make(self.env_name)
         env = gym.wrappers.AtariPreprocessing(env, screen_size=96, scale_obs=True, grayscale_obs=False,
                                               terminal_on_life_loss=True, noop_max=10)
+        root = env.reset()
 
-        next_state = AtariState(canonical_state=env.reset(), observation=None,
+        if 'FIRE' in env.unwrapped.get_action_meanings():
+            # The wrapper from the baseline repo implies so:
+            # https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+            root, *_ = env.step(1)
+
+        next_state = AtariState(canonical_state=root, observation=None,
                                 action=-1, done=False, player=1, env=env)
         next_state.observation = self.buildObservation(next_state)
 
@@ -51,6 +57,7 @@ class AtariGame(GymGame):
 
     def getActionSize(self) -> int:
         """ Return the number of possible actions """
+        # The latent space is hard coded to be 6x6 = 36
         return 36
 
     def getNextState(self, state: AtariState, action: int, **kwargs) -> typing.Tuple[AtariState, float]:
@@ -70,7 +77,7 @@ class AtariGame(GymGame):
 
         env = nextEnv(state, **kwargs)
         # reorder actions so that we can have NOOP at the end
-        action = (action + 1) % self.getActionSize()
+        action = (action - 1 + self.actions) % self.actions
         raw_observation, reward, done, info = env.step(action)
 
         next_state = AtariState(canonical_state=raw_observation, observation=None,
@@ -89,9 +96,13 @@ class AtariGame(GymGame):
             validMoves: a binary vector of length self.getActionSize(), 1 for
                         moves that are legal 0 for invalid moves
         """
-        return np.ones(self.getActionSize())
+        res = np.arange(self.getActionSize()) < self.actions
+        return res.astype(int)
 
     def buildObservation(self, state: AtariState, **kwargs) -> np.ndarray:
         action_plane = np.ones(state.canonical_state.shape[:2]) * state.action / self.getActionSize()
         action_plane = action_plane.reshape((*action_plane.shape, 1))
         return np.concatenate((state.canonical_state, action_plane), axis=-1)
+
+    def render(self, state: AtariState):
+        state.env.render()

@@ -65,5 +65,5 @@ class Crafter:
     def build_conv_block(self, tensor_in):
         conv_block = self.conv_tower(self.args.num_towers, tensor_in)
         flattened = Flatten()(conv_block)
-        fc_sequence = self.dense_sequence(self.args.len_dense, flattened)
+        fc_sequence = self.dense_sequence(self.args.num_dense, flattened)
         return fc_sequence

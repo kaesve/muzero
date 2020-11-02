@@ -19,7 +19,8 @@ from Experimenter.experimenter import ExperimentConfig, tournament_final
 
 ALPHAZERO_DEFAULTS = "Configurations/ModelConfigs/AlphazeroCartpole.json"
 ALPHAZERO_BOARD = "Configurations/ModelConfigs/AlphazeroHex.json"
-MUZERO_DEFAULTS = "Configurations/ModelConfigs/MuzeroCartpole.json"
+MUZERO_CARTPOLE = "Configurations/ModelConfigs/MuzeroCartpole.json"
+MUZERO_ATARI = "Configurations/ModelConfigs/MuzeroAtari.json"
 MUZERO_BOARD = "Configurations/ModelConfigs/MuzeroHex.json"
 
 MUZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json"
@@ -52,6 +53,7 @@ def learnM0(g, config):
     name, net_args, args = content.name, content.net_args, content.args
 
     print("Testing:", name)
+    print("\n\n", content.architecture)
 
     net = MNet(g, net_args, content.architecture)
 
@@ -66,13 +68,14 @@ def learnM0(g, config):
 if __name__ == "__main__":
     # Set debugging/ logging settings.
     debugger.DEBUG_MODE = True
-    debugger.LOG_RATE = 1
+    debugger.RENDER = True
+    debugger.LOG_RATE = 10
 
     learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
     # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
 
     learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
-    # learnM0(GymGame('CartPole-v1'), MUZERO_DEFAULTS)
+    # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
 
     b = ExperimentConfig(ALPHAZERO_RANDOM)
     b.construct()
