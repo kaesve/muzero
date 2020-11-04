@@ -67,4 +67,7 @@ class GymGame(Game):
         return state.canonical_state if len(self.dimensions) > 1 else np.asarray([[state.canonical_state]])
 
     def getHash(self, state: GymState) -> bytes:
-        return np.asarray(state.observation).tobytes()
+        return np.asarray(state.canonical_state).tobytes()
+
+    def render(self, state: GymState):
+        state.env.render()

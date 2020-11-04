@@ -5,11 +5,11 @@
   
   "args": {
     "numIters": 100,
-    "numEps": 50,
-    "numTrainingSteps": 100,
-    "pitting": false,
-    "pitting_trials": 20,
-    "pit_acceptance_ratio": 0.2,
+    "numEps": 100,
+    "numTrainingSteps": 300,
+    "pitting": true,
+    "pitting_trials": 30,
+    "pit_acceptance_ratio": 0.55,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
@@ -27,28 +27,31 @@
 
     "checkpoint": "./out/AlphaZeroOut/",
     "load_model": false,
-    "load_folder_file": ["./AlphaZeroOut/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 10,
+    "load_folder_file": ["./out/AlphaZeroOut/", "latest.pth.tar"],
+    "numItersForTrainExamplesHistory": 20,
 
     "temperature_schedule": {
       "method": "linear",
       "by_weight_update": true,
-      "schedule_points": [[1000, 1], [2500, 0.5], [5000, 0.25]]
+      "schedule_points": [[5000, 1], [7500, 0.5], [10000, 0.25]]
     }
   },
   
   "net_args": {
     "lr": 0.001,
     "l2": 1e-4,
-    "dropout": 0.3,
-    "batch_size": 128,
+    "dropout": 0.0,
+    "batch_size": 64,
     "cuda": false,
-    "num_channels": 256,
-    "num_towers": 2,
+    "num_channels": 128,
+    "num_convs": 1,
+    "num_towers": 3,
+    "residual_left": 2,
+    "residual_right": 0,
     "num_dense": 2,
     "size_dense": 256,
-    "dense_activation": "tanh",
+    "activation": "relu",
     "support_size": 0,
-    "observation_length": 1
+    "observation_length": 5
   }
 }

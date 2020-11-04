@@ -36,16 +36,22 @@ class HexNNet:
             self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=Adam(args.lr))
         else:
             self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=Adam(args.lr))
+        print(self.model.summary())
 
     def build_model(self, x_image):
-        h_conv3 = self.crafter.conv_tower(self.args.num_towers, x_image)
-        h_conv3_flat = Flatten()(h_conv3)
-        s_fc1 = Dropout(self.args.dropout)(Activation(self.args.dense_activation)(
-            Dense(self.args.size_dense)(h_conv3_flat)))  # Widened
+        conv = self.crafter.conv_tower(self.args.num_convs, x_image)
+        res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
+                                               self.args.residual_left, self.args.residual_right)
 
-        pi = Dense(self.action_size, activation='softmax', name='pi')(s_fc1)
-        v = Dense(1, activation='tanh', name='v')(s_fc1) \
+        small = BatchNormalization()(Conv2D(32, 3, padding='same', use_bias=False)(res))
+
+        flat = Flatten()(small)
+
+        fc = self.crafter.dense_sequence(1, flat)
+
+        pi = Dense(self.action_size, activation='softmax', name='pi')(fc)
+        v = Dense(1, activation='tanh', name='v')(fc) \
             if self.args.support_size == 0 else \
-            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(s_fc1)
+            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(fc)
 
         return pi, v

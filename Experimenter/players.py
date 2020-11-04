@@ -68,7 +68,7 @@ class MuZeroPlayer(Player):
 class RandomPlayer(Player):
     name: str = "Random"
 
-    def act(self, state: GameState):
+    def act(self, state: GameState) -> int:
         mass_valid = self.game.getLegalMoves(state)
         return np.random.choice(len(mass_valid), p=mass_valid / np.sum(mass_valid))
 

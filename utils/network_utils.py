@@ -4,7 +4,7 @@
 import typing
 
 import numpy as np
-from keras.layers import Layer, Activation, BatchNormalization, Conv2D, Dropout, Dense, Flatten
+from keras.layers import Layer, LeakyReLU, Activation, BatchNormalization, Dropout, Conv2D, Dense, Flatten, Add
 from keras import backend as k
 
 
@@ -47,18 +47,37 @@ class Crafter:
 
     def __init__(self, args):
         self.args = args
+        self.activation = lambda: Activation(args.activation) \
+            if args.activation != "leakyrelu" else lambda: LeakyReLU(alpha=0.2)
+
+    def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0):
+        assert left_n > 0, "Residual network must have at least a conv block larger than 0."
+
+        if n > 0:
+            return self.conv_residual_tower(n - 1, x, left_n, right_n)
+
+        left = self.conv_tower(left_n - 1, x)
+        if left_n - 1 > 0:
+            left = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+
+        right = self.conv_tower(right_n - 1, x)
+        if right_n - 1 > 0:
+            right = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+
+        merged = Add()([left, right])
+        return self.activation()(merged)
 
     def conv_tower(self, n: int, x):
         """ Recursively builds a convolutional tower of height n. """
         if n > 0:
-            return self.conv_tower(n - 1, Activation('relu')(BatchNormalization()(Conv2D(
+            return self.conv_tower(n - 1, self.activation()(BatchNormalization()(Conv2D(
                 self.args.num_channels, 3, padding='same', use_bias=False)(x))))
         return x
 
     def dense_sequence(self, n: int, x):
         """ Recursively builds a Fully Connected sequence of length n. """
         if n > 0:
-            return self.dense_sequence(n - 1, Dropout(self.args.dropout)(Activation(self.args.dense_activation)(
+            return self.dense_sequence(n - 1, Dropout(self.args.dropout)(self.activation()(
                 Dense(self.args.size_dense)(x))))
         return x
 

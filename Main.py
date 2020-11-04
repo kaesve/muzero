@@ -1,6 +1,8 @@
 """
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
+from datetime import datetime
+
 import utils.debugging as debugger
 from utils.debugging import *
 from utils.storage import DotDict
@@ -62,19 +64,22 @@ def learnM0(g, config):
 
     c = MuZeroCoach(g, net, args)
 
+    time = datetime.now().strftime("%Y%m%d-%H%M%S")
+    content.to_json(f'out/MuZeroOut/configs/{name}_{content.architecture}_{time}.json')
+
     c.learn()
 
 
 if __name__ == "__main__":
     # Set debugging/ logging settings.
     debugger.DEBUG_MODE = True
-    debugger.RENDER = True
-    debugger.LOG_RATE = 10
+    debugger.RENDER = False
+    debugger.LOG_RATE = 1
 
-    learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
+    # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
     # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
-
-    learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    #
+    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
     # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
 
     b = ExperimentConfig(ALPHAZERO_RANDOM)

@@ -2,8 +2,8 @@
   "name": "Hex_AlphaZeroVsRandom",
   "output_dir": "./Results/",
 
-  "num_repeat": 1,
-  "num_trials": 5,
+  "num_repeat": 3,
+  "num_trials": 10,
 
   "environment": {
     "name": "HEX",

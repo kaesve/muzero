@@ -12,9 +12,14 @@ class DotDict(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
+    def to_json(self, file: str) -> None:
+        import json
+        with open(file, 'w') as f:
+            json.dump(self, f)
+
     @staticmethod
     def from_json(file: str) -> DotDict:
         import json
-        with open(file) as f:
+        with open(file, 'r') as f:
             content = json.load(f, object_hook=lambda d: DotDict(**d))
         return DotDict(content)

@@ -54,16 +54,17 @@ class Arena:
                 print(f"Turn {it} Player {cur_player}")
                 self.display(state)
 
-            state.action = players[cur_player + 1].act(state, cur_player)
+            state.action = players[cur_player + 1].act(state)
 
             valid_moves = self.game.getLegalMoves(state)
-            if valid_moves[state.action] == 0:
+            if not valid_moves[state.action]:
                 state.action = len(valid_moves)  # Resign, will result in state.done = True
 
             # Capture an observation for both players
             players[cur_player + 1].observe(state)
             players[1 - cur_player].observe(state)
 
+            cur_player = -cur_player
             state, _ = self.game.getNextState(state, state.action)
             z = self.game.getGameEnded(state)
 
@@ -129,6 +130,7 @@ class Arena:
         two_won = np.sum(np.array(results) == -1).item()
 
         self.player1, self.player2 = self.player2, self.player1  # Swap
+
         results = list()
         for _ in trange(num_games, desc="Pitting Player 2 first", file=sys.stdout):
             self.player1.refresh()

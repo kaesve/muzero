@@ -42,7 +42,7 @@ class DefaultAlphaZero(AlphaZeroNeuralNet):
         observations = np.asarray(observations)
         target_pis = np.asarray(target_pis)
         target_vs = np.asarray(target_vs)
-        priorities = np.asarray(loss_scale) * self.net_args.batch_size  # Undo 1/N normalization.
+        priorities = np.asarray(loss_scale)
 
         # Cast to distribution
         target_vs = scalar_to_support(target_vs, self.net_args.support_size)
@@ -64,7 +64,7 @@ class DefaultAlphaZero(AlphaZeroNeuralNet):
         board: np array with board
         """
         # preparing input
-        observation = observation[np.newaxis, :, :]
+        observation = observation[np.newaxis, ...]
 
         pi, v = self.neural_net.model.predict(observation)
         v_real = support_to_scalar(v, self.net_args.support_size)

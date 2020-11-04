@@ -66,7 +66,7 @@ class MuZeroMonitor(Monitor):
 
             s, pi, v = self.reference.neural_net.forward.predict_on_batch(np.asarray(observations))
 
-            v_real = support_to_scalar(v, self.reference.net_args.support_size)
+            v_real = support_to_scalar(v, self.reference.net_args.support_size).ravel()
 
             tf.summary.histogram(f"v_predict_{0}", data=v_real, step=self.reference.steps)
             tf.summary.histogram(f"v_target_{0}", data=target_vs[:, 0], step=self.reference.steps)
@@ -75,9 +75,8 @@ class MuZeroMonitor(Monitor):
             collect = list()
             for k in range(actions.shape[1]):
                 r, s, pi, v = self.reference.neural_net.recurrent.predict_on_batch([s, actions[:, k, :]])
-                collect.append(
-                    (support_to_scalar(v, self.reference.net_args.support_size),
-                     support_to_scalar(r, self.reference.net_args.support_size)))
+                collect.append((support_to_scalar(v, self.reference.net_args.support_size).ravel(),
+                                support_to_scalar(r, self.reference.net_args.support_size).ravel()))
 
             for t, (v, r) in enumerate(collect):
                 k = t + 1
@@ -107,13 +106,11 @@ class AlphaZeroMonitor(Monitor):
             tf.summary.histogram(f"sample probability", data=priority, step=self.reference.steps)
 
             pis, vs = self.reference.neural_net.model.predict_on_batch(observations)
-            v_reals = support_to_scalar(vs, self.reference.net_args.support_size)
+            # Unpack [batch-size, dims] to [batch-size,]
+            v_reals = support_to_scalar(vs, self.reference.net_args.support_size).ravel()
 
             tf.summary.histogram(f"v_targets", data=target_vs, step=self.reference.steps)
             tf.summary.histogram(f"v_predict", data=v_reals, step=self.reference.steps)
 
-            mse = np.mean(np.square(v_reals - target_vs))
+            mse = np.mean((v_reals - target_vs) ** 2)
             tf.summary.scalar("v_mse", data=mse, step=self.reference.steps)
-
-
-

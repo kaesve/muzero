@@ -58,7 +58,7 @@ class HexGame(Game):
             return state, 0
 
         b = HexBoard(self.n)
-        b.board = np.copy(state)
+        b.board = np.copy(state.canonical_state)
 
         move = (action // self.n, action % self.n)
         assert b.board[move] == HexBoard.EMPTY
@@ -107,10 +107,10 @@ class HexGame(Game):
         # The second plane is identical to the first plane, but for player -1.
         # The third plane is a bias plane indicating whose turn it is (p1=1, p2=-1).
         # Output shape = (board_x, board_y, 3)
-        s_p1 = np.where(state == 1, 1.0, 0.0)
-        s_p2 = np.where(state == -1, 1.0, 0.0)
-        to_play = np.full_like(state, state.player)
-
+        board = state.canonical_state
+        s_p1 = np.where(board == 1, 1.0, 0.0)
+        s_p2 = np.where(board == -1, 1.0, 0.0)
+        to_play = np.full_like(board, state.player)
         return np.stack([s_p1, s_p2, to_play], axis=-1)
 
     def getSymmetries(self, board: GameState, pi: np.ndarray) -> typing.List:
@@ -126,7 +126,7 @@ class HexGame(Game):
         return symmetries
 
     def getHash(self, state: GameState) -> bytes:
-        return state.observation.tobytes()
+        return state.canonical_state.tobytes()
 
     def stringRepresentationReadable(self, state: GameState):
         board_s = "".join(self.square_content[square] for row in state.canonical_state for square in row)

@@ -5,15 +5,15 @@
   
   "args": {
     "numIters": 100,
-    "numEps": 100,
-    "numTrainingSteps": 200,
+    "numEps": 50,
+    "numTrainingSteps": 75,
     "pitting": true,
-    "pitting_trials": 20,
-    "pit_acceptance_ratio": 0.2,
+    "pitting_trials": 5,
+    "pit_acceptance_ratio": 0.0,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
-    "numMCTSSims": 25,
+    "numMCTSSims": 50,
     "prioritize": true,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
@@ -41,14 +41,17 @@
     "lr": 0.001,
     "l2": 1e-4,
     "dropout": 0.2,
-    "batch_size": 64,
+    "batch_size": 128,
     "cuda": false,
     "num_channels": 256,
+    "num_convs": 2,
     "num_towers": 3,
+    "residual_left": 2,
+    "residual_right": 0,
     "num_dense": 2,
     "size_dense": 64,
     "dense_activation": "tanh",
     "support_size": 20,
-    "observation_length": 5
+    "observation_length": 1
   }
 }
