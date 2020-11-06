@@ -61,7 +61,7 @@ class DefaultMuZero(MuZeroNeuralNet):
         target_pis = np.swapaxes(target_pis, 0, 1)
 
         # Pack formatted inputs as tensors.
-        data = [cast_to_tensor(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
+        data = [np.asarray(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
 
         # Get the tf computation graph for the loss given the data.
         loss = self.loss_function(*data)
@@ -72,7 +72,7 @@ class DefaultMuZero(MuZeroNeuralNet):
 
     def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
         observations = observations[np.newaxis, ...]
-        s_0, pi, v = self.neural_net.forward.predict_on_batch(observations)
+        s_0, pi, v = self.neural_net.forward.predict(observations)
 
         v_real = support_to_scalar(v, self.net_args.support_size)
 
@@ -86,7 +86,7 @@ class DefaultMuZero(MuZeroNeuralNet):
         latent_state = latent_state[np.newaxis, ...]
         a_plane = a_plane[np.newaxis, ...]
 
-        r, s_next, pi, v = self.neural_net.recurrent.predict_on_batch([latent_state, a_plane])
+        r, s_next, pi, v = self.neural_net.recurrent.predict([latent_state, a_plane])
 
         v_real = support_to_scalar(v, self.net_args.support_size)
         r_real = support_to_scalar(r, self.net_args.support_size)

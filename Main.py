@@ -47,6 +47,9 @@ def learnA0(g, config):
         print("Load trainExamples from file")
         c.loadTrainExamples()
 
+    time = datetime.now().strftime("%Y%m%d-%H%M%S")
+    content.to_json(f'out/AlphaZeroOut/{name}_{content.architecture}_{time}.json')
+
     c.learn()
 
 
@@ -65,7 +68,7 @@ def learnM0(g, config):
     c = MuZeroCoach(g, net, args)
 
     time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    content.to_json(f'out/MuZeroOut/configs/{name}_{content.architecture}_{time}.json')
+    content.to_json(f'out/MuZeroOut/{name}_{content.architecture}_{time}.json')
 
     c.learn()
 
@@ -79,10 +82,12 @@ if __name__ == "__main__":
     # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
     # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
     #
-    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    # learnM0(GymGame("CartPole-v1"), MUZERO_CARTPOLE)
     # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
 
-    b = ExperimentConfig(ALPHAZERO_RANDOM)
+    b = ExperimentConfig(MUZERO_RANDOM)
+    # b = ExperimentConfig(ALPHAZERO_RANDOM)
     b.construct()
     print(b.game_config)
     print(b.player_configs)
