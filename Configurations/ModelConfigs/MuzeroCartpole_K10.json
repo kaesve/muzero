@@ -17,7 +17,7 @@
     "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
-    "K": 5,
+    "K": 10,
     "n_steps": 10,
     "c1": 1.25,
     "c2": 19652,

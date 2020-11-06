@@ -44,7 +44,7 @@
     "dropout": 0.0,
     "batch_size": 64,
     "cuda": false,
-    "latent_depth": 4,
+    "latent_depth": 1,
     "num_channels": 256,
     "num_towers": 3,
     "num_dense": 2,
