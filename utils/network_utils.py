@@ -54,19 +54,21 @@ class Crafter:
         assert left_n > 0, "Residual network must have at least a conv block larger than 0."
 
         if n > 0:
-            return self.conv_residual_tower(n - 1, x, left_n, right_n)
+            left = self.conv_tower(left_n - 1, x)
+            if left_n - 1 > 0:
+                left = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
 
-        left = self.conv_tower(left_n - 1, x)
-        if left_n - 1 > 0:
-            left = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+            right = self.conv_tower(right_n - 1, x)
+            if right_n - 1 > 0:
+                right = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
 
-        right = self.conv_tower(right_n - 1, x)
-        if right_n - 1 > 0:
-            right = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
+            # TODO: Create GitHub Issue: Add layer produces NameError in tf graph. Equivalent Lambda K.sum does work.
+            merged = Lambda(lambda var: k.sum(var, axis=0))([left, right])
+            out_tensor = self.activation()(merged)
 
-        merged = Lambda(lambda var: k.sum(var, axis=0))([left, right])
+            return self.conv_residual_tower(n - 1, out_tensor, left_n, right_n)
 
-        return self.activation()(merged)
+        return x
 
     def conv_tower(self, n: int, x):
         """ Recursively builds a convolutional tower of height n. """
