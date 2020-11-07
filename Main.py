@@ -82,8 +82,8 @@ if __name__ == "__main__":
     # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
     # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
     #
-    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
-    learnM0(GymGame("CartPole-v1"), MUZERO_CARTPOLE)
+    learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    # learnM0(GymGame("CartPole-v1"), MUZERO_CARTPOLE)
     # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
 
     b = ExperimentConfig(MUZERO_RANDOM)

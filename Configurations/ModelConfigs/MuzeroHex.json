@@ -5,7 +5,7 @@
 
   "args": {
     "numIters": 100,
-    "numEps": 10,
+    "numEps": 5,
     "numTrainingSteps": 300,
     "pitting": false,
     "pitting_trials": 30,
@@ -42,7 +42,7 @@
     "lr": 0.001,
     "l2": 1e-4,
     "dropout": 0.0,
-    "batch_size": 64,
+    "batch_size": 10,
     "cuda": false,
     "latent_depth": 1,
     "num_channels": 128,

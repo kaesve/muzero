@@ -4,7 +4,7 @@
 import typing
 
 import numpy as np
-from keras.layers import Layer, LeakyReLU, Activation, BatchNormalization, Dropout, Conv2D, Dense, Flatten, Add
+from keras.layers import Layer, LeakyReLU, Activation, BatchNormalization, Dropout, Conv2D, Dense, Flatten, Lambda
 from keras import backend as k
 
 
@@ -62,9 +62,10 @@ class Crafter:
 
         right = self.conv_tower(right_n - 1, x)
         if right_n - 1 > 0:
-            right = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+            right = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
 
-        merged = Add()([left, right])
+        merged = Lambda(lambda var: k.sum(var, axis=0))([left, right])
+
         return self.activation()(merged)
 
     def conv_tower(self, n: int, x):
