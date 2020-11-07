@@ -36,61 +36,55 @@ class MuZeroNeuralNet(ABC):
         self.optimizer = tf.optimizers.Adam(self.net_args.lr)
         self.steps = 0
 
+    @tf.function
+    def unroll(self, observations: tf.Tensor, actions: tf.Tensor, sample_weights: tf.Tensor):
+        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+        s, pi_0, v_0 = self.neural_net.forward(observations)
+
+        predictions = [(sample_weights, v_0, 0, pi_0)]
+        for k in range(actions.shape[1]):
+            r, s, pi, v = self.neural_net.recurrent([s, actions[:, k, :]])
+            predictions.append((sample_weights / len(actions), v, r, pi))
+
+            s = scale_gradient(s, 1 / 2)  # Scale the gradient at the start of the dynamics function by 1/2
+
+        return predictions
+
+    @tf.function
     def loss_function(self, observations: tf.Tensor, actions: tf.Tensor, target_vs: tf.Tensor, target_rs: tf.Tensor,
                       target_pis: tf.Tensor, sample_weights: tf.Tensor) -> tf.function:
         """
+        Defines the computation graph for computing the loss of a MuZero model given data.
 
-        :param observations: Shape (batch_size, observation_dimensions)
-        :param actions: Shape (batch_size, K, action_size)
-        :param target_vs:
-        :param target_rs:
-        :param target_pis:
-        :param sample_weights:
-        :return:
+        :return: tf.Tensor with value being the total loss of the MuZero model given the data.
         """
-        @tf.function
-        def loss() -> tf.Tensor:
-            """
-            Defines the computation graph for computing the loss of a MuZero model given data.
+        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+        predictions = self.unroll(observations, actions, sample_weights)
 
-            :return: tf.Tensor with value being the total loss of the MuZero model given the data.
-            """
-            total_loss = tf.constant(0, dtype=tf.float32)
+        # Perform loss computation
+        total_loss = tf.constant(0, dtype=tf.float32)
+        for k in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
+            loss_scale, vs, rs, pis = predictions[k]
+            t_vs, t_rs, t_pis = target_vs[k, ...], target_rs[k, ...], target_pis[k, ...]
 
-            # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
-            s, pi_0, v_0 = self.neural_net.forward.predict(observations)
-            predictions = [(sample_weights, v_0, None, pi_0)]
+            r_loss = scalar_loss(rs, t_rs) if (k > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
+            v_loss = scalar_loss(vs, t_vs)
+            pi_loss = scalar_loss(pis, t_pis)
 
-            for k in range(actions.shape[1]):
-                r, s, pi, v = self.neural_net.recurrent.predict([s, actions[:, k, :]])
-                predictions.append((tf.divide(sample_weights, len(actions)), v, r, pi))
+            step_loss = r_loss + v_loss + pi_loss
+            total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale))
 
-                s = scale_gradient(s, 1/2)  # Scale the gradient at the start of the dynamics function by 1/2
+            # Logging loss of each unrolled head.
+            self.monitor.log_recurrent_losses(k, loss_scale, v_loss, r_loss, pi_loss)
 
-            # Perform loss computation
-            for k in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
-                loss_scale, vs, rs, pis = predictions[k]
-                t_vs, t_rs, t_pis = target_vs[k, ...], target_rs[k, ...], target_pis[k, ...]
+        # Penalize magnitude of weights using l2 norm
+        l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.get_variables()])
+        total_loss += self.net_args.l2 * l2_norm
 
-                r_loss = scalar_loss(rs, t_rs) if (k > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
-                v_loss = scalar_loss(vs, t_vs)
-                pi_loss = scalar_loss(pis, t_pis)
+        self.monitor.log(total_loss, "total loss")
+        self.monitor.log(l2_norm, "l2 norm")
 
-                step_loss = r_loss + v_loss + pi_loss
-                total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale))  # loss_scale includes a 1 / N term.
-
-                # Logging loss of each unrolled head.
-                self.monitor.log_recurrent_losses(k, loss_scale, v_loss, r_loss, pi_loss)
-
-            # Penalize magnitude of weights using l2 norm
-            l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.get_variables()])
-            total_loss += self.net_args.l2 * l2_norm
-
-            self.monitor.log(total_loss, "total loss")
-            self.monitor.log(l2_norm, "l2 norm")
-
-            return total_loss
-        return loss
+        return total_loss
 
     @abstractmethod
     def train(self, examples: typing.List) -> None:

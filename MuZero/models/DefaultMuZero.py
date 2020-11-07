@@ -5,6 +5,8 @@ import numpy as np
 import sys
 import typing
 
+from tensorflow import GradientTape
+
 from utils.loss_utils import support_to_scalar, scalar_to_support, cast_to_tensor
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .architectures import *
@@ -61,13 +63,14 @@ class DefaultMuZero(MuZeroNeuralNet):
         target_pis = np.swapaxes(target_pis, 0, 1)
 
         # Pack formatted inputs as tensors.
-        data = [np.asarray(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
+        data = [cast_to_tensor(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
 
-        # Get the tf computation graph for the loss given the data.
-        loss = self.loss_function(*data)
+        # Track the gradient through unrolling and loss computation and perform an optimization step.
+        with GradientTape() as tape:
+            loss = self.loss_function(*data)
 
-        # Perform an optimization step.
-        _ = self.optimizer.minimize(loss, self.get_variables, name=f'MuZeroDefault_{self.architecture}')
+        grads = tape.gradient(loss, self.get_variables())
+        self.optimizer.apply_gradients(zip(grads, self.get_variables()), name=f'MuZeroDefault_{self.architecture}')
         self.steps += 1
 
     def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:

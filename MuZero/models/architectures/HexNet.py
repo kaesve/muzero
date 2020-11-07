@@ -10,6 +10,7 @@ import sys
 
 from keras.models import Model
 from keras.layers import *
+from keras.backend import stop_gradient, constant
 
 from utils.network_utils import MinMaxScaler, Crafter
 
@@ -26,15 +27,19 @@ class HexNNet:
         self.crafter = Crafter(args)
 
         # s: batch_size x time x state_x x state_y
-        self.observation_history = self.new_observation_tensor()
+        self.observation_history = Input(shape=(self.board_x, self.board_y, self.planes * self.args.observation_length))
         # a: one hot encoded vector of shape batch_size x (state_x * state_y)
-        self.action_plane = self.new_action_tensor()
+        self.action_plane = Input(shape=(self.action_size,))
         # s': batch_size  x board_x x board_y x 1
-        self.encoded_state = self.new_latent_tensor()
+        self.encoded_state = Input(shape=(self.board_x, self.board_y, self.args.latent_depth))
 
+        # Format action vector to plane
+        omit_resign = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_y,),
+                             input_shape=(self.action_size,))(self.action_plane)
+        action_plane = Reshape((self.board_x, self.board_y, 1))(omit_resign)
 
         self.s = self.build_encoder(self.observation_history)
-        self.r, self.s_next = self.build_dynamics(self.encoded_state, self.action_plane)
+        self.r, self.s_next = self.build_dynamics(self.encoded_state, action_plane)
         self.pi, self.v = self.build_predictor(self.encoded_state)
 
         self.encoder = Model(inputs=self.observation_history, outputs=self.s, name='h')
@@ -47,29 +52,6 @@ class HexNNet:
         print(self.encoder.summary())
         print(self.dynamics.summary())
         print(self.predictor.summary())
-
-    def new_observation_tensor(self):
-        return Input(shape=(self.board_x, self.board_y, self.planes * self.args.observation_length))
-
-    def new_action_tensor(self):
-        one_hot_encoded_actions = Input(shape=(self.action_size,))
-
-        omit_resign = Lambda(lambda x: x[..., :-1], output_shape=(self.board_x * self.board_y,),
-                             input_shape=(self.action_size,))(one_hot_encoded_actions)
-        action_plane = Reshape((self.board_x, self.board_y, 1))(omit_resign)
-        return action_plane
-
-    def new_latent_tensor(self):
-        return Input(shape=(self.board_x, self.board_y, self.args.latent_depth))
-
-    def unroll(self):  # TODO: Keras graph unrolling for backprop model.
-        sample_weights = Input(shape=(1,))
-        s, pi, v = self.forward(self.observation_history)
-
-        # out_tensors =
-
-        for _ in range(1, 6):
-            pass
 
     def build_encoder(self, observations):
         conv = self.crafter.conv_tower(self.args.num_convs, observations)

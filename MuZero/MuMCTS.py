@@ -102,7 +102,7 @@ class MuZeroMCTS:
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.
         counts = np.array([self.Nsa[(s_0, a)] if (s_0, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])
-        counts *= self.Vs[s_0]  # Mask illegal moves.
+        counts = counts * self.Vs[s_0]  # Mask illegal moves.
 
         if temp == 0:  # Greedy selection. One hot encode the most visited paths (uniformly random break ties).
             move_probabilities = np.zeros(len(counts))
