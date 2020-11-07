@@ -75,20 +75,25 @@ class MuZeroMonitor(Monitor):
             collect = list()
             for k in range(actions.shape[1]):
                 r, s, pi, v = self.reference.neural_net.recurrent.predict_on_batch([s, actions[:, k, :]])
-                collect.append((support_to_scalar(v, self.reference.net_args.support_size).ravel(),
-                                support_to_scalar(r, self.reference.net_args.support_size).ravel()))
+                collect.append((v, r, pi))
 
-            for t, (v, r) in enumerate(collect):
+            for t, (v, r, pi) in enumerate(collect):
                 k = t + 1
 
-                tf.summary.histogram(f"r_predict_{k}", data=r, step=self.reference.steps)
-                tf.summary.histogram(f"v_predict_{k}", data=v, step=self.reference.steps)
+                v_real = support_to_scalar(v, self.reference.net_args.support_size).ravel()
+                r_real = support_to_scalar(r, self.reference.net_args.support_size).ravel()
 
-                tf.summary.histogram(f"r_target_{k}", data=target_rs[:, k], step=self.reference.steps)
-                tf.summary.histogram(f"v_target_{k}", data=target_vs[:, k], step=self.reference.steps)
+                self.log_distribution(r_real, f"r_predict_{k}")
+                self.log_distribution(v_real, f"v_predict_{k}")
 
-                tf.summary.scalar(f"r_mse_{k}", data=np.mean((r - target_rs[:, k]) ** 2), step=self.reference.steps)
-                tf.summary.scalar(f"v_mse_{k}", data=np.mean((v - target_vs[:, k]) ** 2), step=self.reference.steps)
+                self.log_distribution(target_rs[:, k], f"r_target_{k}")
+                self.log_distribution(target_vs[:, k], f"v_target_{k}")
+
+                self.log(np.mean((r_real - target_rs[:, k]) ** 2), f"r_mse_{k}")
+                self.log(np.mean((v_real - target_vs[:, k]) ** 2), f"v_mse_{k}")
+
+            l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.reference.get_variables()])
+            self.log(l2_norm, "l2 norm")
 
 
 class AlphaZeroMonitor(Monitor):

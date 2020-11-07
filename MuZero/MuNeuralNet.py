@@ -37,14 +37,14 @@ class MuZeroNeuralNet(ABC):
         self.steps = 0
 
     @tf.function
-    def unroll(self, observations: tf.Tensor, actions: tf.Tensor, sample_weights: tf.Tensor):
+    def unroll(self, observations: tf.Tensor, actions: tf.Tensor):
         # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
         s, pi_0, v_0 = self.neural_net.forward(observations)
 
-        predictions = [(sample_weights, v_0, 0, pi_0)]
+        predictions = [(1.0, v_0, 0, pi_0)]
         for k in range(actions.shape[1]):
             r, s, pi, v = self.neural_net.recurrent([s, actions[:, k, :]])
-            predictions.append((sample_weights / len(actions), v, r, pi))
+            predictions.append((1.0 / len(actions), v, r, pi))
 
             s = scale_gradient(s, 1 / 2)  # Scale the gradient at the start of the dynamics function by 1/2
 
@@ -59,7 +59,7 @@ class MuZeroNeuralNet(ABC):
         :return: tf.Tensor with value being the total loss of the MuZero model given the data.
         """
         # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
-        predictions = self.unroll(observations, actions, sample_weights)
+        predictions = self.unroll(observations, actions)
 
         # Perform loss computation
         total_loss = tf.constant(0, dtype=tf.float32)
@@ -72,7 +72,7 @@ class MuZeroNeuralNet(ABC):
             pi_loss = scalar_loss(pis, t_pis)
 
             step_loss = r_loss + v_loss + pi_loss
-            total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale))
+            total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale * sample_weights))
 
             # Logging loss of each unrolled head.
             self.monitor.log_recurrent_losses(k, loss_scale, v_loss, r_loss, pi_loss)
@@ -80,9 +80,6 @@ class MuZeroNeuralNet(ABC):
         # Penalize magnitude of weights using l2 norm
         l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.get_variables()])
         total_loss += self.net_args.l2 * l2_norm
-
-        self.monitor.log(total_loss, "total loss")
-        self.monitor.log(l2_norm, "l2 norm")
 
         return total_loss
 

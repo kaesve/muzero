@@ -71,6 +71,9 @@ class DefaultMuZero(MuZeroNeuralNet):
 
         grads = tape.gradient(loss, self.get_variables())
         self.optimizer.apply_gradients(zip(grads, self.get_variables()), name=f'MuZeroDefault_{self.architecture}')
+
+        # Logging
+        self.monitor.log(loss, "total loss")
         self.steps += 1
 
     def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
