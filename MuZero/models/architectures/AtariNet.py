@@ -8,9 +8,8 @@ For the details of the neural architectures, we refer to our report.
 
 import sys
 
-from keras.models import *
-from keras.layers import *
-from keras.backend import tile
+from keras.models import Model
+from keras.layers import Input, Reshape, Activation, Dense, Conv2D, AveragePooling2D, BatchNormalization, Concatenate
 
 from utils.network_utils import MinMaxScaler, Crafter
 
@@ -27,7 +26,8 @@ class AtariNNet:
         self.args = args
         self.crafter = Crafter(args)
 
-        assert self.action_size == self.latent_x * self.latent_y, "The action space should be the same size as the latent space"
+        assert self.action_size == self.latent_x * self.latent_y, \
+            "The action space should be the same size as the latent space"
 
         # s: batch_size x time x state_x x state_y
         self.observation_history = Input(shape=(self.board_x, self.board_y, self.planes * self.args.observation_length))
@@ -35,7 +35,6 @@ class AtariNNet:
         self.action_plane = Input(shape=(self.action_size,))
         # s': batch_size  x board_x x board_y x 1
         self.latent_state = Input(shape=(self.latent_x, self.latent_y, 1))
-
 
         action_plane = Reshape((self.latent_x, self.latent_y, 1))(self.action_plane)
         latent_state = Reshape((self.latent_x, self.latent_y, 1))(self.latent_state)
@@ -54,7 +53,6 @@ class AtariNNet:
                                outputs=[self.r, self.s_next, *self.predictor(self.s_next)])
 
     def build_encoder(self, observations):
-
         down_sampled = Activation('relu')(BatchNormalization()(Conv2D(64, 3, 2)(observations)))
         down_sampled = Activation('relu')(BatchNormalization()(Conv2D(128, 3, 2)(down_sampled)))
         down_sampled = AveragePooling2D(3, 2)(down_sampled)
@@ -92,18 +90,3 @@ class AtariNNet:
             Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(out_tensor)
 
         return pi, v
-
-
-if __name__ == "__main__":
-    from Games.atari.AtariGame import AtariGame as Game
-
-    game = Game("PongNoFrameskip-v4")
-    nnet = AtariNNet(game, {
-        "observation_length": 10,
-        "num_channels": 8,
-        "size_dense": 32,
-        "dropout": 0.5,
-        "num_towers": 1,
-        "len_dense": 2,
-        "support_size": 300
-    })

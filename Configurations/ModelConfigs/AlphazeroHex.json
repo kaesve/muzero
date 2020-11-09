@@ -45,12 +45,12 @@
     "cuda": false,
     "num_channels": 128,
     "num_convs": 1,
-    "num_towers": 3,
+    "num_towers": 2,
     "residual_left": 2,
     "residual_right": 0,
     "num_dense": 2,
     "size_dense": 256,
-    "activation": "relu",
+    "activation": "leakyrelu",
     "support_size": 0,
     "observation_length": 5
   }

@@ -4,7 +4,7 @@
 import typing
 
 import numpy as np
-from keras.layers import Layer, LeakyReLU, Activation, BatchNormalization, Dropout, Conv2D, Dense, Flatten, Lambda
+from keras.layers import Layer, LeakyReLU, Activation, Dropout, Conv2D, Dense, Flatten, Lambda
 from keras import backend as k
 
 
@@ -17,7 +17,7 @@ class MinMaxScaler(Layer):
     here s is the tensor passed to the layer, e is a small constant for numerical stability.
     """
 
-    def __init__(self, epsilon: float = 1e-8) -> None:
+    def __init__(self, epsilon: float = 1e-5) -> None:
         """
         :param epsilon: float additive constant in the division operator
         """
@@ -40,15 +40,15 @@ class MinMaxScaler(Layer):
         tensor_min = k.min(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
         tensor_max = k.max(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
 
-        return (inputs - tensor_min) / (tensor_max - tensor_min + 1e-8)
+        return (inputs - tensor_min) / (tensor_max - tensor_min + self.epsilon)
 
 
 class Crafter:
 
     def __init__(self, args):
         self.args = args
-        self.activation = lambda: Activation(args.activation) \
-            if args.activation != "leakyrelu" else lambda: LeakyReLU(alpha=0.2)
+        self.activation = lambda: (Activation(args.activation)
+                                   if args.activation != "leakyrelu" else LeakyReLU(alpha=0.2))
 
     def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0):
         assert left_n > 0, "Residual network must have at least a conv block larger than 0."
@@ -56,11 +56,11 @@ class Crafter:
         if n > 0:
             left = self.conv_tower(left_n - 1, x)
             if left_n - 1 > 0:
-                left = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+                left = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
 
             right = self.conv_tower(right_n - 1, x)
             if right_n - 1 > 0:
-                right = BatchNormalization()(Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
+                right = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
 
             # TODO: Create GitHub Issue: Add layer produces NameError in tf graph. Equivalent Lambda K.sum does work.
             merged = Lambda(lambda var: k.sum(var, axis=0))([left, right])
@@ -73,7 +73,7 @@ class Crafter:
     def conv_tower(self, n: int, x):
         """ Recursively builds a convolutional tower of height n. """
         if n > 0:
-            return self.conv_tower(n - 1, self.activation()(BatchNormalization()(Conv2D(
+            return self.conv_tower(n - 1, self.activation()((Conv2D(
                 self.args.num_channels, 3, padding='same', use_bias=False)(x))))
         return x
 

@@ -7,6 +7,14 @@ import numpy as np
 import tensorflow as tf
 
 
+def check_nans(list_of_tensors: typing.List) -> bool:
+    return np.any([np.any(np.isnan(x)) for x in list_of_tensors])
+
+
+def safe_l2norm(x, epsilon=1e-5, axis=None):
+    return tf.sqrt(tf.reduce_sum(x ** 2, axis=axis) + epsilon)
+
+
 def scale_gradient(tensor: tf.Tensor, scale: float) -> tf.Tensor:
     """
     Scales the gradient for the backward pass.
@@ -14,7 +22,7 @@ def scale_gradient(tensor: tf.Tensor, scale: float) -> tf.Tensor:
     :param scale:
     :return:
     """
-    return tf.multiply(tensor, scale) + tf.stop_gradient(tensor) * (1 - scale)
+    return tensor * scale + tf.stop_gradient(tensor) * (1 - scale)
 
 
 def scalar_loss(prediction: typing.Union[tf.Tensor, np.ndarray],
@@ -26,7 +34,7 @@ def scalar_loss(prediction: typing.Union[tf.Tensor, np.ndarray],
     :return:
     """
     if np.prod(prediction.shape) == prediction.shape[0]:           # Implies (batch_size, 1) --> Regression
-        return tf.losses.mse(target, prediction)                   # MSE
+        return tf.losses.mean_squared_error(target, prediction)
 
     return tf.losses.categorical_crossentropy(target, prediction)  # Default: Cross Entropy
 

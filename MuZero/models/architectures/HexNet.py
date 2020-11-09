@@ -10,7 +10,7 @@ import sys
 
 from keras.models import Model
 from keras.layers import *
-from keras.backend import stop_gradient, constant
+from keras.backend import constant, zeros, shape
 
 from utils.network_utils import MinMaxScaler, Crafter
 
@@ -58,9 +58,9 @@ class HexNNet:
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
                                                self.args.residual_left, self.args.residual_right)
 
-        latent_state = self.crafter.activation()(BatchNormalization()(
+        latent_state = self.crafter.activation()((
             Conv2D(self.args.latent_depth, 3, padding='same', use_bias=False)(res)))
-        latent_state = MinMaxScaler()(latent_state)
+        # latent_state = MinMaxScaler()(latent_state)
 
         return latent_state
 
@@ -72,20 +72,23 @@ class HexNNet:
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
                                                self.args.residual_left, self.args.residual_right)
 
-        latent_state = self.crafter.activation()(BatchNormalization()(
-            Conv2D(self.args.latent_depth, 3, padding='same', use_bias=False)(res)))
+        latent_state = self.crafter.activation()((
+            Conv2D(self.args.latent_depth, 3, padding='same')(res)))
+        latent_state = MinMaxScaler()(latent_state)
 
-        flat = Flatten()(reshaped)
-        r = Dense(1, activation='linear', name='r')(flat) \
-            if self.args.support_size == 0 else \
-            Dense(self.args.support_size * 2 + 1, activation='softmax', name='r')(flat)
+        flat = Flatten()(latent_state)
+
+        # Cancel gradient/ predictions as r is not trained in boardgames.
+        r = Dense(self.args.support_size * 2 + 1, name='r')(flat)
+        r = Lambda(lambda x: x * 0)(r)
 
         return r, latent_state
 
     def build_predictor(self, latent_state):
-        out_tensor = self.crafter.conv_tower(self.args.num_towers - 1, latent_state)
+        out_tensor = self.crafter.conv_tower(self.args.num_convs, latent_state)
 
-        small = BatchNormalization()(Conv2D(32, 3, padding='same', use_bias=False)(out_tensor))
+        small = self.crafter.activation()((
+            Conv2D(32, 3, padding='same', use_bias=False)(out_tensor)))
 
         flat = Flatten()(small)
 

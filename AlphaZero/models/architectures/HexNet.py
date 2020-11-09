@@ -43,7 +43,7 @@ class HexNNet:
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
                                                self.args.residual_left, self.args.residual_right)
 
-        small = BatchNormalization()(Conv2D(32, 3, padding='same', use_bias=False)(res))
+        small = self.crafter.activation()(BatchNormalization()(Conv2D(32, 3, padding='same', use_bias=False)(res)))
 
         flat = Flatten()(small)
 
