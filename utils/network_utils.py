@@ -4,7 +4,7 @@
 import typing
 
 import numpy as np
-from keras.layers import Layer, LeakyReLU, Activation, Dropout, Conv2D, Dense, Flatten, Lambda
+from keras.layers import Layer, LeakyReLU, Activation, BatchNormalization, Dropout, Conv2D, Dense, Flatten, Lambda
 from keras import backend as k
 
 
@@ -50,17 +50,21 @@ class Crafter:
         self.activation = lambda: (Activation(args.activation)
                                    if args.activation != "leakyrelu" else LeakyReLU(alpha=0.2))
 
-    def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0):
+    def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0, use_bn=False):
         assert left_n > 0, "Residual network must have at least a conv block larger than 0."
 
         if n > 0:
-            left = self.conv_tower(left_n - 1, x)
+            left = self.conv_tower(left_n - 1, x, use_bn)
             if left_n - 1 > 0:
                 left = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+                if use_bn:
+                    left = BatchNormalization()(left)
 
-            right = self.conv_tower(right_n - 1, x)
+            right = self.conv_tower(right_n - 1, x, use_bn)
             if right_n - 1 > 0:
                 right = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
+                if use_bn:
+                    right = BatchNormalization()(right)
 
             # TODO: Create GitHub Issue: Add layer produces NameError in tf graph. Equivalent Lambda K.sum does work.
             merged = Lambda(lambda var: k.sum(var, axis=0))([left, right])
@@ -70,11 +74,13 @@ class Crafter:
 
         return x
 
-    def conv_tower(self, n: int, x):
+    def conv_tower(self, n: int, x, use_bn=False):
         """ Recursively builds a convolutional tower of height n. """
         if n > 0:
-            return self.conv_tower(n - 1, self.activation()((Conv2D(
-                self.args.num_channels, 3, padding='same', use_bias=False)(x))))
+            tensor = Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(x)
+            if use_bn:
+                tensor = BatchNormalization()(tensor)
+            return self.conv_tower(n - 1, self.activation()(tensor))
         return x
 
     def dense_sequence(self, n: int, x):
@@ -84,8 +90,8 @@ class Crafter:
                 Dense(self.args.size_dense)(x))))
         return x
 
-    def build_conv_block(self, tensor_in):
-        conv_block = self.conv_tower(self.args.num_towers, tensor_in)
+    def build_conv_block(self, tensor_in, use_bn=False):
+        conv_block = self.conv_tower(self.args.num_towers, tensor_in, use_bn)
         flattened = Flatten()(conv_block)
         fc_sequence = self.dense_sequence(self.args.num_dense, flattened)
         return fc_sequence

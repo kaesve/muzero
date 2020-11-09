@@ -38,20 +38,13 @@ class MuZeroNeuralNet(ABC):
 
     @tf.function
     def unroll(self, observations: tf.Tensor, actions: tf.Tensor):
-        # Prepare loss scaling factors before unrolling.
-        num_actions = actions.shape[1]
-        # Sum over one-hot-encoded actions. If this sum is zero, then there is no action --> leaf node.
-        absorb = 1.0 - tf.reduce_sum(actions, axis=-1)
-        # Below computes the number of available actions for unrolling. I.e., K - number_of_absorbing_states.
-        recurrent_head_scale = 1.0 / (num_actions - tf.reduce_sum(absorb, axis=-1))
-
         # Root inference. Collect predictions of the form: [w_i / K, v, r, pi, absorb] for each forward step k = 0...K
         s, pi_0, v_0 = self.neural_net.forward(observations)
 
-        predictions = [(1.0, v_0, 0, pi_0, 0.0)]  # Note: Root can be a terminal state.
-        for k in range(num_actions):
+        predictions = [(1.0, v_0, 0, pi_0)]  # Note: Root can be a terminal state.
+        for k in range(actions.shape[1]):
             r, s, pi, v = self.neural_net.recurrent([s, actions[:, k, :]])
-            predictions.append((recurrent_head_scale, v, r, pi, absorb[:, k]))
+            predictions.append((1.0 / actions.shape[1], v, r, pi))
 
             s = scale_gradient(s, 0.5)  # Scale the gradient at the start of the dynamics function by 1/2
 
@@ -65,22 +58,28 @@ class MuZeroNeuralNet(ABC):
 
         :return: tf.Tensor with value being the total loss of the MuZero model given the data.
         """
+        # Sum over target probabilities. Absorbing states should have a zero sum --> leaf node.
+        absorb_k = 1.0 - tf.reduce_sum(target_pis, axis=-1)
+
         # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
         predictions = self.unroll(observations, actions)
         losses = []  # Collect losses for logging.
 
         # Perform loss computation
-        total_loss = tf.constant(0, dtype=tf.float32)
+        total_loss = tf.constant(0.0, dtype=tf.float32)
         for k in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
-            loss_scale, vs, rs, pis, absorb = predictions[k]
+            loss_scale, vs, rs, pis = predictions[k]
             t_vs, t_rs, t_pis = target_vs[k, ...], target_rs[k, ...], target_pis[k, ...]
 
+            absorb = absorb_k[k, :]
+
+            # Calculate losses per head. Cancel gradients in prior for absorbing states, keep gradients for r and v.
             r_loss = scalar_loss(rs, t_rs) if (k > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
             v_loss = scalar_loss(vs, t_vs)
-            pi_loss = scalar_loss(pis, t_pis)
-            losses.append((v_loss, r_loss, pi_loss, absorb))
+            pi_loss = scalar_loss(pis, t_pis) * (1.0 - absorb)
 
-            step_loss = (r_loss + v_loss + pi_loss) * (1.0 - absorb)  # Set loss to zero if absorbed/ terminal state.
+            step_loss = (r_loss + v_loss + pi_loss)
+            losses.append((v_loss, r_loss, pi_loss, absorb))
 
             total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale * sample_weights))
 

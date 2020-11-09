@@ -73,7 +73,6 @@ def learnM0(g, content):
     c.learn()
 
 
-
 def game_from_name(name):
     match_name = name.lower()
 
@@ -95,8 +94,11 @@ if __name__ == "__main__":
     # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
     # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
     #
-    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
-    # learnM0(GymGame("CartPole-v1"), MUZERO_CARTPOLE)
+    debugger.DEBUG_MODE = True
+    content = DotDict.from_json(MUZERO_CARTPOLE)
+    # game = HexGame(BOARD_SIZE)
+    # learnM0(game, content)
+    learnM0(GymGame("CartPole-v1"), content)
     # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
 
     # b = ExperimentConfig(MUZERO_RANDOM)
@@ -108,13 +110,11 @@ if __name__ == "__main__":
 
     # tournament_final(experiment=b)
 
-
     parser = argparse.ArgumentParser(description="A MuZero and AlphaZero implementation in Tensorflow.")
 
     parser.add_argument("--debug", action="store_true", default=False, help="Turn on debug mode")
     parser.add_argument("--lograte", type=int, default=1, help="Backprop logging frequency")
     parser.add_argument("--render", action="store_true", default=False, help="Render the environment during training and pitting")
-
 
     modes = [ "train", "experiment" ]
     parser.add_argument("--mode", "-m", choices=modes, default="experiment")
@@ -148,7 +148,8 @@ if __name__ == "__main__":
         elif content.algorithm == "MUZERO":
             learnM0(game, content)
         else:
-            raise f"Cannot train on algorithm '{content.algorithm}'"
+            raise NotImplementedError(f"Cannot train on algorithm '{content.algorithm}'")
+
     elif args.mode == "experiment":
         b = ExperimentConfig(args.config)
         b.construct() 

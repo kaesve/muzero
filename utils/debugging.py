@@ -53,9 +53,9 @@ class MuZeroMonitor(Monitor):
                              pi_loss: tf.Tensor, absorb: tf.Tensor) -> None:
         step = self.reference.steps
         if self.reference.steps % LOG_RATE == 0:
-            tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_mean(r_loss * (1 - absorb)), step=step)
-            tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_mean(v_loss * (1 - absorb)), step=step)
-            tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_mean(pi_loss * (1 - absorb)), step=step)
+            tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_mean(r_loss), step=step)
+            tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_mean(v_loss), step=step)
+            tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss) / tf.reduce_sum(1 - absorb), step=step)
 
     def log_batch(self, data_batch: typing.List) -> None:
         if DEBUG_MODE and self.reference.steps % LOG_RATE == 0:
@@ -74,15 +74,18 @@ class MuZeroMonitor(Monitor):
             tf.summary.histogram(f"v_target_{0}", data=target_vs[:, 0], step=self.reference.steps)
             tf.summary.scalar(f"v_mse_{0}", data=np.mean((v_real - target_vs[:, 0]) ** 2), step=self.reference.steps)
 
+            # Sum over one-hot-encoded actions. If this sum is zero, then there is no action --> leaf node.
+            absorb_k = 1.0 - tf.reduce_sum(target_pis, axis=-1)
+
             collect = list()
             for k in range(actions.shape[1]):
                 r, s, pi, v = self.reference.neural_net.recurrent.predict_on_batch([s, actions[:, k, :]])
-                collect.append((v, r, pi))
+                collect.append((v, r, pi, absorb_k[k, :]))
 
-            for t, (v, r, pi) in enumerate(collect):
+            for t, (v, r, pi, absorb) in enumerate(collect):
                 k = t + 1
 
-                pi_loss = -np.sum(target_pis[:, k] * np.log(pi), axis=-1)
+                pi_loss = -np.sum(target_pis[:, k] * np.log(pi), axis=-1) / tf.reduce_sum(1 - absorb)
                 self.log_distribution(pi_loss, f"pi_dist_{k}")
 
                 v_real = support_to_scalar(v, self.reference.net_args.support_size).ravel()

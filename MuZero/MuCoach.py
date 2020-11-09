@@ -44,6 +44,10 @@ class MuZeroCoach(Coach):
         """
         # One hot encode actions. Keep truncated actions empty (zeros).
         actions = history.actions[t:t+k]  # Actions are shifted one step to the right.
+        a_truncation = k - len(actions)
+        if a_truncation > 0:
+            actions += np.random.randint(self.game.getActionSize(), size=a_truncation).tolist()
+
         enc_actions = np.zeros([k, self.game.getActionSize()])
         enc_actions[np.arange(len(actions)), actions] = 1
 

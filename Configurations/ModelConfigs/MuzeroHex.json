@@ -7,7 +7,7 @@
     "numIters": 100,
     "numEps": 100,
     "numTrainingSteps": 300,
-    "pitting": false,
+    "pitting": true,
     "pitting_trials": 30,
     "pit_acceptance_ratio": 0.55,
     "dirichlet_alpha": 0.3,
