@@ -18,12 +18,15 @@ class AlphaZeroCoach(Coach):
     in Game and NeuralNet. args are specified in main.py.
     """
 
-    def __init__(self, game, neural_net, args: DotDict) -> None:
+    def __init__(self, game, neural_net, args: DotDict, run_name: typing.Optional[str] = None) -> None:
         super().__init__(game, neural_net, args, MCTS, AlphaZeroPlayer)
         self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
         self.update_temperature = self.temp_schedule.build()
 
-        self.logdir = f"out/logs/AlphaZero/{self.neural_net.architecture}/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+        if run_name == None:
+            run_name = datetime.now().strftime("%Y%m%d-%H%M%S")
+        
+        self.logdir = f"out/logs/AlphaZero/{self.neural_net.architecture}/" + run_name
         self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
         self.file_writer.set_as_default()
 

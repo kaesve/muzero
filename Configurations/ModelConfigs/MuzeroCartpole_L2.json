@@ -1,5 +1,5 @@
 {
-  "name": "singleplayergames",
+  "name": "singleplayergames_Latent2",
   "algorithm": "MUZERO",
   "architecture": "Gym",
 
@@ -26,9 +26,9 @@
     "minimum_reward": null,
     "maximum_reward": null,
 
-    "checkpoint": "./out/MuZeroOut/",
+    "checkpoint": "./out/MuZeroOut/L2/",
     "load_model": false,
-    "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
+    "load_folder_file": ["./out/MuZeroOut/L2/", "latest.pth.tar"],
     "numItersForTrainExamplesHistory": 15,
 
     "temperature_schedule": {
