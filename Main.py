@@ -2,6 +2,7 @@
 File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
 from datetime import datetime
+import argparse
 
 import utils.debugging as debugger
 from utils.debugging import *
@@ -14,6 +15,7 @@ from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero as ANet
 from MuZero.models.DefaultMuZero import DefaultMuZero as MNet
 
 from Games.hex.HexGame import HexGame
+from Games.othello.OthelloGame import OthelloGame
 from Games.gym.GymGame import GymGame
 from Games.atari.AtariGame import AtariGame
 
@@ -31,8 +33,7 @@ ALPHAZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json
 BOARD_SIZE = 5
 
 
-def learnA0(g, config):
-    content = DotDict.from_json(config)
+def learnA0(g, content):
     name, net_args, args = content.name, content.net_args, content.args
 
     print("Testing:", name)
@@ -53,8 +54,7 @@ def learnA0(g, config):
     c.learn()
 
 
-def learnM0(g, config):
-    content = DotDict.from_json(config)
+def learnM0(g, content):
     name, net_args, args = content.name, content.net_args, content.args
 
     print("Testing:", name)
@@ -73,23 +73,91 @@ def learnM0(g, config):
     c.learn()
 
 
-if __name__ == "__main__":
-    # Set debugging/ logging settings.
-    debugger.DEBUG_MODE = True
-    debugger.RENDER = False
-    debugger.LOG_RATE = 1
 
+def game_from_name(name):
+    match_name = name.lower()
+
+    if match_name == "hex":
+        return HexGame(BOARD_SIZE)
+    elif match_name == "othello":
+        return OthelloGame(BOARD_SIZE)
+    elif match_name == "gym":
+        return GymGame("CartPole-v1")
+    elif match_name.startswith("gym_"):
+        return GymGame(name[len("gymS"):])
+    elif match_name.startswith("atari_"):
+        game_name = match_name[len("atari_"):]
+        game_name = game_name.capitalize() + "NoFrameskip-v4"
+        return AtariGame(game_name)
+
+
+if __name__ == "__main__":
     # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
     # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
     #
-    learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
+    # learnM0(HexGame(BOARD_SIZE), MUZERO_BOARD)
     # learnM0(GymGame("CartPole-v1"), MUZERO_CARTPOLE)
     # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
 
-    b = ExperimentConfig(MUZERO_RANDOM)
+    # b = ExperimentConfig(MUZERO_RANDOM)
     # b = ExperimentConfig(ALPHAZERO_RANDOM)
-    b.construct()
-    print(b.game_config)
-    print(b.player_configs)
+    # b = ExperimentConfig(args.config)
+    # b.construct() 
+    # print(b.game_config)
+    # print(b.player_configs)
 
-    tournament_final(experiment=b)
+    # tournament_final(experiment=b)
+
+
+    parser = argparse.ArgumentParser(description="A MuZero and AlphaZero implementation in Tensorflow.")
+
+    parser.add_argument("--debug", action="store_true", default=False, help="Turn on debug mode")
+    parser.add_argument("--lograte", type=int, default=1, help="Backprop logging frequency")
+    parser.add_argument("--render", action="store_true", default=False, help="Render the environment during training and pitting")
+
+
+    modes = [ "train", "experiment" ]
+    parser.add_argument("--mode", "-m", choices=modes, default="experiment")
+    parser.add_argument("--config", "-c", help="Path to config file", required=True)
+    parser.add_argument("--boardsize", "-s", type=int, default=BOARD_SIZE, help="Board size (if relevant)")
+
+    mode_parsers = parser.add_subparsers(title="Modes")
+    
+    experiment_parser = mode_parsers.add_parser("experiment")
+    experiment_parser.set_defaults(mode="experiment")
+
+    train_parser = mode_parsers.add_parser("train")
+    train_parser.set_defaults(mode="train")
+    train_parser.add_argument("--game", default="gym")
+
+    args = parser.parse_args()
+
+    print("DEBUG IS ", args.debug)
+
+    debugger.DEBUG_MODE = args.debug
+    debugger.RENDER = args.render
+    debugger.LOG_RATE = args.lograte
+
+    BOARD_SIZE = args.boardsize
+    
+    if args.mode == "train":
+        content = DotDict.from_json(args.config)
+        game = game_from_name(args.game)
+        if content.algorithm == "ALPHAZERO":
+            learnA0(game, content)
+        elif content.algorithm == "MUZERO":
+            learnM0(game, content)
+        else:
+            raise f"Cannot train on algorithm '{content.algorithm}'"
+    elif args.mode == "experiment":
+        b = ExperimentConfig(args.config)
+        b.construct() 
+        print(b.game_config)
+        print(b.player_configs)
+
+        tournament_final(experiment=b)
+
+
+
+
+
