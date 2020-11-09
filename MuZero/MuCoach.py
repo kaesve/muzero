@@ -42,7 +42,10 @@ class MuZeroCoach(Coach):
         :param k:
         :return:
         """
+        # One hot encode actions. Keep truncated actions empty (zeros).
         actions = history.actions[t:t+k]  # Actions are shifted one step to the right.
+        enc_actions = np.zeros([k, self.game.getActionSize()])
+        enc_actions[np.arange(len(actions)), actions] = 1
 
         # Targets
         pis = history.probabilities[t:t+k+1]
@@ -50,19 +53,11 @@ class MuZeroCoach(Coach):
         rewards = history.rewards[t:t+k+1]
 
         # Handle truncations > 0 due to terminal states. Treat last state as absorbing state
-        a_truncation = k - len(actions)  # Action truncation
-        if a_truncation > 0:
-            actions += np.random.choice(self.game.getActionSize(), size=a_truncation).tolist()
-
         t_truncation = (k + 1) - len(pis)  # Target truncation due to terminal state
         if t_truncation > 0:
             pis += [pis[-1]] * t_truncation  # Uniform policy
             rewards += [rewards[-1]] * t_truncation
             vs += [0] * t_truncation
-
-        # One hot encode actions.
-        enc_actions = np.zeros([len(actions), self.game.getActionSize()])
-        enc_actions[np.arange(len(actions)), actions] = 1
 
         return enc_actions, (np.asarray(vs), np.asarray(rewards), np.asarray(pis))  # (Actions, Targets)
 

@@ -9,7 +9,7 @@ import tensorflow as tf
 import numpy as np
 
 from utils import DotDict
-from utils.loss_utils import scalar_loss, scale_gradient
+from utils.loss_utils import scalar_loss, scale_gradient, safe_l2norm
 from utils.debugging import MuZeroMonitor
 
 
@@ -38,15 +38,22 @@ class MuZeroNeuralNet(ABC):
 
     @tf.function
     def unroll(self, observations: tf.Tensor, actions: tf.Tensor):
-        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+        # Prepare loss scaling factors before unrolling.
+        num_actions = actions.shape[1]
+        # Sum over one-hot-encoded actions. If this sum is zero, then there is no action --> leaf node.
+        absorb = 1.0 - tf.reduce_sum(actions, axis=-1)
+        # Below computes the number of available actions for unrolling. I.e., K - number_of_absorbing_states.
+        recurrent_head_scale = 1.0 / (num_actions - tf.reduce_sum(absorb, axis=-1))
+
+        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi, absorb] for each forward step k = 0...K
         s, pi_0, v_0 = self.neural_net.forward(observations)
 
-        predictions = [(1.0, v_0, 0, pi_0)]
-        for k in range(actions.shape[1]):
+        predictions = [(1.0, v_0, 0, pi_0, 0.0)]  # Note: Root can be a terminal state.
+        for k in range(num_actions):
             r, s, pi, v = self.neural_net.recurrent([s, actions[:, k, :]])
-            predictions.append((1.0 / len(actions), v, r, pi))
+            predictions.append((recurrent_head_scale, v, r, pi, absorb[:, k]))
 
-            s = scale_gradient(s, 1 / 2)  # Scale the gradient at the start of the dynamics function by 1/2
+            s = scale_gradient(s, 0.5)  # Scale the gradient at the start of the dynamics function by 1/2
 
         return predictions
 
@@ -60,28 +67,28 @@ class MuZeroNeuralNet(ABC):
         """
         # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
         predictions = self.unroll(observations, actions)
+        losses = []  # Collect losses for logging.
 
         # Perform loss computation
         total_loss = tf.constant(0, dtype=tf.float32)
         for k in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
-            loss_scale, vs, rs, pis = predictions[k]
+            loss_scale, vs, rs, pis, absorb = predictions[k]
             t_vs, t_rs, t_pis = target_vs[k, ...], target_rs[k, ...], target_pis[k, ...]
 
             r_loss = scalar_loss(rs, t_rs) if (k > 0 and self.fit_rewards) else tf.constant(0, dtype=tf.float32)
             v_loss = scalar_loss(vs, t_vs)
             pi_loss = scalar_loss(pis, t_pis)
+            losses.append((v_loss, r_loss, pi_loss, absorb))
 
-            step_loss = r_loss + v_loss + pi_loss
+            step_loss = (r_loss + v_loss + pi_loss) * (1.0 - absorb)  # Set loss to zero if absorbed/ terminal state.
+
             total_loss += tf.reduce_sum(scale_gradient(step_loss, loss_scale * sample_weights))
 
-            # Logging loss of each unrolled head.
-            self.monitor.log_recurrent_losses(k, loss_scale, v_loss, r_loss, pi_loss)
-
         # Penalize magnitude of weights using l2 norm
-        l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.get_variables()])
+        l2_norm = tf.reduce_sum([safe_l2norm(x) for x in self.get_variables()])
         total_loss += self.net_args.l2 * l2_norm
 
-        return total_loss
+        return total_loss, losses
 
     @abstractmethod
     def train(self, examples: typing.List) -> None:

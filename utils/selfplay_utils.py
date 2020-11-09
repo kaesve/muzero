@@ -37,14 +37,11 @@ class GameHistory:
         self.rewards.append(r)
         self.search_returns.append(v)
 
-    def terminate(self, state: GameState, z: typing.Union[int, float]) -> None:
+    def terminate(self, z: typing.Union[int, float]) -> None:
         """Take a snapshot of the terminal state of the environment"""
-        self.observations.append(state.observation)
-        self.actions.append(np.random.choice(len(self.probabilities[-1])))
-        self.players.append(state.player)
-        self.probabilities.append(np.full_like(self.probabilities[-1], fill_value=1/len(self.probabilities[-1])))
-        self.rewards.append(z)         # u_T
-        self.search_returns.append(0)  # Future possible reward = 0
+        self.probabilities.append(np.zeros_like(self.probabilities[-1]))
+        self.rewards.append(z)         # Reward: u_T
+        self.search_returns.append(0)  # Bootstrap: Future possible reward = 0
         self.terminated = True
 
     def refresh(self) -> None:
@@ -57,15 +54,14 @@ class GameHistory:
         self.observed_returns = list()
         if n is None:
             # Boardgames
-            self.observed_returns.append(self.rewards[-1])       # Append values to list in order T, T-1, ..., 2, 1
-            for i in range(1, len(self)):
+            self.observed_returns.append(self.rewards[-1])  # Append values to list in order T, T-1, ..., 2, 1
+            for i in range(1, len(self.rewards)):
                 self.observed_returns.append(-self.observed_returns[i - 1])
             self.observed_returns = self.observed_returns[::-1]  # Reverse back to chronological order
         else:
             # General MDPs. Symbols follow notation from the paper.
-            for t in range(len(self)):
+            for t in range(len(self.rewards)):
                 horizon = np.min([t + n, len(self) - 1])
-
                 # u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon
                 discounted_rewards = [np.power(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
                 # gamma ^ k * v_t+horizon

@@ -1,5 +1,6 @@
 import logging
 import typing
+import os
 
 # Dynamic VRAM growth: https://github.com/tensorflow/tensorflow/issues/24496#issuecomment-464909727
 from tensorflow.compat.v1 import ConfigProto
@@ -8,12 +9,13 @@ from tensorflow.compat.v1 import InteractiveSession
 import tensorflow as tf
 import numpy as np
 
-from utils.loss_utils import scale_gradient, support_to_scalar, scalar_to_support
+from utils.loss_utils import scale_gradient, support_to_scalar, scalar_to_support, safe_l2norm
 
 # Dynamic VRAM growth: https://github.com/tensorflow/tensorflow/issues/24496#issuecomment-464909727
 config = ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 # Suppress warnings from TENSORFLOW's side
 logger = tf.get_logger()
@@ -47,13 +49,13 @@ class MuZeroMonitor(Monitor):
     def __init__(self, reference):
         super().__init__(reference)
 
-    def log_recurrent_losses(self, t: int, scale: tf.Tensor, v_loss: tf.Tensor,
-                             r_loss: tf.Tensor, pi_loss: tf.Tensor) -> None:
+    def log_recurrent_losses(self, t: int, v_loss: tf.Tensor, r_loss: tf.Tensor,
+                             pi_loss: tf.Tensor, absorb: tf.Tensor) -> None:
         step = self.reference.steps
         if self.reference.steps % LOG_RATE == 0:
-            tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_sum(scale_gradient(r_loss, scale)), step=step)
-            tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_sum(scale_gradient(v_loss, scale)), step=step)
-            tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(scale_gradient(pi_loss, scale)), step=step)
+            tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_mean(r_loss * (1 - absorb)), step=step)
+            tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_mean(v_loss * (1 - absorb)), step=step)
+            tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_mean(pi_loss * (1 - absorb)), step=step)
 
     def log_batch(self, data_batch: typing.List) -> None:
         if DEBUG_MODE and self.reference.steps % LOG_RATE == 0:
@@ -80,6 +82,9 @@ class MuZeroMonitor(Monitor):
             for t, (v, r, pi) in enumerate(collect):
                 k = t + 1
 
+                pi_loss = -np.sum(target_pis[:, k] * np.log(pi), axis=-1)
+                self.log_distribution(pi_loss, f"pi_dist_{k}")
+
                 v_real = support_to_scalar(v, self.reference.net_args.support_size).ravel()
                 r_real = support_to_scalar(r, self.reference.net_args.support_size).ravel()
 
@@ -92,7 +97,7 @@ class MuZeroMonitor(Monitor):
                 self.log(np.mean((r_real - target_rs[:, k]) ** 2), f"r_mse_{k}")
                 self.log(np.mean((v_real - target_vs[:, k]) ** 2), f"v_mse_{k}")
 
-            l2_norm = tf.reduce_sum([tf.nn.l2_loss(x) for x in self.reference.get_variables()])
+            l2_norm = tf.reduce_sum([safe_l2norm(x) for x in self.reference.get_variables()])
             self.log(l2_norm, "l2 norm")
 
 

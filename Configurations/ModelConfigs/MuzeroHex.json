@@ -5,11 +5,11 @@
 
   "args": {
     "numIters": 100,
-    "numEps": 5,
+    "numEps": 100,
     "numTrainingSteps": 300,
     "pitting": false,
     "pitting_trials": 30,
-    "pit_acceptance_ratio": 0.2,
+    "pit_acceptance_ratio": 0.55,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
     "maxlenOfQueue": 200000,
@@ -40,19 +40,19 @@
 
   "net_args": {
     "lr": 0.001,
-    "l2": 1e-4,
+    "l2": 1e-3,
     "dropout": 0.0,
     "batch_size": 64,
     "cuda": false,
     "latent_depth": 1,
     "num_channels": 128,
     "num_convs": 1,
-    "num_towers": 3,
+    "num_towers": 2,
     "residual_left": 2,
     "residual_right": 0,
     "num_dense": 2,
     "size_dense": 256,
-    "activation": "relu",
+    "activation": "leakyrelu",
     "support_size": 0,
     "observation_length": 5
   }
