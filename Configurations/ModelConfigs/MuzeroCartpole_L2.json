@@ -1,5 +1,5 @@
 {
-  "name": "singleplayergames",
+  "name": "singleplayergames_Latent2",
   "algorithm": "MUZERO",
   "architecture": "Gym",
 

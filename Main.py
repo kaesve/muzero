@@ -33,42 +33,43 @@ ALPHAZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json
 BOARD_SIZE = 5
 
 
-def learnA0(g, content):
-    name, net_args, args = content.name, content.net_args, content.args
+def get_run_name(config_name, architecture, game):
+    time = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return f"{config_name}_{architecture}_{game}_{time}"
 
-    print("Testing:", name)
+def learnA0(g, content, run_name):
+    net_args, args = content.net_args, content.args
+
+    print("Testing:", ", ".join(run_name.split("_")))
 
     net = ANet(g, net_args, content.architecture)
 
     if args.load_model:
         net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    c = AlphaZeroCoach(g, net, args)
+    c = AlphaZeroCoach(g, net, args, run_name)
     if args.load_model:
         print("Load trainExamples from file")
         c.loadTrainExamples()
 
-    time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    content.to_json(f'out/AlphaZeroOut/{name}_{content.architecture}_{time}.json')
+    content.to_json(f'out/AlphaZeroOut/{run_name}.json')
 
     c.learn()
 
 
-def learnM0(g, content):
-    name, net_args, args = content.name, content.net_args, content.args
+def learnM0(g, content, run_name):
+    net_args, args = content.net_args, content.args
 
-    print("Testing:", name)
-    print("\n\n", content.architecture)
+    print("Testing:", ", ".join(run_name.split("_")))
 
     net = MNet(g, net_args, content.architecture)
 
     if args.load_model:
         net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    c = MuZeroCoach(g, net, args)
+    c = MuZeroCoach(g, net, args, run_name)
 
-    time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    content.to_json(f'out/MuZeroOut/{name}_{content.architecture}_{time}.json')
+    content.to_json(f'out/MuZeroOut/{run_name}.json')
 
     c.learn()
 
@@ -143,10 +144,12 @@ if __name__ == "__main__":
     if args.mode == "train":
         content = DotDict.from_json(args.config)
         game = game_from_name(args.game)
+        run_name = get_run_name(content.name, content.architecture, args.game)
+
         if content.algorithm == "ALPHAZERO":
-            learnA0(game, content)
+            learnA0(game, content, run_name)
         elif content.algorithm == "MUZERO":
-            learnM0(game, content)
+            learnM0(game, content, run_name)
         else:
             raise f"Cannot train on algorithm '{content.algorithm}'"
     elif args.mode == "experiment":
