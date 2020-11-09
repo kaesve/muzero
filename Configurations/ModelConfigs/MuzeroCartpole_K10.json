@@ -26,9 +26,9 @@
     "minimum_reward": null,
     "maximum_reward": null,
 
-    "checkpoint": "./out/MuZeroOut/",
+    "checkpoint": "./out/MuZeroOut/K10/",
     "load_model": false,
-    "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
+    "load_folder_file": ["./out/MuZeroOut/K10/", "latest.pth.tar"],
     "numItersForTrainExamplesHistory": 15,
 
     "temperature_schedule": {
