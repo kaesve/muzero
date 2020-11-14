@@ -160,11 +160,9 @@ class MuZeroNeuralNet(ABC):
         overhead and results in a significant speed up.
 
         :param observations: A game specific (stacked) tensor of observations of the environment at step t: o_t.
-
         :returns: A tuple with predictions of the following form:
             s_(0): The root 'latent_state' produced by the representation function
-            pi: a policy vector for the current board- a numpy array of length
-                game.getActionSize
+            pi: a policy vector for the current board- a numpy array of length |action_space|.
             v: a float that gives the value of the current board
         """
 
@@ -177,13 +175,10 @@ class MuZeroNeuralNet(ABC):
 
         :param latent_state: A neural encoding of the environment at step k: s_k.
         :param action: A (encoded) action to perform on the latent state
-
         :returns: A tuple with predictions of the following form:
             r: The immediate predicted reward of the environment.
-            s_(k+1): A new 'latent_state' resulting from performing the 'action' in
-                the latent_state.
-            pi: a policy vector for the current board- a numpy array of length
-                game.getActionSize.
+            s_(k+1): A new 'latent_state' resulting from performing the 'action' in the latent_state.
+            pi: a policy vector for the current board- a numpy array of length |action_space|.
             v: a float that gives the value of the current board.
         """
 
