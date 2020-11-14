@@ -85,7 +85,7 @@ class MuZeroMonitor(Monitor):
             for t, (v, r, pi, absorb) in enumerate(collect):
                 k = t + 1
 
-                pi_loss = -np.sum(target_pis[:, k] * np.log(pi), axis=-1) / tf.reduce_sum(1 - absorb)
+                pi_loss = -np.sum(target_pis[:, k] * np.log(pi + 1e-8), axis=-1)
                 self.log_distribution(pi_loss, f"pi_dist_{k}")
 
                 v_real = support_to_scalar(v, self.reference.net_args.support_size).ravel()

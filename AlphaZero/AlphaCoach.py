@@ -20,10 +20,8 @@ class AlphaZeroCoach(Coach):
 
     def __init__(self, game, neural_net, args: DotDict, run_name: typing.Optional[str] = None) -> None:
         super().__init__(game, neural_net, args, MCTS, AlphaZeroPlayer)
-        self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
-        self.update_temperature = self.temp_schedule.build()
 
-        if run_name == None:
+        if run_name is None:
             run_name = datetime.now().strftime("%Y%m%d-%H%M%S")
         
         self.logdir = f"out/logs/AlphaZero/{self.neural_net.architecture}/" + run_name

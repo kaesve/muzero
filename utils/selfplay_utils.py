@@ -37,8 +37,11 @@ class GameHistory:
         self.rewards.append(r)
         self.search_returns.append(v)
 
-    def terminate(self, z: typing.Union[int, float]) -> None:
+    def terminate(self, state: GameState, z: typing.Union[int, float]) -> None:
         """Take a snapshot of the terminal state of the environment"""
+        # self.observations.append(state.observation)
+        # self.actions.append(np.random.randint(len(self.probabilities[-1])))
+        # self.players.append(state.player)
         self.probabilities.append(np.zeros_like(self.probabilities[-1]))
         self.rewards.append(z)         # Reward: u_T
         self.search_returns.append(0)  # Bootstrap: Future possible reward = 0
@@ -60,14 +63,15 @@ class GameHistory:
             self.observed_returns = self.observed_returns[::-1]  # Reverse back to chronological order
         else:
             # General MDPs. Symbols follow notation from the paper.
+            # z_t = u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon + gamma ^ k * v_t+horizon
+            # for all (t - 1) = 1... len(self) - 1
             for t in range(len(self.rewards)):
-                horizon = np.min([t + n, len(self) - 1])
-                # u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon
+                horizon = np.min([t + n, len(self.rewards) - 1])
+
                 discounted_rewards = [np.power(gamma, k - t) * self.rewards[k] for k in range(t, horizon)]
-                # gamma ^ k * v_t+horizon
                 bootstrap = (np.power(gamma, horizon - t) * self.search_returns[horizon]) if horizon <= t + n else 0
-                # z_t for all (t - 1) = 1... len(self) - 1
-                self.observed_returns.append(np.sum(discounted_rewards) + bootstrap)
+
+                self.observed_returns.append(sum(discounted_rewards) + bootstrap)
 
     def stackObservations(self, length: int, current_observation: typing.Optional[np.ndarray] = None,
                           t: typing.Optional[int] = None) -> np.ndarray:  # TODO: rework function.
@@ -205,6 +209,8 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
     and v_i being the MCTS search result and z_i being the observed n-step return.
     The w_i is the Importance Sampling ratio and accounts for some of the sampling bias.
 
+    WARNING: Sampling with replacement is performed if the given batch-size exceeds the replay-buffer size.
+
     :param list_of_histories: List of GameHistory objects to sample indices from.
     :param n: int Number of samples to generate == batch_size.
     :param prioritize: bool Whether to use prioritized sampling
@@ -230,7 +236,7 @@ def sample_batch(list_of_histories: typing.List[GameHistory], n: int, prioritize
         sample_weight = np.power(n * sampling_probability, beta)
 
     # Sample with prioritized / uniform probabilities sample indices over the flattened list of GameHistory objects.
-    flat_indices = np.random.choice(a=np.sum(lengths), size=n, replace=False, p=sampling_probability)
+    flat_indices = np.random.choice(a=np.sum(lengths), size=n, replace=(n > np.sum(lengths)), p=sampling_probability)
 
     # Map the flat indices to the correct histories and history indices.
     history_index_borders = np.cumsum(lengths)

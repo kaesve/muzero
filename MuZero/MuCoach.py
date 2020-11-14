@@ -29,7 +29,7 @@ class MuZeroCoach(Coach):
         """
         super().__init__(game, neural_net, args, MuZeroMCTS, MuZeroPlayer)
 
-        if run_name == None:
+        if run_name is None:
             run_name = datetime.now().strftime("%Y%m%d-%H%M%S")
 
         self.logdir = f"out/logs/MuZero/{self.neural_net.architecture}/" + run_name

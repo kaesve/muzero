@@ -33,12 +33,18 @@ class MuZeroNeuralNet(ABC):
         self.neural_net = builder(game, net_args)
         self.monitor = MuZeroMonitor(self)
 
-        self.optimizer = tf.optimizers.Adam(self.net_args.lr)
+        if self.net_args.optimizer.method == "adam":
+            self.optimizer = tf.optimizers.Adam(lr=self.net_args.optimizer.lr_init)
+        elif self.net_args.optimizer.method == "sgd":
+            self.optimizer = tf.optimizers.SGD(lr=self.net_args.optimizer.lr_init,
+                                               momentum=self.net_args.optimizer.momentum)
+        else:
+            raise NotImplementedError(f"Optimization method {self.net_args.optimizer.method} not implemented...")
         self.steps = 0
 
     @tf.function
     def unroll(self, observations: tf.Tensor, actions: tf.Tensor):
-        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi, absorb] for each forward step k = 0...K
+        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
         s, pi_0, v_0 = self.neural_net.forward(observations)
 
         predictions = [(1.0, v_0, 0, pi_0)]  # Note: Root can be a terminal state.

@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import typing
 
-from tensorflow import GradientTape, clip_by_global_norm
+from tensorflow import GradientTape, clip_by_global_norm, optimizers
 
 from utils.loss_utils import support_to_scalar, scalar_to_support, cast_to_tensor, check_nans
 from MuZero.MuNeuralNet import MuZeroNeuralNet
@@ -77,6 +77,7 @@ class DefaultMuZero(MuZeroNeuralNet):
         self.monitor.log(loss / len(examples), "total loss")
         for k, step_loss in enumerate(step_losses):
             self.monitor.log_recurrent_losses(k, *step_loss)
+
         self.steps += 1
 
     def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:

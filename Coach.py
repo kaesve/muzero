@@ -97,7 +97,7 @@ class Coach:
             z = self.game.getGameEnded(state, close=True)
 
         # Terminal reward for board games is -1 or 1. For general games the bootstrap value is 0 (future rewards = 0)
-        history.terminate((-z if self.game.n_players > 1 else 0))  # TODO: Perhaps flip rewards?
+        history.terminate(state, (-z if self.game.n_players > 1 else 0))  # TODO: Perhaps flip rewards?
         history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
 
         return history

@@ -32,9 +32,9 @@
     "numItersForTrainExamplesHistory": 20,
 
     "temperature_schedule": {
-      "method": "linear",
-      "by_weight_update": true,
-      "schedule_points": [[5000, 1], [7500, 0.5], [10000, 0.25]]
+      "method": "step",
+      "by_weight_update": false,
+      "schedule_points": [[10, 1], [10, 0]]
     }
   },
 

@@ -90,11 +90,12 @@ class MuZeroMCTS:
                    proportional to Nsa[(s_0,a)]**(1./temp)
             v: (float) Estimated value of the root state.
         """
+        # Refresh value bounds and statistics in the tree
+        self.minmax.refresh()
+        self.clear_tree()
+
         # Get a hashable latent state representation 's_0', the predicted value of the root, and the numerical root s_0.
         s_0, latent_state, v_0 = self.initialize_root(state, trajectory)
-
-        # Refresh value bounds in the tree
-        self.minmax.refresh()
 
         # Aggregate root state value over MCTS back-propagated values
         v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims - 1)])

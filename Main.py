@@ -21,21 +21,11 @@ from Games.atari.AtariGame import AtariGame
 
 from Experimenter.experimenter import ExperimentConfig, tournament_final
 
-ALPHAZERO_DEFAULTS = "Configurations/ModelConfigs/AlphazeroCartpole.json"
-ALPHAZERO_BOARD = "Configurations/ModelConfigs/AlphazeroHex.json"
-MUZERO_CARTPOLE = "Configurations/ModelConfigs/MuzeroCartpole.json"
-MUZERO_ATARI = "Configurations/ModelConfigs/MuzeroAtari.json"
-MUZERO_BOARD = "Configurations/ModelConfigs/MuzeroHex.json"
-
-MUZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json"
-ALPHAZERO_RANDOM = "Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json"
-
-BOARD_SIZE = 5
-
 
 def get_run_name(config_name, architecture, game):
     time = datetime.now().strftime("%Y%m%d-%H%M%S")
     return f"{config_name}_{architecture}_{game}_{time}"
+
 
 def learnA0(g, content, run_name):
     net_args, args = content.net_args, content.args
@@ -92,38 +82,21 @@ def game_from_name(name):
 
 
 if __name__ == "__main__":
-    # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
-    # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
-    #
-    debugger.DEBUG_MODE = True
-    content = DotDict.from_json(MUZERO_CARTPOLE)
-    # game = HexGame(BOARD_SIZE)
-    # learnM0(game, content)
-    learnM0(GymGame("CartPole-v1"), content)
-    # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
-
-    # b = ExperimentConfig(MUZERO_RANDOM)
-    # b = ExperimentConfig(ALPHAZERO_RANDOM)
-    # b = ExperimentConfig(args.config)
-    # b.construct() 
-    # print(b.game_config)
-    # print(b.player_configs)
-
-    # tournament_final(experiment=b)
-
+    # Handle console arguments
     parser = argparse.ArgumentParser(description="A MuZero and AlphaZero implementation in Tensorflow.")
 
     parser.add_argument("--debug", action="store_true", default=False, help="Turn on debug mode")
     parser.add_argument("--lograte", type=int, default=1, help="Backprop logging frequency")
-    parser.add_argument("--render", action="store_true", default=False, help="Render the environment during training and pitting")
+    parser.add_argument("--render", action="store_true", default=False,
+                        help="Render the environment during training and pitting")
 
-    modes = [ "train", "experiment" ]
+    modes = ["train", "experiment"]
     parser.add_argument("--mode", "-m", choices=modes, default="experiment")
     parser.add_argument("--config", "-c", help="Path to config file", required=True)
-    parser.add_argument("--boardsize", "-s", type=int, default=BOARD_SIZE, help="Board size (if relevant)")
+    parser.add_argument("--boardsize", "-s", type=int, default=5, help="Board size (if relevant)")
 
     mode_parsers = parser.add_subparsers(title="Modes")
-    
+
     experiment_parser = mode_parsers.add_parser("experiment")
     experiment_parser.set_defaults(mode="experiment")
 
@@ -140,7 +113,7 @@ if __name__ == "__main__":
     debugger.LOG_RATE = args.lograte
 
     BOARD_SIZE = args.boardsize
-    
+
     if args.mode == "train":
         content = DotDict.from_json(args.config)
         game = game_from_name(args.game)
@@ -155,13 +128,8 @@ if __name__ == "__main__":
 
     elif args.mode == "experiment":
         b = ExperimentConfig(args.config)
-        b.construct() 
+        b.construct()
         print(b.game_config)
         print(b.player_configs)
 
         tournament_final(experiment=b)
-
-
-
-
-
