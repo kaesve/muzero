@@ -95,7 +95,12 @@ class GameHistory:
             current_observation = self.observations[t]
 
         # Get a trajectory of states of 'length' most recent observations until time-point t.
-        trajectory = self.observations[:t][-(length - 1):] + [current_observation]
+        # Trajectories sampled beyond the end of the game are simply repeats of the terminal observation.
+        if t > len(self):
+            terminal_repeat = [current_observation] * (t - len(self))
+            trajectory = self.observations[:t][-(length - len(terminal_repeat)):] + terminal_repeat
+        else:
+            trajectory = self.observations[:t][-(length - 1):] + [current_observation]
 
         if len(trajectory) < length:
             prefix = [np.zeros_like(current_observation) for _ in range(length - len(trajectory))]

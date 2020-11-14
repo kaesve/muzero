@@ -31,7 +31,7 @@ class Coach:
         self.game = game
         self.args = args
 
-        self.trainExamplesHistory = deque(maxlen=self.args.numItersForTrainExamplesHistory)
+        self.trainExamplesHistory = deque(maxlen=self.args.selfplay_buffer_window)
         self.skipFirstSelfPlay = False  # Can be overridden in loadTrainExamples()
 
         # Initialize network and search engine
@@ -97,7 +97,7 @@ class Coach:
             z = self.game.getGameEnded(state, close=True)
 
         # Terminal reward for board games is -1 or 1. For general games the bootstrap value is 0 (future rewards = 0)
-        history.terminate(state, (-z if self.game.n_players > 1 else 0))  # TODO: Perhaps flip rewards?
+        history.terminate(state, (-z if self.game.n_players > 1 else 0))
         history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
 
         return history
@@ -111,17 +111,17 @@ class Coach:
         only if it wins >= updateThreshold fraction of games.
         """
 
-        for i in range(1, self.args.numIters + 1):
+        for i in range(1, self.args.num_selfplay_iterations + 1):
             print(f'------ITER {i}------')
             if not self.skipFirstSelfPlay or i > 1:  # else: go directly to backpropagation
 
                 # Self-play/ Gather training data.
                 iteration_train_examples = list()
-                for _ in trange(self.args.numEps, desc="Self Play", file=sys.stdout):
+                for _ in trange(self.args.num_episodes, desc="Self Play", file=sys.stdout):
                     self.mcts.clear_tree()
                     iteration_train_examples.append(self.executeEpisode())
 
-                    if sum(map(len, iteration_train_examples)) > self.args.maxlenOfQueue:
+                    if sum(map(len, iteration_train_examples)) > self.args.max_buffer_size:
                         iteration_train_examples.pop(0)
 
                 # Store data from previous self-play iterations into the history.
@@ -140,7 +140,7 @@ class Coach:
             self.neural_net.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
             # Backpropagation
-            for _ in trange(self.args.numTrainingSteps, desc="Backpropagation", file=sys.stdout):
+            for _ in trange(self.args.num_gradient_steps, desc="Backpropagation", file=sys.stdout):
                 batch = self.sampleBatch(complete_history)
 
                 self.neural_net.train(batch)

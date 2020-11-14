@@ -36,8 +36,15 @@ class MuZeroCoach(Coach):
         self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
         self.file_writer.set_as_default()
 
+        self.return_forward_observations = False
+        self.observation_stack_length = neural_net.net_args.observation_length  # Readability variable
+
+    def toggle_future_observation_sampling(self) -> None:
+        """ Enable/ Disable construction of stacked-observations for each future step in buildHypotheticalSteps. """
+        self.return_forward_observations = not self.return_forward_observations
+
     def buildHypotheticalSteps(self, history: GameHistory, t: int, k: int) -> \
-            typing.Tuple[np.ndarray, typing.Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+            typing.Tuple[np.ndarray, typing.Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
         """
 
         :param history:
@@ -45,16 +52,16 @@ class MuZeroCoach(Coach):
         :param k:
         :return:
         """
-        # One hot encode actions. Keep truncated actions empty (zeros).
-        actions = history.actions[t:t+k]  # Actions are shifted one step to the right.
+        # One hot encode actions.
+        actions = history.actions[t:t+k]
         a_truncation = k - len(actions)
-        if a_truncation > 0:
+        if a_truncation > 0:  # Uniform policy when unrolling beyond terminal states.
             actions += np.random.randint(self.game.getActionSize(), size=a_truncation).tolist()
 
         enc_actions = np.zeros([k, self.game.getActionSize()])
         enc_actions[np.arange(len(actions)), actions] = 1
 
-        # Targets
+        # Value targets.
         pis = history.probabilities[t:t+k+1]
         vs = history.observed_returns[t:t+k+1]
         rewards = history.rewards[t:t+k+1]
@@ -62,11 +69,16 @@ class MuZeroCoach(Coach):
         # Handle truncations > 0 due to terminal states. Treat last state as absorbing state
         t_truncation = (k + 1) - len(pis)  # Target truncation due to terminal state
         if t_truncation > 0:
-            pis += [pis[-1]] * t_truncation  # Uniform policy
-            rewards += [rewards[-1]] * t_truncation
-            vs += [0] * t_truncation
+            pis += [pis[-1]] * t_truncation          # Zero vector
+            rewards += [rewards[-1]] * t_truncation  # = 0
+            vs += [0] * t_truncation                 # = 0
 
-        return enc_actions, (np.asarray(vs), np.asarray(rewards), np.asarray(pis))  # (Actions, Targets)
+        obs_trajectory = []
+        if self.return_forward_observations:
+            obs_trajectory = [history.stackObservations(self.observation_stack_length, t=t+i+1) for i in range(k)]
+
+        # (Actions, Targets, Observations)
+        return enc_actions, (np.asarray(vs), np.asarray(rewards), np.asarray(pis)), obs_trajectory
 
     def sampleBatch(self, histories: typing.List[GameHistory]) -> typing.List:
         """
@@ -81,8 +93,8 @@ class MuZeroCoach(Coach):
 
         # Construct training examples for MuZero of the form (input, action, (targets), loss_scalar)
         examples = [(
-            histories[h_i].stackObservations(self.neural_net.net_args.observation_length, t=i),
-            *self.buildHypotheticalSteps(histories[h_i], i, k=self.args.K),
+            histories[h_i].stackObservations(self.observation_stack_length, t=i),
+            *self.buildHypotheticalSteps(histories[h_i], t=i, k=self.args.K),
             loss_scale
         )
             for (h_i, i), loss_scale in zip(sample_coordinates, sample_weight)

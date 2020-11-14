@@ -4,16 +4,16 @@
   "architecture": "Gym",
 
   "args": {
-    "numIters": 100,
-    "numEps": 20,
-    "numTrainingSteps": 40,
+    "num_selfplay_iterations": 100,
+    "num_episodes": 20,
+    "num_gradient_steps": 40,
     "pitting": true,
     "pitting_trials": 10,
     "pit_acceptance_ratio": 0.0,
     "dirichlet_alpha": 0.25,
     "exploration_fraction": 0.25,
-    "maxlenOfQueue": 200000,
-    "numMCTSSims": 11,
+    "max_buffer_size": 200000,
+    "num_MCTS_sims": 11,
     "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
@@ -29,7 +29,7 @@
     "checkpoint": "./out/MuZeroOut/K5/",
     "load_model": false,
     "load_folder_file": ["./out/MuZeroOut/K5/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 5,
+    "selfplay_buffer_window": 5,
 
     "temperature_schedule": {
       "method": "stepwise",

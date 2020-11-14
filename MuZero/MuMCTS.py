@@ -98,8 +98,8 @@ class MuZeroMCTS:
         s_0, latent_state, v_0 = self.initialize_root(state, trajectory)
 
         # Aggregate root state value over MCTS back-propagated values
-        v_search = sum([self._search(latent_state) for _ in range(self.args.numMCTSSims - 1)])
-        v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.numMCTSSims
+        v_search = sum([self._search(latent_state) for _ in range(self.args.num_MCTS_sims - 1)])
+        v = (v_0 + (-v_search if self.game.n_players > 1 else v_search)) / self.args.num_MCTS_sims
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.
         counts = np.array([self.Nsa[(s_0, a)] if (s_0, a) in self.Nsa else 0 for a in range(self.game.getActionSize())])

@@ -5,9 +5,9 @@ import numpy as np
 import sys
 import typing
 
-from tensorflow import GradientTape, clip_by_global_norm, optimizers
+from tensorflow import GradientTape
 
-from utils.loss_utils import support_to_scalar, scalar_to_support, cast_to_tensor, check_nans
+from utils.loss_utils import support_to_scalar, scalar_to_support, cast_to_tensor
 from MuZero.MuNeuralNet import MuZeroNeuralNet
 from .architectures import *
 
@@ -49,11 +49,11 @@ class DefaultMuZero(MuZeroNeuralNet):
         :return:
         """
         # Unpack and transform data for loss computation.
-        observations, actions, targets, sample_weight = list(zip(*examples))
+        observations, actions, targets, forward_observations, sample_weight = list(zip(*examples))
 
         actions, sample_weight = np.asarray(actions), np.asarray(sample_weight)
 
-        # Unpack and encode targets. All target shapes are of the form [time, batch_size, categories]
+        # Unpack and encode targets. Value target shapes are of the form [time, batch_size, categories]
         target_vs, target_rs, target_pis = list(map(np.asarray, zip(*targets)))
 
         target_vs = np.asarray([scalar_to_support(target_vs[:, t], self.net_args.support_size)
@@ -70,7 +70,7 @@ class DefaultMuZero(MuZeroNeuralNet):
             loss, step_losses = self.loss_function(*data)
 
         grads = tape.gradient(loss, self.get_variables())
-        # grads_clipped, _ = clip_by_global_norm(grads, 5.0)
+        # grads_clipped, _ = clip_by_global_norm(grads, 5.0)  # Optional. Not strictly necessary.
         self.optimizer.apply_gradients(zip(grads, self.get_variables()), name=f'MuZeroDefault_{self.architecture}')
 
         # Logging

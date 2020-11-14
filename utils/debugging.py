@@ -59,7 +59,7 @@ class MuZeroMonitor(Monitor):
 
     def log_batch(self, data_batch: typing.List) -> None:
         if DEBUG_MODE and self.reference.steps % LOG_RATE == 0:
-            observations, actions, targets, sample_weight = list(zip(*data_batch))
+            observations, actions, targets, forward_observations, sample_weight = list(zip(*data_batch))
             actions, sample_weight = np.asarray(actions), np.asarray(sample_weight)
             target_vs, target_rs, target_pis = list(map(np.asarray, zip(*targets)))
 

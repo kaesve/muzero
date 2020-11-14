@@ -4,16 +4,16 @@
   "architecture": "What neural architecture to use. For the currently implemented ones @see DefaultMuZero",
 
   "args": {
-    "numIters": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",
-    "numEps": "(int) Number of episodes to perform self play for collecting training examples",
-    "numTrainingSteps": "(int) Number of weight updates to perform in the backpropagation step",
+    "num_selfplay_iterations": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",
+    "num_episodes": "(int) Number of episodes to perform self play for collecting training examples",
+    "num_gradient_steps": "(int) Number of weight updates to perform in the backpropagation step",
     "pitting": "(bool) Whether to test the newly trained model against the old model in a trial",
     "pitting_trials": "(int > 1) Number of trials to test the new model against the old",
     "pit_acceptance_ratio": "(double: [0, 1]) Win/loss ratio for whether to accept the new model over the old model ",
     "dirichlet_alpha": "(double) Alpha parameter of the dirichlet distribution to sample noise from for exploration",
     "exploration_fraction": "(double: [0, 1]) Fraction to sample based on noise of the dirichlet for exploration vs the network prior",
-    "maxlenOfQueue": "(int) Maximum number of game examples to train the neural networks on",
-    "numMCTSSims": "(int) Number of planning moves for MCTS to simulate",
+    "max_buffer_size": "(int) Maximum number of game examples to train the neural networks on",
+    "num_MCTS_sims": "(int) Number of planning moves for MCTS to simulate",
     "prioritize": "(bool) Set to true when using prioritized sampling from the replay buffer (used in Atari)",
     "prioritize_alpha": "(double) Exponentiation factor for computing probabilities in prioritized replay",
     "prioritize_beta": "(double) Exponentiation factor for exponentiating the importance sampling ratio in prioritized replay",
@@ -29,7 +29,7 @@
     "checkpoint": "(path: string) Directory to store sampled experiences and fitted parameters in",
     "load_model": "(bool) Whether to load in a previously trained model from the checkpoint directory",
     "load_folder_file": "(Array, ['directory', 'file']) Specify which model to load in",
-    "numItersForTrainExamplesHistory": "(int) Maximum number of self play iterations kept in the deque",
+    "selfplay_buffer_window": "(int) Maximum number of self play iterations kept in the deque",
 
     "temperature_schedule": {
       "method": "(string) choice between 'stepwise' and 'linear'.",

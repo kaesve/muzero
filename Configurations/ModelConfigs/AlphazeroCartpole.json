@@ -4,16 +4,16 @@
   "architecture": "Gym",
   
   "args": {
-    "numIters": 100,
-    "numEps": 50,
-    "numTrainingSteps": 75,
+    "num_selfplay_iterations": 100,
+    "num_episodes": 50,
+    "num_gradient_steps": 75,
     "pitting": true,
     "pitting_trials": 5,
     "pit_acceptance_ratio": 0.0,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.1,
-    "maxlenOfQueue": 200000,
-    "numMCTSSims": 50,
+    "max_buffer_size": 200000,
+    "num_MCTS_sims": 50,
     "prioritize": true,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
@@ -28,7 +28,7 @@
     "checkpoint": "./out/AlphaZeroOut/",
     "load_model": false,
     "load_folder_file": ["./out/AlphaZeroOut/", "latest.pth.tar"],
-    "numItersForTrainExamplesHistory": 10,
+    "selfplay_buffer_window": 10,
 
     "temperature_schedule": {
       "method": "stepwise",
