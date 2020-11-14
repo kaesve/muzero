@@ -83,6 +83,7 @@ def game_from_name(name):
 
 if __name__ == "__main__":
     # Handle console arguments
+
     parser = argparse.ArgumentParser(description="A MuZero and AlphaZero implementation in Tensorflow.")
 
     parser.add_argument("--debug", action="store_true", default=False, help="Turn on debug mode")
@@ -133,3 +134,30 @@ if __name__ == "__main__":
         print(b.player_configs)
 
         tournament_final(experiment=b)
+
+    else:
+        # Ad hoc code path. Use for quick tests
+
+        # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
+        # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
+        #
+        debugger.DEBUG_MODE = True
+        content = DotDict.from_json(MUZERO_CARTPOLE)
+        run_name = get_run_name(content.name, content.architecture, "gym")
+
+        # game = HexGame(BOARD_SIZE)
+        # learnM0(game, content)
+        learnM0(GymGame("CartPole-v1"), content, run_name)
+        # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
+
+        # b = ExperimentConfig(MUZERO_RANDOM)
+        # b = ExperimentConfig(ALPHAZERO_RANDOM)
+        # b = ExperimentConfig(args.config)
+        # b.construct()
+        # print(b.game_config)
+        # print(b.player_configs)
+
+        # tournament_final(experiment=b)
+
+
+
