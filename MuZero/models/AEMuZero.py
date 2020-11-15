@@ -1,11 +1,10 @@
 import typing
 
 import tensorflow as tf
-import numpy as np
 
 from utils import DotDict
 from .DefaultMuZero import DefaultMuZero
-from utils.loss_utils import scale_gradient, safe_l2norm, scalar_loss, scalar_to_support, cast_to_tensor
+from utils.loss_utils import scale_gradient, safe_l2norm, scalar_loss
 
 
 class DecoderMuZero(DefaultMuZero):

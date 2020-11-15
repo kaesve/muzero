@@ -121,6 +121,7 @@ if __name__ == "__main__":
 
     if args.mode == "train":
         content = DotDict.from_json(args.config)
+
         game = game_from_name(args.game)
         run_name = get_run_name(content.name, content.architecture, args.game)
 

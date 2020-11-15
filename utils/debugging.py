@@ -50,12 +50,15 @@ class MuZeroMonitor(Monitor):
         super().__init__(reference)
 
     def log_recurrent_losses(self, t: int, v_loss: tf.Tensor, r_loss: tf.Tensor, pi_loss: tf.Tensor,
-                             absorb: tf.Tensor, *vargs) -> None:
+                             absorb: tf.Tensor, o_loss: tf.Tensor = None) -> None:
         step = self.reference.steps
         if self.reference.steps % LOG_RATE == 0:
             tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_mean(r_loss), step=step)
             tf.summary.scalar(f"v_loss_{t}", data=tf.reduce_mean(v_loss), step=step)
             tf.summary.scalar(f"pi_loss_{t}", data=tf.reduce_sum(pi_loss) / tf.reduce_sum(1 - absorb), step=step)
+
+            if o_loss is not None:  # Decoder option.
+                tf.summary.scalar(f"decode_loss_{t}", data=tf.reduce_mean(o_loss), step=step)
 
     def log_batch(self, data_batch: typing.List) -> None:
         if DEBUG_MODE and self.reference.steps % LOG_RATE == 0:
@@ -104,22 +107,32 @@ class MuZeroMonitor(Monitor):
             l2_norm = tf.reduce_sum([safe_l2norm(x) for x in self.reference.get_variables()])
             self.log(l2_norm, "l2 norm")
 
-            forward_observations = np.asarray(forward_observations)
-            # Compute statistics related to auto-encoding state dynamics:
-            for t, (s, v, r, pi, absorb) in enumerate(collect):
-                k = t + 1
+            # Option to track statistical properties of the dynamics model.
+            if self.reference.net_args.dynamics_penalty > 0:
+                forward_observations = np.asarray(forward_observations)
+                # Compute statistics related to auto-encoding state dynamics:
+                for t, (s, v, r, pi, absorb) in enumerate(collect):
+                    k = t + 1
+                    stacked_obs = forward_observations[:, t, ...]
 
-                stacked_obs = forward_observations[:, t, ...]
-                # TODO: Option between latent decoding KL Divergence or encoding state KL Divergence.
+                    s_enc = self.reference.neural_net.encoder.predict_on_batch(stacked_obs)
+                    kl_divergence = tf.keras.losses.kullback_leibler_divergence(s_enc, s)
 
-                s_enc = self.reference.neural_net.encoder.predict_on_batch(stacked_obs)
-                kl_divergence = tf.keras.losses.kullback_leibler_divergence(s_enc, s)
-                s_entropy = tf.keras.losses.categorical_crossentropy(s, s)
+                    # Relative entropy of dynamics model and encoder.
+                    # Lower values indicate that the prediction model receives more stable input.
+                    self.log_distribution(kl_divergence, f"KL_Divergence_{k}")
+                    self.log(np.mean(kl_divergence), f"Mean_KLDivergence_{k}")
 
-                self.log_distribution(kl_divergence, f"KL_Divergence_{k}")
-                self.log(np.mean(kl_divergence), f"Mean_KLDivergence_{k}")
+                    # Internal entropy of the dynamics model
+                    s_entropy = tf.keras.losses.categorical_crossentropy(s, s)
+                    self.log(np.mean(s_entropy), f"mean_dynamics_entropy_{k}")
 
-                self.log(np.mean(s_entropy), f"mean_dynamics_entropy_{k}")
+                    if hasattr(self.reference.neural_net, "decoder"):
+                        # If available, track the performance of a neural decoder from latent to real state.
+                        stacked_obs_predict = self.reference.neural_net.decoder.predict_on_batch(s)
+                        se = (stacked_obs - stacked_obs_predict) ** 2
+
+                        self.log(np.mean(se), f"decoder_error_{k}")
 
 
 class AlphaZeroMonitor(Monitor):
