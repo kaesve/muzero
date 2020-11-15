@@ -13,6 +13,7 @@ from MuZero.MuCoach import MuZeroCoach
 
 from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero as ANet
 from MuZero.models.DefaultMuZero import DefaultMuZero as MNet
+from MuZero.models.AEMuZero import DecoderMuZero as DMNet
 
 from Games.hex.HexGame import HexGame
 from Games.othello.OthelloGame import OthelloGame
@@ -52,7 +53,10 @@ def learnM0(g, content, run_name):
 
     print("Testing:", ", ".join(run_name.split("_")))
 
-    net = MNet(g, net_args, content.architecture)
+    if args.latent_decoder:
+        net = DMNet(g, net_args, content.architecture)
+    else:
+        net = MNet(g, net_args, content.architecture)
 
     if args.load_model:
         net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])

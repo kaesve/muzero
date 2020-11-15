@@ -49,8 +49,8 @@ class MuZeroMonitor(Monitor):
     def __init__(self, reference):
         super().__init__(reference)
 
-    def log_recurrent_losses(self, t: int, v_loss: tf.Tensor, r_loss: tf.Tensor,
-                             pi_loss: tf.Tensor, absorb: tf.Tensor) -> None:
+    def log_recurrent_losses(self, t: int, v_loss: tf.Tensor, r_loss: tf.Tensor, pi_loss: tf.Tensor,
+                             absorb: tf.Tensor, *vargs) -> None:
         step = self.reference.steps
         if self.reference.steps % LOG_RATE == 0:
             tf.summary.scalar(f"r_loss_{t}", data=tf.reduce_mean(r_loss), step=step)

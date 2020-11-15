@@ -17,7 +17,7 @@
     "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
-    "latent_decoder": false,
+    "latent_decoder": true,
     "K": 5,
     "n_steps": 50,
     "c1": 1.25,

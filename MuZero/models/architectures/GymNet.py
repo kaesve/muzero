@@ -49,6 +49,10 @@ class GymNNet:
         self.recurrent = Model(inputs=[self.latent_state, self.action_tensor],
                                outputs=[self.r, self.s_next, *self.predictor(self.s_next)], name='recurrent')
 
+        # Decoder functionality.
+        self.decoded_observations = self.build_decoder(latent_state)
+        self.decoder = Model(inputs=self.latent_state, outputs=self.decoded_observations, name='decoder')
+
     def build_encoder(self, observations):
         fc_sequence = self.crafter.dense_sequence(self.args.num_dense, observations)
 
@@ -81,3 +85,10 @@ class GymNNet:
             Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(fc_sequence)
 
         return pi, v
+
+    def build_decoder(self, latent_state):
+        fc_sequence = self.crafter.dense_sequence(self.args.num_dense, latent_state)
+
+        out = Dense(self.x * self.y * self.planes, name='o_k')(fc_sequence)
+        o = Reshape((self.x, self.y, self.planes))(out)
+        return o
