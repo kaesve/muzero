@@ -118,4 +118,4 @@ class Game(ABC):
         """
 
     def render(self, state):
-        pass
+        raise NotImplementedError(f"Render method not implemented for Game: {self}")

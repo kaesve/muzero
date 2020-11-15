@@ -20,9 +20,10 @@ from utils.debugging import MuZeroMonitor
 
 class MuZeroNeuralNet(ABC):
     """
-    This class specifies the base NeuralNet class. To define your own neural network, subclass
+    This class specifies the base MuZeroNeuralNet class. To define your own neural network, subclass
     this class and implement the abstract functions below. The unroll and loss_function methods
     should be generic enough to work with any canonical MuZero architecture.
+    See DefaultMuZero for an example implementation.
     """
 
     def __init__(self, game, net_args: DotDict, builder: typing.Callable) -> None:
@@ -164,7 +165,7 @@ class MuZeroNeuralNet(ABC):
         """
         Yield a list of all trainable variables within the model
 
-        :returns: List A list of all tf.Variables within the entire MuZero model.
+        :return: List A list of all tf.Variables *to be trained* within the MuZero model.
         """
 
     @abstractmethod
@@ -174,10 +175,10 @@ class MuZeroNeuralNet(ABC):
         overhead and results in a significant speed up.
 
         :param observations: A game specific (stacked) tensor of observations of the environment at step t: o_t.
-        :returns: A tuple with predictions of the following form:
+        :return: A tuple with predictions of the following form:
             s_(0): The root 'latent_state' produced by the representation function
-            pi: a policy vector for the current board- a numpy array of length |action_space|.
-            v: a float that gives the value of the current board
+            pi: a policy vector for the provided state - a numpy array of length |action_space|.
+            v: a float that gives the state value estimate of the provided state.
         """
 
     @abstractmethod
@@ -189,15 +190,24 @@ class MuZeroNeuralNet(ABC):
 
         :param latent_state: A neural encoding of the environment at step k: s_k.
         :param action: A (encoded) action to perform on the latent state
-        :returns: A tuple with predictions of the following form:
+        :return: A tuple with predictions of the following form:
             r: The immediate predicted reward of the environment.
             s_(k+1): A new 'latent_state' resulting from performing the 'action' in the latent_state.
-            pi: a policy vector for the current board- a numpy array of length |action_space|.
-            v: a float that gives the value of the current board.
+            pi: a policy vector for the provided state - a numpy array of length |action_space|.
+            v: a float that gives the state value estimate of the provided state.
         """
 
     def save_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
-        """ Saves the current neural network (with its parameters) in folder/filename """
+        """
+        Saves the current neural network (with its parameters) in folder/filename
+        Each individual part of the MuZero algorithm is stored separately (representation, dynamics, prediction
+        and optionally the latent state decoder).
+
+        If specified folder does not yet exists, the method creates a new folder if permitted.
+
+        :param folder: str Path to model weight files
+        :param filename: str Base name for model weight files
+        """
         representation_path = os.path.join(folder, 'r_' + filename)
         dynamics_path = os.path.join(folder, 'd_' + filename)
         predictor_path = os.path.join(folder, 'p_' + filename)
@@ -210,8 +220,18 @@ class MuZeroNeuralNet(ABC):
         self.neural_net.dynamics.save_weights(dynamics_path)
         self.neural_net.predictor.save_weights(predictor_path)
 
+        if hasattr(self.neural_net, 'decoder'):
+            decoder_path = os.path.join(folder, 'decoder_' + filename)
+            self.neural_net.decoder.save_weights(decoder_path)
+
     def load_checkpoint(self, folder: str = 'checkpoint', filename: str = 'checkpoint.pth.tar') -> None:
-        """ Loads parameters of each neural network model from given folder/filename """
+        """
+        Loads parameters of each neural network model from given folder/filename
+
+        :param folder: str Path to model weight files
+        :param filename: str Base name of model weight files
+        :raises: FileNotFoundError if one of the three models are missing or if path is incorrectly specified.
+        """
         representation_path = os.path.join(folder, 'r_' + filename)
         dynamics_path = os.path.join(folder, 'd_' + filename)
         predictor_path = os.path.join(folder, 'p_' + filename)

@@ -6,6 +6,7 @@ import sys
 import typing
 from pickle import Pickler, Unpickler, HIGHEST_PROTOCOL
 from collections import deque
+from abc import ABC, abstractmethod
 
 import numpy as np
 from tqdm import trange
@@ -16,7 +17,7 @@ from utils.selfplay_utils import GameHistory, TemperatureScheduler
 from utils import debugging
 
 
-class Coach:
+class Coach(ABC):
     """
     This class executes the self-play + learning. It uses the functions defined
     in Game and NeuralNet. args are specified in main.py.
@@ -51,6 +52,7 @@ class Coach:
     def getCheckpointFile(iteration: int) -> str:
         return f'checkpoint_{iteration}.pth.tar'
 
+    @abstractmethod
     def sampleBatch(self, histories: typing.List[GameHistory]) -> typing.List:
         """
         Sample a batch of data from the current replay buffer (with or without prioritization).
@@ -58,7 +60,6 @@ class Coach:
         Returns:
             A list of sample statistics of the form (observation, targets, meta_data)
         """
-        raise NotImplementedError("Coach.py has no default batch sample procedure.")
 
     def executeEpisode(self) -> GameHistory:
         """
