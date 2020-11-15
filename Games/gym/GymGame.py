@@ -6,7 +6,7 @@ from copy import deepcopy
 import numpy as np
 import gym
 
-from Game import Game
+from Games.Game import Game
 from utils.game_utils import GymState
 
 sys.path.append('../../..')
@@ -37,8 +37,6 @@ class GymGame(Game):
         return next_state
 
     def getNextState(self, state: GymState, action: int, **kwargs) -> typing.Tuple[GymState, float]:
-        # Gym may raise warnings that .step() is called even though the environment is done.
-        # This however doesn't happen and may be a results of DeepCopy in the AlphaMCTS procedure.
         def nextEnv(old_state: GymState, clone: bool = False):  # Macro for cloning the state
             return deepcopy(old_state.env) if clone else old_state.env
 

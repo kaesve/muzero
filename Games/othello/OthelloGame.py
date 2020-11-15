@@ -4,7 +4,7 @@ import typing
 
 import numpy as np
 
-from Game import Game
+from Games.Game import Game
 from .OthelloLogic import Board
 from utils.game_utils import GameState
 

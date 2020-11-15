@@ -1,5 +1,13 @@
 """
+Define the base self-play/ data gathering class. This class should work with any MCTS-based neural network learning
+algorithm like AlphaZero or MuZero. Self-play, model-fitting, and pitting is performed sequentially on a single-thread
+in this default implementation.
 
+Notes:
+ - Code adapted from https://github.com/suragnair/alpha-zero-general
+ - Base implementation done.
+ - Base implementation sufficiently abstracted to accommodate both AlphaZero and MuZero.
+ - Documentation 15/11/2020
 """
 import os
 import sys
@@ -11,7 +19,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import trange
 
-from Arena import Arena
+from Experimenter.Arena import Arena
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, TemperatureScheduler
 from utils import debugging
@@ -19,37 +27,46 @@ from utils import debugging
 
 class Coach(ABC):
     """
-    This class executes the self-play + learning. It uses the functions defined
-    in Game and NeuralNet. args are specified in main.py.
+    This class controls the self-play and learning loop. Subclass this abstract class to define implementation
+    specific procedures for sampling data for the learning algorithm. See MuZero/MuNeuralNet.py or
+    AlphaZero/AlphaNeuralNet.py for examples.
     """
 
     def __init__(self, game, neural_net, args: DotDict, search_engine, player) -> None:
         """
-
-        :param game:
-        :param args:
+        Initialize the self-play class with an environment, an agent to train, requisite hyperparameters, a MCTS search
+        engine, and an agent-interface.
+        :param game: Game Implementation of Game class for environment logic.
+        :param neural_net: Some implementation of a neural network class to be trained.
+        :param args: DotDict Data structure containing parameters for self-play.
+        :param search_engine: Class containing the logic for performing MCTS using the neural_net.
+        :param player: Class containing the logic for agent-environment interaction.
         """
         self.game = game
         self.args = args
 
+        # Initialize replay buffer and helper variable
         self.trainExamplesHistory = deque(maxlen=self.args.selfplay_buffer_window)
-        self.skipFirstSelfPlay = False  # Can be overridden in loadTrainExamples()
+        self.update_on_checkpoint = False  # Can be overridden in loadTrainExamples()
 
         # Initialize network and search engine
         self.neural_net = neural_net
         self.mcts = search_engine(self.game, self.neural_net, self.args)
         self.arena_player = player(self.game, self.mcts, self.neural_net, DotDict({'name': 'p1'}))
 
+        # Initialize adversary if specified.
         if self.args.pitting:
             self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args, neural_net.architecture)
             self.opponent_mcts = search_engine(self.game, self.opponent_net, self.args)
             self.arena_opponent = player(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'p2'}))
 
+        # Initialize MCTS visit count exponentiation factor schedule.
         self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
         self.update_temperature = self.temp_schedule.build()
 
     @staticmethod
     def getCheckpointFile(iteration: int) -> str:
+        """ Helper function to format model checkpoint filenames """
         return f'checkpoint_{iteration}.pth.tar'
 
     @abstractmethod
@@ -57,20 +74,25 @@ class Coach(ABC):
         """
         Sample a batch of data from the current replay buffer (with or without prioritization).
 
-        Returns:
-            A list of sample statistics of the form (observation, targets, meta_data)
+        This method is left abstract as different algorithm instances may require different data-targets.
+
+        :param histories: List of GameHistory objects. Contains all game-trajectories in the replay-buffer.
+        :return: List of training examples.
         """
 
     def executeEpisode(self) -> GameHistory:
         """
-        This function executes one episode of self-play, starting with player 1.
+        Perform one episode of self-play for gathering data to train neural networks on.
 
-        It uses a temp=1 if episode_step < tempThreshold, and thereafter uses temp=0.
+        The implementation details of the neural networks/ agents, temperature schedule, data storage
+        is kept highly transparent on this side of the algorithm. Hence for implementation details
+        see the specific implementations of the function calls.
 
-        Returns:
-            history: A data structure containing all observed states and statistics
-                     from the perspective of the past current players.
-                     The structure is of the form (s_t, a_t, player_t, pi_t, r_t, v_t, z_t)
+        At every step we record a snapshot of the state into a GameHistory object, this includes the observation,
+        MCTS search statistics, performed action, and observed rewards. After the end of the episode, we close the
+        GameHistory object and compute internal target values.
+
+        :return: GameHistory Data structure containing all observed states and statistics required for network training.
         """
         history = GameHistory()
         state = self.game.getInitialState()  # Always from perspective of player 1 for boardgames.
@@ -105,16 +127,16 @@ class Coach(ABC):
 
     def learn(self) -> None:
         """
-        Performs numIters iterations with numEps episodes of self-play in each
-        iteration. After every iteration, it retrains neural network with
-        examples in complete_history (which has a maximum length of maxlenofQueue).
-        It then pits the new neural network against the old one and accepts it
-        only if it wins >= updateThreshold fraction of games.
+        Control the data gathering and weight optimization loop. Perform 'num_selfplay_iterations' iterations
+        of self-play to gather data, each of 'num_episodes' episodes. After every self-play iteration, train the
+        neural network with the accumulated data. If specified, the previous neural network weights are evaluated
+        against the newly fitted neural network weights, the newly fitted weights are then accepted based on some
+        specified win/ lose ratio. Neural network weights and the replay buffer are stored after every iteration.
+        Note that for highly granular vision based environments, that the replay buffer may grow to large sizes.
         """
-
         for i in range(1, self.args.num_selfplay_iterations + 1):
             print(f'------ITER {i}------')
-            if not self.skipFirstSelfPlay or i > 1:  # else: go directly to backpropagation
+            if not self.update_on_checkpoint or i > 1:  # else: go directly to backpropagation
 
                 # Self-play/ Gather training data.
                 iteration_train_examples = list()
@@ -128,10 +150,8 @@ class Coach(ABC):
                 # Store data from previous self-play iterations into the history.
                 self.trainExamplesHistory.append(iteration_train_examples)
 
-            # Print out statistics about the replay buffer.
+            # Print out statistics about the replay buffer, and back-up the data history to a file (can be slow).
             GameHistory.print_statistics(self.trainExamplesHistory)
-
-            # Backup history to a file
             self.saveTrainExamples(i - 1)
 
             # Flatten examples over self-play episodes and sample a training batch.
@@ -166,6 +186,12 @@ class Coach(ABC):
                 self.neural_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
     def saveTrainExamples(self, iteration: int) -> None:
+        """
+        Store the current accumulated data to a compressed file using pickle. Note that for highly dimensional
+        environments, that the stored files may be considerably large and that storing/ loading the data may
+        introduce a significant bottleneck to the runtime of the algorithm.
+        :param iteration: int Current iteration of the self-play. Used as indexing value for the data filename.
+        """
         folder = self.args.checkpoint
         if not os.path.exists(folder):
             os.makedirs(folder)
@@ -179,14 +205,16 @@ class Coach(ABC):
             os.remove(old_checkpoint)
 
     def loadTrainExamples(self) -> None:
+        """
+        Load in a previously generated replay buffer from the path specified in the .json arguments.
+        """
         model_file = os.path.join(self.args.load_folder_file[0], self.args.load_folder_file[1])
         examples_file = model_file + ".examples"
         if not os.path.isfile(examples_file):
-            print(examples_file)
-            r = input("File with trainExamples not found. Continue? [y|n]")
+            r = input(f"Data file {examples_file} could not be found. Continue with a fresh buffer? [y|n]")
             if r != "y":
                 sys.exit()
         else:
-            print("File with trainExamples found. Read it.")
+            print(f"Data file {examples_file} found. Read it.")
             with open(examples_file, "rb") as f:
                 self.trainExamplesHistory = Unpickler(f).load()

@@ -15,7 +15,7 @@ import typing
 
 import numpy as np
 
-from Game import Game
+from Games.Game import Game
 from .src_joery.hex_skeleton import HexBoard
 from .src_joery.hex_utils import available_moves, make_move
 from utils.game_utils import GameState

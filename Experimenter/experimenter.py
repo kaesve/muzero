@@ -7,9 +7,7 @@ import sys
 
 from tqdm import tqdm, trange
 
-from utils import DotDict
-
-from Arena import Arena
+from Experimenter.Arena import Arena
 
 from Games.hex.HexGame import HexGame
 from Games.othello.OthelloGame import OthelloGame
@@ -123,7 +121,7 @@ def tournament_final(experiment: ExperimentConfig) -> None:
                 pass
             else:
                 arena = Arena(experiment.game, *players)
-                trial_result = arena.playGames(experiment.experiment_args.num_trials)
+                trial_result = arena.playTurnGames(experiment.experiment_args.num_trials)
                 results.append(trial_result)
 
     print(results)
