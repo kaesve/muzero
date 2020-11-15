@@ -1,26 +1,25 @@
 {
-  "name": "singleplayergames",
+  "name": "singleplayergames_K5_debug",
   "algorithm": "MUZERO",
-  "architecture": "Atari",
-  "debug": true,
+  "architecture": "Gym",
 
   "args": {
     "num_selfplay_iterations": 100,
-    "num_episodes": 50,
-    "num_gradient_steps": 75,
+    "num_episodes": 20,
+    "num_gradient_steps": 40,
     "pitting": true,
-    "pitting_trials": 5,
+    "pitting_trials": 10,
     "pit_acceptance_ratio": 0.0,
-    "dirichlet_alpha": 0.3,
-    "exploration_fraction": 0.1,
+    "dirichlet_alpha": 0.25,
+    "exploration_fraction": 0.25,
     "max_buffer_size": 200000,
-    "num_MCTS_sims": 50,
-    "prioritize": true,
+    "num_MCTS_sims": 11,
+    "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
     "latent_decoder": false,
     "K": 5,
-    "n_steps": 10,
+    "n_steps": 50,
     "c1": 1.25,
     "c2": 19652,
     "gamma": 0.997,
@@ -28,15 +27,15 @@
     "minimum_reward": null,
     "maximum_reward": null,
 
-    "checkpoint": "./MuZeroOut/",
+    "checkpoint": "./out/MuZeroOut/K5/",
     "load_model": false,
-    "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
-    "selfplay_buffer_window": 20,
+    "load_folder_file": ["./out/MuZeroOut/K5/", "latest.pth.tar"],
+    "selfplay_buffer_window": 5,
 
     "temperature_schedule": {
       "method": "stepwise",
       "by_weight_update": true,
-      "schedule_points": [[5000, 1], [7500, 0.5], [10000, 0.25]]
+      "schedule_points": [[0, 1]]
     }
   },
 
@@ -47,16 +46,17 @@
       "momentum": 0.9
     },
     "l2": 1e-4,
-    "dynamics_penalty": 0,
+    "dynamics_penalty": 1e-1,
     "dropout": 0.0,
-    "batch_size": 64,
+    "batch_size": 128,
     "cuda": false,
+    "latent_depth": 8,
     "num_channels": 256,
     "num_towers": 3,
     "num_dense": 2,
-    "size_dense": 64,
-    "dense_activation": "tanh",
+    "size_dense": 16,
+    "activation": "elu",
     "support_size": 20,
-    "observation_length": 10
+    "observation_length": 1
   }
 }

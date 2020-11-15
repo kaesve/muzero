@@ -80,9 +80,10 @@ class MuZeroMonitor(Monitor):
             collect = list()
             for k in range(actions.shape[1]):
                 r, s, pi, v = self.reference.neural_net.recurrent.predict_on_batch([s, actions[:, k, :]])
-                collect.append((v, r, pi, absorb_k[k, :]))
 
-            for t, (v, r, pi, absorb) in enumerate(collect):
+                collect.append((s, v, r, pi, absorb_k[k, :]))
+
+            for t, (s, v, r, pi, absorb) in enumerate(collect):
                 k = t + 1
 
                 pi_loss = -np.sum(target_pis[:, k] * np.log(pi + 1e-8), axis=-1)
@@ -102,6 +103,23 @@ class MuZeroMonitor(Monitor):
 
             l2_norm = tf.reduce_sum([safe_l2norm(x) for x in self.reference.get_variables()])
             self.log(l2_norm, "l2 norm")
+
+            forward_observations = np.asarray(forward_observations)
+            # Compute statistics related to auto-encoding state dynamics:
+            for t, (s, v, r, pi, absorb) in enumerate(collect):
+                k = t + 1
+
+                stacked_obs = forward_observations[:, t, ...]
+                # TODO: Option between latent decoding KL Divergence or encoding state KL Divergence.
+
+                s_enc = self.reference.neural_net.encoder.predict_on_batch(stacked_obs)
+                kl_divergence = tf.keras.losses.kullback_leibler_divergence(s_enc, s)
+                s_entropy = tf.keras.losses.categorical_crossentropy(s, s)
+
+                self.log_distribution(kl_divergence, f"KL_Divergence_{k}")
+                self.log(np.mean(kl_divergence), f"Mean_KLDivergence_{k}")
+
+                self.log(np.mean(s_entropy), f"mean_dynamics_entropy_{k}")
 
 
 class AlphaZeroMonitor(Monitor):

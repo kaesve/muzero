@@ -36,12 +36,8 @@ class MuZeroCoach(Coach):
         self.file_writer = tf.summary.create_file_writer(self.logdir + "/metrics")
         self.file_writer.set_as_default()
 
-        self.return_forward_observations = False
+        self.return_forward_observations = (neural_net.net_args.dynamics_penalty > 0 or args.latent_decoder)
         self.observation_stack_length = neural_net.net_args.observation_length  # Readability variable
-
-    def toggle_future_observation_sampling(self) -> None:
-        """ Enable/ Disable construction of stacked-observations for each future step in buildHypotheticalSteps. """
-        self.return_forward_observations = not self.return_forward_observations
 
     def buildHypotheticalSteps(self, history: GameHistory, t: int, k: int) -> \
             typing.Tuple[np.ndarray, typing.Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:

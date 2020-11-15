@@ -17,6 +17,7 @@
     "prioritize": "(bool) Set to true when using prioritized sampling from the replay buffer (used in Atari)",
     "prioritize_alpha": "(double) Exponentiation factor for computing probabilities in prioritized replay",
     "prioritize_beta": "(double) Exponentiation factor for exponentiating the importance sampling ratio in prioritized replay",
+    "latent_decoder": "(bool) MuZero option argument to jointly train a latent-state to real-state decoder model",
     "K": "(int > 0) Number of 'hypothetical' steps to unroll the MuZero network for during backpropagation",
     "n_steps": "(int > 0) Amount of steps to look ahead for rewards before bootstrapping (value function estimation)",
     "c1": "(double) First exploration constant for MuZero in the PUCT formula",
@@ -39,8 +40,13 @@
   },
 
   "net_args": {
-    "lr": "(double) Learning rate for the neural network's optimizer",
+    "optimizer": {
+      "method": "(string) Optimizer to use for model. MuZero has support for 'sgd' and 'adam'",
+      "lr_init": "(double) Learning rate for the neural network's optimizer (initial learning rate if schedule is used)",
+      "momentum": "(double) Momentum used for optimizer when using SGD."
+    },
     "l2": "(double) Penalty scalar for l2 loss of network weights",
+    "dynamics_penalty": "(double) Penalty for MuZero dynamics model for diverging too far from the representation network/ true transition function",
     "dropout": "(double) DropOut regularization rate for the neural network",
     "batch_size": "(int) Stochastic gradient descent batch size",
     "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",

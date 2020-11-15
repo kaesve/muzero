@@ -38,7 +38,11 @@
   },
   
   "net_args": {
-    "lr": 0.001,
+    "optimizer": {
+      "method": "adam",
+      "lr_init": 0.02,
+      "momentum": 0.9
+    },
     "l2": 1e-4,
     "dropout": 0.2,
     "batch_size": 128,

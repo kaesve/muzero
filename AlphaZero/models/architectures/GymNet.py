@@ -38,10 +38,12 @@ class GymNNet:
         self.pi, self.v = self.build_predictor(observations)
 
         self.model = Model(inputs=self.observation_history, outputs=[self.pi, self.v])
+
+        opt = Adam(args.optimizer.lr_init)
         if self.args.support_size > 0:
-            self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=Adam(args.lr))
+            self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=opt)
         else:
-            self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=Adam(args.lr))
+            self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=opt)
 
     def build_predictor(self, observations):
         fc_sequence = self.crafter.dense_sequence(self.args.num_dense, observations)

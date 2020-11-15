@@ -80,7 +80,7 @@ class GameHistory:
             if current_observation is not None:
                 return current_observation
             elif t is not None:
-                return self.observations[t]
+                return self.observations[np.min([t, len(self) - 1])]
             else:
                 return self.observations[-1]
 

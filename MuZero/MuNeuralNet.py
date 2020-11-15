@@ -50,8 +50,8 @@ class MuZeroNeuralNet(ABC):
             raise NotImplementedError(f"Optimization method {self.net_args.optimizer.method} not implemented...")
 
     @tf.function
-    def unroll(self, observations: tf.Tensor, actions: tf.Tensor) -> typing.List[typing.Tuple[tf.Tensor, tf.Tensor,
-                                                                                              tf.Tensor, tf.Tensor]]:
+    def unroll(self, observations: tf.Tensor, actions: tf.Tensor) -> \
+            typing.List[typing.Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]]:
         """
         Build up a computation graph that collects output tensors from recurrently unrolling the MuZero model.
 
@@ -59,16 +59,16 @@ class MuZeroNeuralNet(ABC):
 
         :param observations: tf.Tensor in R^(batch_size x width x height x (depth * time))
         :param actions: tf.Tensor consisting of one-hot-encoded actions in {0, 1}^(batch_size x K x |action_space|)
-        :return: List of tuples containing the value predictions and loss-scale for each unrolled step.
+        :return: List of tuples containing the hidden state, value predictions and loss-scale for each unrolled step.
         """
-        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+        # Root inference. Collect predictions of the form: [w_i / K, s, v, r, pi] for each forward step k = 0...K
         s, pi_0, v_0 = self.neural_net.forward(observations)
 
         # Note: Root can be a terminal state. Loss scale for the root head is 1.0 instead of 1 / K.
-        predictions = [(1.0, v_0, 0, pi_0)]
+        predictions = [(1.0, s, v_0, 0, pi_0)]
         for k in range(actions.shape[1]):
             r, s, pi, v = self.neural_net.recurrent([s, actions[:, k, :]])
-            predictions.append((1.0 / actions.shape[1], v, r, pi))
+            predictions.append((1.0 / actions.shape[1], s, v, r, pi))
 
             # Scale the gradient at the start of the dynamics function by 1/2
             s = scale_gradient(s, 0.5)
@@ -76,8 +76,8 @@ class MuZeroNeuralNet(ABC):
         return predictions
 
     @tf.function
-    def loss_function(self, observations: tf.Tensor, actions: tf.Tensor, target_vs: tf.Tensor, target_rs: tf.Tensor,
-                      target_pis: tf.Tensor, sample_weights: tf.Tensor) -> typing.Tuple[tf.Tensor, typing.List]:
+    def loss_function(self, observations, actions, target_vs, target_rs, target_pis,
+                      target_observations, sample_weights) -> typing.Tuple[tf.Tensor, typing.List]:
         """
         Defines the computation graph for computing the loss of a MuZero model given data.
 
@@ -94,11 +94,15 @@ class MuZeroNeuralNet(ABC):
         during MCTS search. Note that the root state could be provided as a terminal state, this would mean that
         the probability vector head would receive zero gradient for the entire unrolling.
 
+        If specified, the dynamics function will receive a slight differentiable penalty based on the
+        target_observations and the predicted latent state by the encoder network.
+
         :param observations: tf.Tensor in R^(batch_size x width x height x (depth * time)). Stacked state observations.
         :param actions: tf.Tensor in {0, 1}^(batch_size x K x |action_space|). One-hot encoded actions for unrolling.
         :param target_vs: tf.Tensor either in [0,1] or R with dimensions (K x batch_size x support_size)
         :param target_rs: tf.Tensor either in [0,1] or R with dimensions (K x batch_size x support_size)
         :param target_pis: tf.Tensor either in [0,1] or R with dimensions (K x batch_size x |action_space|)
+        :param target_observations: tf.Tensor of same dimensions of observations for each unroll step in axis 1.
         :param sample_weights: tf.Tensor in [0, 1]^(batch_size). Of the form (batch_size * priority) ^ (-beta)
         :return: tuple of a tf.Tensor and a list of tf.Tensors containing the total loss and piecewise losses.
         :see: MuNeuralNet.unroll
@@ -108,15 +112,14 @@ class MuZeroNeuralNet(ABC):
         # Sum over target probabilities. Absorbing states should have a zero sum --> leaf node.
         absorb_k = 1.0 - tf.reduce_sum(target_pis, axis=-1)
 
-        # Root inference. Collect predictions of the form: [w_i / K, v, r, pi] for each forward step k = 0...K
+        # Root inference. Collect predictions of the form: [w_i / K, s, v, r, pi] for each forward step k = 0...K
         predictions = self.unroll(observations, actions)
 
         # Perform loss computation for each unrolling step.
         total_loss = tf.constant(0.0, dtype=tf.float32)
         for k in range(len(predictions)):  # Length = 1 + K (root + hypothetical forward steps)
-            loss_scale, vs, rs, pis = predictions[k]
+            loss_scale, states, vs, rs, pis = predictions[k]
             t_vs, t_rs, t_pis = target_vs[k, ...], target_rs[k, ...], target_pis[k, ...]
-
             absorb = absorb_k[k, :]
 
             # Calculate losses per head. Cancel gradients in prior for absorbing states, keep gradients for r and v.
@@ -126,6 +129,17 @@ class MuZeroNeuralNet(ABC):
 
             step_loss = scale_gradient(r_loss + v_loss + pi_loss, loss_scale * sample_weights)
             total_loss += tf.reduce_sum(step_loss)  # Actually averages over batch : see sample_weights.
+
+            # If specified, slightly regularize the dynamics model using the KL Divergence between the latent state
+            # predicted by the dynamics model with the encoder. This penalty should be low to emphasize
+            # value prediction, but may aid stability of learning.
+            if self.net_args.dynamics_penalty > 0 and k > 0:
+                # Infer latent states as predicted by the encoder and cancel the gradients for the encoder
+                encoded_states = self.neural_net.encoder(target_observations[:, (k - 1), ...])
+                encoded_states = tf.stop_gradient(encoded_states)
+
+                kl_divergence = tf.reduce_mean(tf.losses.kullback_leibler_divergence(states, encoded_states))
+                total_loss += loss_scale * self.net_args.dynamics_penalty * kl_divergence
 
             # Logging
             loss_monitor.append((v_loss, r_loss, pi_loss, absorb))

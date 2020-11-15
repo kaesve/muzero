@@ -17,6 +17,7 @@
     "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
+    "latent_decoder": false,
     "K": 1,
     "n_steps": 50,
     "c1": 1.25,
@@ -45,6 +46,7 @@
       "momentum": 0.9
     },
     "l2": 1e-4,
+    "dynamics_penalty": 0,
     "dropout": 0.0,
     "batch_size": 128,
     "cuda": false,

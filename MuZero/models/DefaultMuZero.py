@@ -51,6 +51,8 @@ class DefaultMuZero(MuZeroNeuralNet):
         # Unpack and transform data for loss computation.
         observations, actions, targets, forward_observations, sample_weight = list(zip(*examples))
 
+        forward_observations = np.asarray(forward_observations)
+
         actions, sample_weight = np.asarray(actions), np.asarray(sample_weight)
 
         # Unpack and encode targets. Value target shapes are of the form [time, batch_size, categories]
@@ -63,7 +65,8 @@ class DefaultMuZero(MuZeroNeuralNet):
         target_pis = np.swapaxes(target_pis, 0, 1)
 
         # Pack formatted inputs as tensors.
-        data = [cast_to_tensor(x) for x in [observations, actions, target_vs, target_rs, target_pis, sample_weight]]
+        data = [cast_to_tensor(x) for x in [observations, actions, target_vs, target_rs,
+                                            target_pis, forward_observations, sample_weight]]
 
         # Track the gradient through unrolling and loss computation and perform an optimization step.
         with GradientTape() as tape:

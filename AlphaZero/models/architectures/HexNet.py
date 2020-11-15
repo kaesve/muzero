@@ -32,10 +32,12 @@ class HexNNet:
         self.pi, self.v = self.build_model(self.input_boards)
 
         self.model = Model(inputs=self.input_boards, outputs=[self.pi, self.v])
+
+        opt = Adam(args.optimizer.lr_init)
         if self.args.support_size > 0:
-            self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=Adam(args.lr))
+            self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=opt)
         else:
-            self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=Adam(args.lr))
+            self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=opt)
         print(self.model.summary())
 
     def build_model(self, x_image):
