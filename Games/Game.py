@@ -76,7 +76,7 @@ class Game(ABC):
         """
 
     @abstractmethod
-    def getGameEnded(self, state: GameState) -> typing.Union[float, int]:
+    def getGameEnded(self, state: GameState, **kwargs) -> typing.Union[float, int]:
         """
         Determine whether the given state is a terminal state.
         :param state: GameState Data structure containing the specifics of the current environment state.

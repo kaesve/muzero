@@ -12,7 +12,7 @@ import tensorflow as tf
 
 from Coach import Coach
 from AlphaZero.AlphaMCTS import MCTS
-from Experimenter.players import AlphaZeroPlayer
+from Agents import DefaultAlphaZeroPlayer
 from utils.selfplay_utils import GameHistory, sample_batch
 from utils import DotDict
 
@@ -33,7 +33,7 @@ class AlphaZeroCoach(Coach):
         :param args: DotDict Data structure containing parameters for self-play.
         :param run_name: str Optionally provide a run-name for the TensorBoard log-files. Default is current datetime.
         """
-        super().__init__(game, neural_net, args, MCTS, AlphaZeroPlayer)
+        super().__init__(game, neural_net, args, MCTS, DefaultAlphaZeroPlayer)
 
         # Initialize tensorboard logging.
         if run_name is None:

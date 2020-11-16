@@ -1,9 +1,5 @@
 """
-In this python file we modified the class to enable generation of multiple
-neural architectures by modifying the argument dictionary.
 
-For the details of the neural architectures, we refer to our report.
-:see: main_experimenter.py
 """
 
 import sys
@@ -16,7 +12,7 @@ from utils.network_utils import MinMaxScaler, Crafter
 sys.path.append('../..')
 
 
-class AtariNNet:
+class MuZeroAtariNetwork:
 
     def __init__(self, game, args):
         # Network arguments

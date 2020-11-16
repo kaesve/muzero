@@ -1,0 +1,25 @@
+{
+  "name": "Gym_MuZeroVsRandom",
+  "output_dir": "./Results/",
+
+  "num_repeat": 3,
+  "num_trials": 10,
+
+  "environment": {
+    "name": "GYM",
+    "args": {
+      "env_name": "CartPole-v1"
+    }
+  },
+
+  "players": [
+    {
+      "name": "MUZERO",
+      "config": "Configurations/ModelConfigs/MuzeroCartpole_K5_debug.json"
+    },
+    {
+      "name": "RANDOM",
+      "config": null
+    }
+  ]
+}

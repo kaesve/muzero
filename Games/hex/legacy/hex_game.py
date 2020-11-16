@@ -8,7 +8,7 @@ players on a game-board of a specified size.
 :edited by: Joery de Vries, Oliver Konig, Siyuan Dong
 """
 
-from .hex_skeleton import HexBoard
+from Games.hex.HexLogic import HexBoard
 from .hex_utils import is_valid_move, make_move
 
 

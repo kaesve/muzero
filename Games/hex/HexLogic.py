@@ -58,6 +58,9 @@ class HexBoard:
         if cy - 1 >= 0:   neighbors.append((cx, cy - 1))
         return neighbors
 
+    def get_empty_coordinates(self):
+        return [(i, j) for i in range(self.size) for j in range(self.size) if self.is_empty((i, j))]
+
     def border(self, color, move):
         (nx, ny) = move
         return (color == HexBoard.BLUE and nx == self.size - 1) or (color == HexBoard.RED and ny == self.size - 1)

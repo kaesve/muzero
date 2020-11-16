@@ -23,11 +23,6 @@ from Games.atari.AtariGame import AtariGame
 from Experimenter.experimenter import ExperimentConfig, tournament_final
 
 
-def get_run_name(config_name, architecture, game):
-    time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return f"{config_name}_{architecture}_{game}_{time}"
-
-
 def learnA0(g, content, run_name):
     net_args, args = content.net_args, content.args
 
@@ -66,6 +61,11 @@ def learnM0(g, content, run_name):
     content.to_json(f'out/MuZeroOut/{run_name}.json')
 
     c.learn()
+
+
+def get_run_name(config_name, architecture, game):
+    time = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return f"{config_name}_{architecture}_{game}_{time}"
 
 
 def game_from_name(name):
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
         #
         debugger.DEBUG_MODE = True
-        content = DotDict.from_json(MUZERO_CARTPOLE)
+        content = DotDict.from_json('Configurations/ModelConfigs/MuzeroCartpole.json')
         run_name = get_run_name(content.name, content.architecture, "gym")
 
         # game = HexGame(BOARD_SIZE)

@@ -16,7 +16,7 @@ EDIT: Modified the neccesary code to work with the new np.ndarray board represen
 :edited by: Joery de Vries, Oliver Konig, Siyuan Dong
 """
 
-from .hex_skeleton import HexBoard
+from Games.hex.HexLogic import HexBoard
 
 
 def available_moves(hex_board):
@@ -25,9 +25,7 @@ def available_moves(hex_board):
     :param hex_board: HexBoard class object
     :return: list of all empty positions on the current HexBoard.
     """
-    return [(i, j) for i in range(hex_board.size)
-            for j in range(hex_board.size)
-            if hex_board.is_empty((i, j))]
+    return [(i, j) for i in range(hex_board.size) for j in range(hex_board.size) if hex_board.is_empty((i, j))]
 
 
 def placed_positions(hex_board, color):

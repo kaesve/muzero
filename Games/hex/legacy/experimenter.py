@@ -19,7 +19,7 @@ from trueskill import Rating, rate_1vs1
 
 from .hex_player import Player
 from .hex_game import playgame
-from .hex_skeleton import HexBoard
+from Games.hex.HexLogic import HexBoard
 from .hex_policies import MinimaxPolicy
 from .hex_heuristics import RandomHeuristic, DijkstraHeuristic
 

@@ -74,7 +74,7 @@ class Arena:
 
             cur_player = -cur_player
             state, _ = self.game.getNextState(state, state.action)
-            z = self.game.getGameEnded(state)
+            z = self.game.getGameEnded(state, close=True)
 
         if verbose:
             print(f"Game over: Turn {step} Result {z}")
@@ -109,7 +109,7 @@ class Arena:
             score += r
 
             # Closes the environment if terminated.
-            _ = self.game.getGameEnded(state)
+            _ = self.game.getGameEnded(state, close=True)
 
         if verbose:
             print(f"Game over: Step {step} Final score {score}")

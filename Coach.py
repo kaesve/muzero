@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from tqdm import trange
 
-from Experimenter.Arena import Arena
+from Experimenter import Arena
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, TemperatureScheduler
 from utils import debugging
@@ -52,13 +52,15 @@ class Coach(ABC):
         # Initialize network and search engine
         self.neural_net = neural_net
         self.mcts = search_engine(self.game, self.neural_net, self.args)
-        self.arena_player = player(self.game, self.mcts, self.neural_net, DotDict({'name': 'p1'}))
+        self.arena_player = player(self.game, None)
+        self.arena_player.set_variables(self.neural_net, self.mcts, 'p1')
 
         # Initialize adversary if specified.
         if self.args.pitting:
             self.opponent_net = self.neural_net.__class__(self.game, neural_net.net_args, neural_net.architecture)
             self.opponent_mcts = search_engine(self.game, self.opponent_net, self.args)
-            self.arena_opponent = player(self.game, self.opponent_mcts, self.opponent_net, DotDict({'name': 'p2'}))
+            self.arena_opponent = player(self.game, None)
+            self.arena_opponent.set_variables(self.opponent_net, self.opponent_mcts, 'p2')
 
         # Initialize MCTS visit count exponentiation factor schedule.
         self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)

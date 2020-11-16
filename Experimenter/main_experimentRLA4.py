@@ -28,8 +28,8 @@ from AlphaZero.AlphaCoach import AlphaZeroCoach
 from Games.hex.HexGame import HexGame as Game
 from Games.hex.AlphaZeroModel.NNet import NNetWrapper as nn
 
-from Games.hex.src_joery.hex_policies import *
-from Games.hex.src_joery.experimenter import *
+from Games.hex.legacy.hex_policies import *
+from Games.hex.legacy.experimenter import *
 
 import time
 import datetime

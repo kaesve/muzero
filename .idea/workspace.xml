@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Reset">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Agents/AtariNetwork.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Agents/HexNetwork.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Agents/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Gym_MuZeroVsRandom.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Experimenter/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Games/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/AlphaCoach.py" beforeDir="false" afterPath="$PROJECT_DIR$/AlphaZero/AlphaCoach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/models/DefaultAlphaZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/AlphaZero/models/DefaultAlphaZero.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/models/architectures/GymNet.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/GymNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/models/architectures/HexNet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/models/architectures/OthelloNet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/models/architectures/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/experimenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/experimenter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/main_experimentRLA4.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/main_experimentRLA4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/players.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/Player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/Game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/HexGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/HexGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/experimenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/experimenter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/hex_game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_heuristics.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/hex_heuristics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_player.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/hex_player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_policies.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/hex_policies.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/hex_search.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/HexLogic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/src_joery/hex_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/legacy/hex_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/othello/OthelloPlayers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/othello/OthelloPlayers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/MuCoach.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/MuCoach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/models/AEMuZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/models/AEMuZero.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/models/DefaultMuZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/models/DefaultMuZero.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/models/architectures/AtariNet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/models/architectures/GymNet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/models/architectures/HexNet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/models/architectures/__init__.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="JupyterTrust" id="5f20aa83-38a6-4ff4-9246-90c0bed2962d" />
+  <component name="ProjectId" id="1kLi5E5vlWz6AMHT0yATCc5WdYE" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Configurations/JobConfigs" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="muzero" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="muzero" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\JobConfigs" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Agents" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="" />
+      <created>1605486086989</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1605486086989</updated>
+      <workItem from="1605486088036" duration="611000" />
+      <workItem from="1605486701874" duration="7419000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605492559772">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605492559772" />
+    <state x="741" y="275" key="FileChooserDialogImpl" timestamp="1605486696665">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="741" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1605486696665" />
+    <state x="462" y="165" key="SettingsEditor" timestamp="1605487235022">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
+    <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="624" y="227" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1605486504267" />
+  </component>
+</project>

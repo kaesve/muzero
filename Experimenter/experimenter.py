@@ -5,59 +5,17 @@ from dataclasses import dataclass
 from itertools import combinations
 import sys
 
-from tqdm import tqdm, trange
+from tqdm import trange
 
-from Experimenter.Arena import Arena
+from Experimenter import Arena
+import Agents
+import Games
 
-from Games.hex.HexGame import HexGame
-from Games.othello.OthelloGame import OthelloGame
-from Games.gym.GymGame import GymGame
-from Games.atari.AtariGame import AtariGame
-
-from Experimenter.players import *
-from MuZero.models.DefaultMuZero import DefaultMuZero
-from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero
-
-from AlphaZero.AlphaMCTS import MCTS
-from MuZero.MuMCTS import MuZeroMCTS
+from utils import DotDict
 
 
 @dataclass
-class PlayerConfig:
-    name: str
-
-    def __init__(self, name: str, player_cls) -> None :
-        self.name = name
-        self.player = player_cls
-
-
-@dataclass
-class GameConfig:
-    name: str
-
-    def __init__(self, name: str, cls, alpha_zero, mu_zero) -> None:
-        self.name = name
-        self.cls = cls
-        self.alpha_zero = alpha_zero
-        self.mu_zero = mu_zero
-
-
 class ExperimentConfig(object):
-
-    players = DotDict({
-        "ALPHAZERO": PlayerConfig("ALPHAZERO", AlphaZeroPlayer),
-        "MUZERO": PlayerConfig("MUZERO", MuZeroPlayer),
-        "RANDOM": PlayerConfig("RANDOM", RandomPlayer),
-        "DETERMINISTIC": PlayerConfig("DETERMINISTIC", DeterministicPlayer),
-        "MANUAL": PlayerConfig("MANUAL", ManualPlayer)
-    })
-
-    games = DotDict({
-        "HEX": GameConfig("HEX", HexGame, DefaultAlphaZero, DefaultMuZero),
-        "OTHELLO": GameConfig("OTHELLO", OthelloGame, DefaultAlphaZero, DefaultMuZero),
-        "GYM": GameConfig("GYM", GymGame, DefaultAlphaZero, DefaultMuZero),
-        "ATARI": GameConfig("GYM", AtariGame, DefaultAlphaZero, DefaultMuZero)
-    })
 
     def __init__(self, experiment_file: str):
         self.experiment_args = DotDict.from_json(experiment_file)
@@ -68,42 +26,20 @@ class ExperimentConfig(object):
     def construct(self) -> None:
         env = self.experiment_args.environment
 
-        if env.name in self.games:
-            self.game_config = self.games[env.name]
+        if env.name in Games.Games:
+            self.game_config = Games.Games[env.name]
         else:
             raise NotImplementedError("Did not specify a valid environment.")
 
-        self.game = self.game_config.cls(**env.args)
+        self.game = self.game_config(**env.args)
 
         player_configs = self.experiment_args.players
         for config in player_configs:
 
-            if config.name not in self.players:
+            if config.name not in Agents.Players:
                 raise NotImplementedError("Did not specify a valid environment.")
 
-            if config.name == self.players.ALPHAZERO.name:
-                algorithm_config = DotDict.from_json(config.config)
-
-                model = self.game_config.alpha_zero(self.game, algorithm_config.net_args, algorithm_config.architecture)
-                search = MCTS(self.game, model, algorithm_config.args)
-
-                self.player_configs.append(self.players.ALPHAZERO.player(
-                    self.game, search, model, config=algorithm_config))
-
-            elif config.name == self.players.MUZERO.name:
-                algorithm_config = DotDict.from_json(config.config)
-
-                model = self.game_config.mu_zero(self.game, algorithm_config.net_args, algorithm_config.architecture)
-                search = MuZeroMCTS(self.game, model, algorithm_config.args)
-
-                self.player_configs.append(self.players.MUZERO.player(
-                    self.game, search, model, config=algorithm_config))
-
-            elif config.name == self.players.MANUAL.name:
-                self.player_configs.append(self.players[config.name].player(
-                    self.game, name=input("Input a player name: ")))
-            else:
-                self.player_configs.append(self.players[config.name].player(self.game))
+            self.player_configs.append(Agents.Players[config.name](self.game, config.config))
 
 
 def tournament_final(experiment: ExperimentConfig) -> None:
@@ -111,16 +47,20 @@ def tournament_final(experiment: ExperimentConfig) -> None:
     # Initialize parametric players.
     for p in experiment.player_configs:
         if p.parametric:  # Load in latest model.
-            p.model.load_checkpoint(*p.config.args.load_folder_file)
+            p.model.load_checkpoint(*p.args.args.load_folder_file)
 
     results = list()
-    for rep in trange(experiment.experiment_args.num_repeat, desc="Tourney repetition", file=sys.stdout):
-        for players in tqdm(combinations(experiment.player_configs, experiment.game.n_players),
-                            desc=f"Tourney {rep}", file=sys.stdout):
+    for _ in trange(experiment.experiment_args.num_repeat, desc="Tourney repetition", file=sys.stdout):
+        for players in combinations(experiment.player_configs, experiment.game.n_players):
+            print()
             if experiment.game.n_players == 1:
-                pass
+                arena = Arena(experiment.game, *players, *players)  # Duplicate players
+                print("Playing:", arena.player1.name)
+                trial_result = [arena.playGame(arena.player1) for _ in range(experiment.experiment_args.num_trials)]
+                results.append(trial_result)
             else:
                 arena = Arena(experiment.game, *players)
+                print(f"Playing: {arena.player1.name} Vs {arena.player2.name}")
                 trial_result = arena.playTurnGames(experiment.experiment_args.num_trials)
                 results.append(trial_result)
 

@@ -5,7 +5,7 @@ See the report for the details on symmetry and how moves are correctly returned 
 the player.
 
 For documentation we refer to the game-logic class and the parent-class:
-:see: hex_skeleton.py
+:see: HexLogic.py
 :see: Game.py
 """
 
@@ -16,8 +16,7 @@ import typing
 import numpy as np
 
 from Games.Game import Game
-from .src_joery.hex_skeleton import HexBoard
-from .src_joery.hex_utils import available_moves, make_move
+from .HexLogic import HexBoard
 from utils.game_utils import GameState
 
 sys.path.append('../../..')
@@ -62,7 +61,9 @@ class HexGame(Game):
 
         move = (action // self.n, action % self.n)
         assert b.board[move] == HexBoard.EMPTY
-        make_move(b, move, state.player)
+
+        # Perform action.
+        b.place(move, state.player)
 
         next_state = GameState(canonical_state=b.board, observation=None, action=action,
                                player=-state.player, done=False)
@@ -133,7 +134,7 @@ class HexGame(Game):
         return board_s
 
     def getScore(self, state: GameState):
-        return len(available_moves(state.canonical_state))
+        return len(HexBoard(state.canonical_state).get_empty_coordinates())
 
     @staticmethod
     def display(state: GameState):

@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 
 from Coach import Coach
-from Experimenter.players import MuZeroPlayer
+from Agents import MuZeroPlayer
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, sample_batch

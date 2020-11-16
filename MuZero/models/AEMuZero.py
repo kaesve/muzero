@@ -1,3 +1,15 @@
+"""
+Defines an implementation of MuZeroNeuralNet that overrides the DefaultMuZero implementation.
+This class handles training of a latent-to-real-state decoder jointly with the MuZero model.
+
+To make use of this class, ensure your neural network class has a 'decoder' attribute that defines
+a keras Model to a trainable neural network decoder. Then simply specify whether or not to train a decoder
+in the algorithm parameter .json file.
+
+Notes:
+ -  Base implementation done 15/11/2020
+ -  Documentation 16/11/2020
+"""
 import typing
 
 import tensorflow as tf
@@ -26,7 +38,7 @@ class DecoderMuZero(DefaultMuZero):
                                       f"a decoding neural network model in your network constructor.")
 
     def get_variables(self) -> typing.List:
-        """ Get all trainable parameters defined by the neural network """
+        """ Get all trainable parameters defined by the neural network + decoder weights """
         parts = (self.neural_net.encoder, self.neural_net.predictor, self.neural_net.dynamics, self.neural_net.decoder)
         return [v for v_list in map(lambda n: n.weights, parts) for v in v_list]
 
