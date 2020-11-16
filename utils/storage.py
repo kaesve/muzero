@@ -17,6 +17,13 @@ class DotDict(dict):
         with open(file, 'w') as f:
             json.dump(self, f)
 
+    def recursive_update(self, other: DotDict) -> None:
+        for (key, value) in other.items():
+            if isinstance(value, DotDict) and isinstance(self[key], DotDict):
+                self[key].recursive_update(value)
+            else:
+                self[key] = value
+
     @staticmethod
     def from_json(file: str) -> DotDict:
         import json
