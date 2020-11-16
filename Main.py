@@ -115,6 +115,7 @@ if __name__ == "__main__":
         p.add_argument("--run_name", default=False, help="Override the run name (will not be timestamped!)")
 
 
+    args = parser.parse_args()
 
     debugger.DEBUG_MODE = args.debug
     debugger.RENDER = args.render
