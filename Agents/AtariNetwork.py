@@ -5,11 +5,63 @@
 import sys
 
 from keras.models import Model
-from keras.layers import Input, Reshape, Activation, Dense, Conv2D, AveragePooling2D, BatchNormalization, Concatenate
+from keras.layers import Input, Reshape, Activation, Dense, Conv2D, \
+    AveragePooling2D, BatchNormalization, Concatenate, Flatten
+from keras.optimizers import Adam
 
 from utils.network_utils import MinMaxScaler, Crafter
 
 sys.path.append('../..')
+
+
+class AlphaZeroAtariNetwork:
+
+    def __init__(self, game, args):
+        self.board_x, self.board_y, depth = game.getDimensions()
+        self.action_size = game.getActionSize()
+        self.args = args
+        self.crafter = Crafter(args)
+
+        # Neural Net# s: batch_size x board_x x board_y
+        self.input_boards = Input(shape=(self.board_x, self.board_y, depth * self.args.observation_length))
+
+        self.pi, self.v = self.build_model(self.input_boards)
+
+        self.model = Model(inputs=self.input_boards, outputs=[self.pi, self.v])
+
+        opt = Adam(args.optimizer.lr_init)
+        if self.args.support_size > 0:
+            self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=opt)
+        else:
+            self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=opt)
+
+        print(self.model.summary())
+
+    def build_model(self, x_image):
+        conv = Conv2D(self.args.num_channels, kernel_size=3, strides=(2, 2))(x_image)
+        res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
+                                               self.args.residual_left, self.args.residual_right)
+
+        conv = Conv2D(self.args.num_channels, kernel_size=3, strides=(2, 2))(res)
+        res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
+                                               self.args.residual_left, self.args.residual_right)
+
+        pooled = AveragePooling2D(3, strides=(2, 2))(res)
+        res = self.crafter.conv_residual_tower(self.args.num_towers, pooled,
+                                               self.args.residual_left, self.args.residual_right)
+
+        pooled = AveragePooling2D(3, strides=(2, 2))(res)
+        conv = Conv2D(self.args.num_channels // 2, kernel_size=3, strides=(2, 2))(pooled)
+        flat = Flatten()(conv)
+
+        fc = self.crafter.dense_sequence(1, flat)
+
+        pi = Dense(self.action_size, activation='softmax', name='pi')(fc)
+        v = Dense(1, activation='tanh', name='v')(fc) \
+            if self.args.support_size == 0 else \
+            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(fc)
+
+        return pi, v
 
 
 class MuZeroAtariNetwork:

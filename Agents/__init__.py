@@ -2,7 +2,7 @@
 Initialization module to define constructor classes/ agent implementations in the 'Agents' scope.
 """
 from .GymNetwork import AlphaZeroGymNetwork, MuZeroGymNetwork
-from .AtariNetwork import MuZeroAtariNetwork
+from .AtariNetwork import AlphaZeroAtariNetwork, MuZeroAtariNetwork
 from .HexNetwork import AlphaZeroHexNetwork, MuZeroHexNetwork
 from .Player import ManualPlayer, RandomPlayer, DeterministicPlayer, MuZeroPlayer, DefaultAlphaZeroPlayer
 
@@ -11,7 +11,8 @@ from .Player import ManualPlayer, RandomPlayer, DeterministicPlayer, MuZeroPlaye
 AlphaZeroNetworks = {
     'Hex': AlphaZeroHexNetwork,
     'Othello': AlphaZeroHexNetwork,
-    'Gym': AlphaZeroGymNetwork
+    'Gym': AlphaZeroGymNetwork,
+    "Atari": AlphaZeroAtariNetwork
 }
 
 

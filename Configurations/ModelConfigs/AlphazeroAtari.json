@@ -1,7 +1,7 @@
 {
-  "name": "boardgames",
+  "name": "Atari",
   "algorithm": "ALPHAZERO",
-  "architecture": "Hex",
+  "architecture": "Atari",
   
   "args": {
     "num_selfplay_iterations": 100,
@@ -57,7 +57,7 @@
     "num_dense": 2,
     "size_dense": 256,
     "activation": "leakyrelu",
-    "support_size": 0,
+    "support_size": 50,
     "observation_length": 5
   }
 }

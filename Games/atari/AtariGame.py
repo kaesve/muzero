@@ -76,6 +76,7 @@ class AtariGame(GymGame):
             return old_state.env.clone_full_state() if clone else old_state.env
 
         env = nextEnv(state, **kwargs)
+
         # reorder actions so that we can have NOOP at the end
         action = (action - 1 + self.actions) % self.actions
         raw_observation, reward, done, info = env.step(action)
