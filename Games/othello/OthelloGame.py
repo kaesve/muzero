@@ -53,8 +53,11 @@ class OthelloGame(Game):
 
         next_state = GameState(canonical_state=b.pieces, observation=None, action=action,
                                player=-state.player, done=False)
+        z = self.getGameEnded(next_state)
         next_state.observation = self.buildObservation(next_state)
-        return next_state, 0
+        next_state.done = bool(z)
+
+        return next_state, z
 
     def getLegalMoves(self, state: GameState, **kwargs) -> np.ndarray:
         # return a fixed size binary vector

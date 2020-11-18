@@ -52,12 +52,11 @@ class MCTS:
         self.Nsa = {}  # stores #times edge s,a was visited
         self.Ns = {}   # stores #times board s was visited
         self.Ps = {}   # stores initial policy (returned by neural net)
-        self.Es = {}   # stores game.getGameEnded ended for board s
         self.Vs = {}   # stores game.getValidMoves for board s
 
     def clear_tree(self) -> None:
         """ Clear all statistics stored in the current search tree """
-        self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Es, self.Vs = [{} for _ in range(8)]
+        self.Qsa, self.Ssa, self.Rsa, self.Nsa, self.Ns, self.Ps, self.Vs = [{} for _ in range(7)]
 
     def initialize_root(self, state: GameState, trajectory: GameHistory) -> typing.Tuple[bytes, float]:
         """
@@ -199,29 +198,27 @@ class MCTS:
         confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.action_size)]
         a = np.argmax(self.Vs[s] * np.asarray(confidence_bounds)).item()  # Get argmax as scalar
 
+        # Default leaf node value. Future possible future reward is 0. Variable is overwritten if edge is non-terminal.
+        value = 0
         if (s, a) not in self.Ssa:  ### ROLLOUT
             next_state, reward = self.game.getNextState(state, a, clone=True)
             s_next = self.game.getHash(next_state)
 
-            if s_next not in self.Es:
-                self.Es[s_next] = self.game.getGameEnded(next_state)
+            # Transition statistics.
+            self.Rsa[(s, a)], self.Ssa[(s, a)], self.Ns[s_next] = reward, next_state, 0
 
-            if self.Es[s_next]:  # Leaf node
-                value = 0 if self.single_player else -self.Es[s_next]
-                self.Rsa[(s, a)] = 0
-            else:
-                # Build network input for inference
+            # Inference for non-terminal nodes.
+            if not next_state.done:
+                # Build network input for inference.
                 network_input = trajectory.stackObservations(self.neural_net.net_args.observation_length,
                                                              state.observation)
                 prior, value = self.neural_net.predict(network_input)
 
-                # Current depth statistics
-                self.Rsa[(s, a)], self.Ssa[(s, a)] = reward, next_state
-                # Next depth statistics
-                self.Ps[s_next], self.Ns[s_next], self.Vs[s_next] = prior, 0, self.game.getLegalMoves(next_state)
-                value = value if self.single_player else -value  # Alternate value perspective for adversary.
+                # Inference statistics. Alternate value perspective due to adversary (model predicts for next player).
+                self.Ps[s_next], self.Vs[s_next] = prior, self.game.getLegalMoves(next_state)
+                value = value if self.single_player else -value
 
-        else:  ### EXPANSION
+        elif not self.Ssa[(s, a)].done:  ### EXPANSION
             trajectory.observations.append(state.observation)   # Build up an observation trajectory inside the tree
             value = self._search(self.Ssa[(s, a)], trajectory, path + (a,))
             trajectory.observations.pop()                       # Clear tree observation trajectory when backing up

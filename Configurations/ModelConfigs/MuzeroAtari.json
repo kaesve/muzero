@@ -8,6 +8,8 @@
     "num_selfplay_iterations": 100,
     "num_episodes": 50,
     "num_gradient_steps": 75,
+    "max_episode_moves": 500,
+    "max_trial_moves": 500,
     "pitting": true,
     "pitting_trials": 5,
     "pit_acceptance_ratio": 0.0,

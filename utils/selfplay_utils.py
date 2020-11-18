@@ -37,13 +37,10 @@ class GameHistory:
         self.rewards.append(r)
         self.search_returns.append(v)
 
-    def terminate(self, state: GameState, z: typing.Union[int, float]) -> None:
+    def terminate(self) -> None:
         """Take a snapshot of the terminal state of the environment"""
-        # self.observations.append(state.observation)
-        # self.actions.append(np.random.randint(len(self.probabilities[-1])))
-        # self.players.append(state.player)
         self.probabilities.append(np.zeros_like(self.probabilities[-1]))
-        self.rewards.append(z)         # Reward: u_T
+        self.rewards.append(0)         # Reward past u_T
         self.search_returns.append(0)  # Bootstrap: Future possible reward = 0
         self.terminated = True
 
@@ -57,10 +54,10 @@ class GameHistory:
         self.observed_returns = list()
         if n is None:
             # Boardgames
-            self.observed_returns.append(self.rewards[-1])  # Append values to list in order T, T-1, ..., 2, 1
+            self.observed_returns.append(self.rewards[-2])  # Append values to list in order T, T-1, ..., 2, 1
             for i in range(1, len(self.rewards)):
                 self.observed_returns.append(-self.observed_returns[i - 1])
-            self.observed_returns = self.observed_returns[::-1]  # Reverse back to chronological order
+            self.observed_returns = self.observed_returns[::-1] + [0]  # Reverse back to chronological order
         else:
             # General MDPs. Symbols follow notation from the paper.
             # z_t = u_t+1 + gamma * u_t+2 + ... + gamma^(k-1) * u_t+horizon + gamma ^ k * v_t+horizon

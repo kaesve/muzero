@@ -52,10 +52,7 @@ class GymGame(Game):
     def getLegalMoves(self, state: GymState) -> np.ndarray:
         return np.ones(self.actions)
 
-    def getGameEnded(self, state: GymState, close: bool = False) -> int:
-        if state.done and close:
-            state.env.close()
-
+    def getGameEnded(self, state: GymState, **kwargs) -> int:
         return int(state.done)
 
     def getSymmetries(self, state: GymState, pi: np.ndarray, **kwargs) -> typing.List:
@@ -66,6 +63,9 @@ class GymGame(Game):
 
     def getHash(self, state: GymState) -> bytes:
         return np.asarray(state.canonical_state).tobytes()
+
+    def close(self, state: GymState) -> None:
+        state.env.close()
 
     def render(self, state: GymState):
         state.env.render()

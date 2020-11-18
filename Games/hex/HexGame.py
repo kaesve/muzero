@@ -54,7 +54,7 @@ class HexGame(Game):
         if action == self.n * self.n:
             state.done = True
             state.player = -state.player
-            return state, 0
+            return state, -1
 
         b = HexBoard(self.n)
         b.board = np.copy(state.canonical_state)
@@ -67,9 +67,11 @@ class HexGame(Game):
 
         next_state = GameState(canonical_state=b.board, observation=None, action=action,
                                player=-state.player, done=False)
+        z = self.getGameEnded(next_state)
         next_state.observation = self.buildObservation(state)
+        next_state.done = bool(z)
 
-        return next_state, 0
+        return next_state, z
 
     def getLegalMoves(self, state: GameState) -> np.ndarray:
         # return a fixed size binary vector
@@ -93,13 +95,9 @@ class HexGame(Game):
         b.board = np.copy(state.canonical_state)
 
         if b.check_win(1):
-            state.done = True
             return 1 if state.player == 1 else -1
-
-        if b.check_win(-1):
-            state.done = True
+        elif b.check_win(-1):
             return 1 if state.player == -1 else -1
-
         return 0
 
     def buildObservation(self, state: GameState) -> np.ndarray:
@@ -136,8 +134,7 @@ class HexGame(Game):
     def getScore(self, state: GameState):
         return len(HexBoard(state.canonical_state).get_empty_coordinates())
 
-    @staticmethod
-    def display(state: GameState):
+    def render(self, state: GameState):
         board_cls = HexBoard(state.canonical_state.shape[0])
         board_cls.board = state.canonical_state
         board_cls.print()

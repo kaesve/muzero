@@ -23,7 +23,7 @@ class Arena:
     An Arena class where any 2 agents can be pitted against each other.
     """
 
-    def __init__(self, game: Game, player1, player2) -> None:
+    def __init__(self, game: Game, player1, player2, max_trial_length: int = 1_000) -> None:
         """
         Input:
             player 1,2: two functions that takes board as input, return action
@@ -38,6 +38,7 @@ class Arena:
         self.player1 = player1
         self.player2 = player2
         self.game = game
+        self.max_trial_length = max_trial_length
 
     def playTurnGame(self, first_player, second_player, verbose: bool = False) -> int:
         """
@@ -49,37 +50,37 @@ class Arena:
         :return: int Either 1 if player 1 won, -1 if player 2 won, or 0 if the game was a draw.
         """
         players = [second_player, None, first_player]
-        cur_player = 1
+        step = 1
         state = self.game.getInitialState()
-        step = z = 0
+        r = 0
 
-        while not state.done:
-            step += 1
-
+        while not state.done and step <= self.max_trial_length:
             if verbose:
-                print(f"Turn {step} Player {cur_player}")
+                print(f"Turn {step} Player {state.player}")
 
             if debugging.RENDER:
                 self.game.render(state)
 
-            state.action = players[cur_player + 1].act(state)
+            state.action = players[state.player + 1].act(state)
 
             valid_moves = self.game.getLegalMoves(state)
             if not valid_moves[state.action]:
                 state.action = len(valid_moves)  # Resign, will result in state.done = True
 
             # Capture an observation for both players
-            players[cur_player + 1].observe(state)
-            players[1 - cur_player].observe(state)
+            players[state.player + 1].observe(state)
+            players[1 - state.player].observe(state)
 
-            cur_player = -cur_player
-            state, _ = self.game.getNextState(state, state.action)
-            z = self.game.getGameEnded(state, close=True)
+            # Take a step in the environment
+            state, r = self.game.getNextState(state, state.action)
+            step += 1
+
+        self.game.close(state)
 
         if verbose:
             print(f"Game over: Turn {step} Result {z}")
 
-        return cur_player * z
+        return r
 
     def playGame(self, player, verbose: bool = False) -> float:
         """
@@ -90,26 +91,27 @@ class Arena:
         :return: float The cumulative reward that the player managed to gather.
         """
         state = self.game.getInitialState()
-        step = score = 0
+        step, score = 1, 0
 
-        while not state.done:
-            step += 1
-
+        while not state.done and step <= self.max_trial_length:
             if verbose:
                 print(f"Turn {step} Current score {score}")
 
             if debugging.RENDER:
                 self.game.render(state)
 
+            # Take action in the current state
             state.action = player.act(state)
-
-            # Ensure that the opponent also observes the environment
+            # Log the old state
             player.observe(state)
+            # Get the new state and the reward
             state, r = self.game.getNextState(state, state.action)
-            score += r
 
-            # Closes the environment if terminated.
-            _ = self.game.getGameEnded(state, close=True)
+            # Update statistics
+            score += r
+            step += 1
+
+        self.game.close(state)
 
         if verbose:
             print(f"Game over: Step {step} Final score {score}")

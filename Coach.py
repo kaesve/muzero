@@ -98,11 +98,9 @@ class Coach(ABC):
         """
         history = GameHistory()
         state = self.game.getInitialState()  # Always from perspective of player 1 for boardgames.
-        z = step = 0
+        step = 1
 
-        while not state.done:  # Boardgames: If loop ends => current player lost
-            step += 1
-
+        while not state.done and step <= self.args.max_episode_moves:
             if debugging.RENDER:  # Display visualization of the environment if specified.
                 self.game.render(state)
 
@@ -119,10 +117,11 @@ class Coach(ABC):
 
             # Update state of control
             state = next_state
-            z = self.game.getGameEnded(state, close=True)
+            step += 1
 
-        # Terminal reward for board games is -1 or 1. For general games the bootstrap value is 0 (future rewards = 0)
-        history.terminate(state, (-z if self.game.n_players > 1 else 0))
+        # Cleanup environment and GameHistory
+        self.game.close(state)
+        history.terminate()
         history.compute_returns(gamma=self.args.gamma, n=(self.args.n_steps if self.game.n_players == 1 else None))
 
         return history
@@ -176,7 +175,7 @@ class Coach(ABC):
                 self.opponent_net.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
                 # Perform trials with the new network against the old network.
-                arena = Arena(self.game, self.arena_player, self.arena_opponent)
+                arena = Arena(self.game, self.arena_player, self.arena_opponent, self.args.max_trial_moves)
                 accept = arena.pitting(self.args, self.neural_net.monitor)
 
             if accept:

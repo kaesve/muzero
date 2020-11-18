@@ -110,6 +110,12 @@ class Game(ABC):
         :return: Some hashable datatype representing the provided GameState.
         """
 
+    def close(self, state: GameState) -> None:
+        """
+        Clean up necessary variables within the environment/ class. If any.
+        :param state: GameState Data structure containing the specifics of the current environment state.
+        """
+
     def render(self, state: GameState):
         """
         Base method for generating a visual rendering of the game implementation.

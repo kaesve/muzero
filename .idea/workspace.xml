@@ -22,21 +22,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update Readme">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Arena fix and ablations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AlphaZero/AlphaMCTS.py" beforeDir="false" afterPath="$PROJECT_DIR$/AlphaZero/AlphaMCTS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K1.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K10.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K5.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpoleAblations.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K5_debug.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_debug.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L1.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L2.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L4.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L8.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/Game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/gym/GymGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/gym/GymGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/HexGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/HexGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/othello/OthelloGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/othello/OthelloGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/selfplay_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/selfplay_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +93,7 @@
       <updated>1605486086989</updated>
       <workItem from="1605486088036" duration="611000" />
       <workItem from="1605486701874" duration="9318000" />
-      <workItem from="1605545725643" duration="21953000" />
+      <workItem from="1605545725643" duration="27740000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -121,7 +116,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605495329263</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Arena fix and ablations">
+      <created>1605696069322</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1605696069322</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -143,13 +145,14 @@
     <MESSAGE value="Large refactoring. Documentation and single-player experiment functionality." />
     <MESSAGE value="Revert &quot;Update git ignore&quot;&#10;&#10;This reverts commit d40ee7ef" />
     <MESSAGE value="Update Readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update Readme" />
+    <MESSAGE value="Arena fix and ablations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Arena fix and ablations" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605492559772">
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605701101200">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605492559772" />
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605701101200" />
     <state x="558" y="83" key="CommitChangelistDialog2" timestamp="1605494205585">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -162,15 +165,19 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="741" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1605486696665" />
+    <state x="767" y="223" key="RollbackChangesDialog" timestamp="1605700311631">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="767" y="223" key="RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605700311631" />
     <state x="-1458" y="600" key="SettingsEditor" timestamp="1605546931058">
       <screen x="-1920" y="435" width="1920" height="1040" />
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605495330700">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605696071356">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605495330700" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605696071356" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
