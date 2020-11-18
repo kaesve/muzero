@@ -96,7 +96,7 @@ class HexGame(Game):
 
         if b.check_win(1):
             return 1 if state.player == 1 else -1
-        elif b.check_win(-1):
+        if b.check_win(-1):
             return 1 if state.player == -1 else -1
         return 0
 

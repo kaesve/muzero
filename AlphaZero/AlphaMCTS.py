@@ -195,12 +195,12 @@ class MCTS:
         ### SELECTION
         # pick the action with the highest upper confidence bound
         exploration_factor = self.args.c1 + np.log(self.Ns[s] + self.args.c2 + 1) - np.log(self.args.c2)
-        confidence_bounds = [self.compute_ucb(s, a, exploration_factor) for a in range(self.action_size)]
-        a = np.argmax(self.Vs[s] * np.asarray(confidence_bounds)).item()  # Get argmax as scalar
+        confidence_bounds = np.asarray([self.compute_ucb(s, a, exploration_factor) for a in range(self.action_size)])
+        a = np.flatnonzero(self.Vs[s])[np.argmax(confidence_bounds[self.Vs[s].astype(bool)])]  # Get masked argmax.
 
         # Default leaf node value. Future possible future reward is 0. Variable is overwritten if edge is non-terminal.
         value = 0
-        if (s, a) not in self.Ssa:  ### ROLLOUT
+        if (s, a) not in self.Ssa:  ### ROLLOUT for valid moves
             next_state, reward = self.game.getNextState(state, a, clone=True)
             s_next = self.game.getHash(next_state)
 

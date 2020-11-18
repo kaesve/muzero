@@ -22,15 +22,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Arena fix and ablations">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Max moves option and rework of reward functionality in Coach and Game">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AlphaZero/AlphaMCTS.py" beforeDir="false" afterPath="$PROJECT_DIR$/AlphaZero/AlphaMCTS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/Game.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/Game.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/gym/GymGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/gym/GymGame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Games/hex/HexGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/HexGame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/othello/OthelloGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/othello/OthelloGame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/selfplay_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/selfplay_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -93,7 +89,7 @@
       <updated>1605486086989</updated>
       <workItem from="1605486088036" duration="611000" />
       <workItem from="1605486701874" duration="9318000" />
-      <workItem from="1605545725643" duration="27740000" />
+      <workItem from="1605545725643" duration="31318000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -123,7 +119,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605696069322</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Max moves option and rework of reward functionality in Coach and Game">
+      <created>1605703969495</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1605703969495</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,7 +149,8 @@
     <MESSAGE value="Revert &quot;Update git ignore&quot;&#10;&#10;This reverts commit d40ee7ef" />
     <MESSAGE value="Update Readme" />
     <MESSAGE value="Arena fix and ablations" />
-    <option name="LAST_COMMIT_MESSAGE" value="Arena fix and ablations" />
+    <MESSAGE value="Max moves option and rework of reward functionality in Coach and Game" />
+    <option name="LAST_COMMIT_MESSAGE" value="Max moves option and rework of reward functionality in Coach and Game" />
   </component>
   <component name="WindowStateProjectService">
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605701101200">
@@ -174,9 +178,10 @@
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605696071356">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605703971169">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605703971169" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605696071356" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />

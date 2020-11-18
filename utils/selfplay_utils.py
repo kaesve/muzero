@@ -134,6 +134,7 @@ class MinMaxStats(object):
         """
         self.default_max = self.maximum = maximum_reward if maximum_reward is not None else -np.inf
         self.default_min = self.minimum = minimum_reward if minimum_reward is not None else np.inf
+        print(self.default_min)
 
     def refresh(self) -> None:
         """
