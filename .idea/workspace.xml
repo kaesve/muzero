@@ -22,9 +22,21 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Large refactoring. Documentation and single-player experiment functionality.">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update Readme">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AlphaZero/AlphaMCTS.py" beforeDir="false" afterPath="$PROJECT_DIR$/AlphaZero/AlphaMCTS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K10.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K5.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpoleAblations.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_K5_debug.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_debug.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L2.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L4.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_L8.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +49,9 @@
         <option value="Python Script" />
       </list>
     </option>
+  </component>
+  <component name="Git.Pull.Settings">
+    <option name="BRANCH" value="master" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -52,7 +67,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Configurations/JobConfigs" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Configurations/ModelConfigs" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -64,12 +79,13 @@
     </option>
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\JobConfigs" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Agents" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\JobConfigs" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -81,7 +97,8 @@
       <option name="presentableId" value="Default" />
       <updated>1605486086989</updated>
       <workItem from="1605486088036" duration="611000" />
-      <workItem from="1605486701874" duration="8600000" />
+      <workItem from="1605486701874" duration="9318000" />
+      <workItem from="1605545725643" duration="21953000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -97,7 +114,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605494206194</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Update Readme">
+      <created>1605495329263</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1605495329263</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -118,7 +142,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Large refactoring. Documentation and single-player experiment functionality." />
     <MESSAGE value="Revert &quot;Update git ignore&quot;&#10;&#10;This reverts commit d40ee7ef" />
-    <option name="LAST_COMMIT_MESSAGE" value="Revert &quot;Update git ignore&quot;&#10;&#10;This reverts commit d40ee7ef" />
+    <MESSAGE value="Update Readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update Readme" />
   </component>
   <component name="WindowStateProjectService">
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605492559772">
@@ -129,18 +154,23 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="558" y="83" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1605494205585" />
+    <state x="-1736" y="521" key="DiffContextDialog" timestamp="1605546318039">
+      <screen x="-1920" y="435" width="1920" height="1040" />
+    </state>
+    <state x="-1736" y="521" key="DiffContextDialog/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546318039" />
     <state x="741" y="275" key="FileChooserDialogImpl" timestamp="1605486696665">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="741" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1605486696665" />
-    <state x="462" y="165" key="SettingsEditor" timestamp="1605487235022">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="-1458" y="600" key="SettingsEditor" timestamp="1605546931058">
+      <screen x="-1920" y="435" width="1920" height="1040" />
     </state>
+    <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605494213820">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605495330700">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605494213820" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605495330700" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

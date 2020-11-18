@@ -1,25 +1,25 @@
 {
-  "name": "singleplayergames",
+  "name": "CartPole_Base",
   "algorithm": "MUZERO",
   "architecture": "Gym",
 
   "args": {
     "num_selfplay_iterations": 100,
-    "num_episodes": 50,
-    "num_gradient_steps": 200,
+    "num_episodes": 20,
+    "num_gradient_steps": 40,
     "pitting": true,
-    "pitting_trials": 20,
+    "pitting_trials": 10,
     "pit_acceptance_ratio": 0.0,
-    "dirichlet_alpha": 0.3,
-    "exploration_fraction": 0.1,
+    "dirichlet_alpha": 0.25,
+    "exploration_fraction": 0.25,
     "max_buffer_size": 200000,
     "num_MCTS_sims": 11,
     "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
     "latent_decoder": false,
-    "K": 10,
-    "n_steps": 10,
+    "K": 5,
+    "n_steps": 50,
     "c1": 1.25,
     "c2": 19652,
     "gamma": 0.997,
@@ -29,13 +29,13 @@
 
     "checkpoint": "./out/MuZeroOut/",
     "load_model": false,
-    "load_folder_file": ["./MuZeroOut/", "latest.pth.tar"],
-    "selfplay_buffer_window": 15,
+    "load_folder_file": ["./out/MuZeroOut/", "latest.pth.tar"],
+    "selfplay_buffer_window": 5,
 
     "temperature_schedule": {
       "method": "stepwise",
       "by_weight_update": true,
-      "schedule_points": [[1000, 1], [2500, 0.5], [5000, 0.25]]
+      "schedule_points": [[0, 1]]
     }
   },
 
@@ -48,14 +48,14 @@
     "l2": 1e-4,
     "dynamics_penalty": 0,
     "dropout": 0.0,
-    "batch_size": 256,
+    "batch_size": 128,
     "cuda": false,
-    "latent_depth": 4,
+    "latent_depth": 8,
     "num_channels": 256,
     "num_towers": 3,
     "num_dense": 2,
-    "size_dense": 128,
-    "activation": "tanh",
+    "size_dense": 16,
+    "activation": "elu",
     "support_size": 20,
     "observation_length": 1
   }

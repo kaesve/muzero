@@ -94,26 +94,25 @@ if __name__ == "__main__":
 
     experiment_parser = mode_parsers.add_parser("experiment")
     experiment_parser.set_defaults(mode="experiment")
-    
+
     train_parser = mode_parsers.add_parser("train")
     train_parser.set_defaults(mode="train")
     train_parser.add_argument("--game", default="gym")
-    train_parser.add_argument("--boardsize", "-s", type=int, default=5, help="Board size (if relevant)")    
+    train_parser.add_argument("--boardsize", "-s", type=int, default=5, help="Board size (if relevant)")
 
     # Common arguments
-    for p in [ experiment_parser, train_parser ]:
-        
+    for p in [experiment_parser, train_parser]:
         # Debug settings
         p.add_argument("--debug", action="store_true", default=False, help="Turn on debug mode")
         p.add_argument("--lograte", type=int, default=1, help="Backprop logging frequency")
         p.add_argument("--render", action="store_true", default=False,
-                            help="Render the environment during training and pitting")
+                       help="Render the environment during training and pitting")
 
         # Run configuration
         p.add_argument("--config", "-c", nargs="*", help="Path to config file", required=True)
-        p.add_argument("--gpu", default=0, help="Set which device to use (-1 for CPU). Equivalent to/overrides the CUDA_VISIBLE_DEVICES environment variable.")
+        p.add_argument("--gpu", default=0, help="Set which device to use (-1 for CPU). Equivalent "
+                                                "to/overrides the CUDA_VISIBLE_DEVICES environment variable.")
         p.add_argument("--run_name", default=False, help="Override the run name (will not be timestamped!)")
-
 
     args = parser.parse_args()
 
@@ -121,13 +120,17 @@ if __name__ == "__main__":
     debugger.RENDER = args.render
     debugger.LOG_RATE = args.lograte
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 
     if args.mode == "train":
         content = DotDict.from_json(args.config[0])
         for override in args.config[1:]:
-            content.recursive_update(DotDict.from_json(override))
+            sub_config = DotDict.from_json(override)
+            if 'ablations' in sub_config:
+                content.recursive_update(sub_config.ablations[int(args.config[2])])
+                break
+            else:
+                content.recursive_update(override)
 
         BOARD_SIZE = args.boardsize
 
@@ -157,7 +160,7 @@ if __name__ == "__main__":
         #
         debugger.DEBUG_MODE = True
         content = DotDict.from_json('Configurations/ModelConfigs/MuzeroCartpole.json')
-        
+
         run_name = args.run_name if args.run_name else get_run_name(content.name, content.architecture, "gym")
 
         # game = HexGame(BOARD_SIZE)
@@ -173,6 +176,3 @@ if __name__ == "__main__":
         # print(b.player_configs)
 
         # tournament_final(experiment=b)
-
-
-

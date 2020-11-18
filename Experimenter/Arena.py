@@ -189,4 +189,6 @@ class Arena:
         print(f'CHAMPION/CONTENDER WINS : {wins} / {losses} ; DRAWS : {draws} ; '
               f'NEW CHAMPION ACCEPTANCE RATIO : {args.pit_acceptance_ratio}')
 
-        return losses + wins > 0 and wins / (losses + wins) >= args.pit_acceptance_ratio
+        return (losses + wins > 0 and
+                wins / (losses + wins) >= args.pit_acceptance_ratio
+                ) or args.pit_acceptance_ratio == 0

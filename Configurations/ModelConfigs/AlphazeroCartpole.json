@@ -5,19 +5,19 @@
   
   "args": {
     "num_selfplay_iterations": 100,
-    "num_episodes": 50,
-    "num_gradient_steps": 75,
+    "num_episodes": 20,
+    "num_gradient_steps": 40,
     "pitting": true,
-    "pitting_trials": 5,
+    "pitting_trials": 10,
     "pit_acceptance_ratio": 0.0,
-    "dirichlet_alpha": 0.3,
-    "exploration_fraction": 0.1,
+    "dirichlet_alpha": 0.25,
+    "exploration_fraction": 0.25,
     "max_buffer_size": 200000,
-    "num_MCTS_sims": 50,
-    "prioritize": true,
+    "num_MCTS_sims": 11,
+    "prioritize": false,
     "prioritize_alpha": 0.5,
     "prioritize_beta": 1,
-    "n_steps": 10,
+    "n_steps": 50,
     "c1": 1.25,
     "c2": 19652,
     "gamma": 0.997,
@@ -33,7 +33,7 @@
     "temperature_schedule": {
       "method": "stepwise",
       "by_weight_update": true,
-      "schedule_points": [[1000, 1], [2500, 0.5], [5000, 0.25]]
+      "schedule_points": [[0, 1]]
     }
   },
   
@@ -44,7 +44,7 @@
       "momentum": 0.9
     },
     "l2": 1e-4,
-    "dropout": 0.2,
+    "dropout": 0.1,
     "batch_size": 128,
     "cuda": false,
     "num_channels": 256,
@@ -53,8 +53,8 @@
     "residual_left": 2,
     "residual_right": 0,
     "num_dense": 2,
-    "size_dense": 64,
-    "dense_activation": "tanh",
+    "size_dense": 16,
+    "activation": "elu",
     "support_size": 20,
     "observation_length": 1
   }

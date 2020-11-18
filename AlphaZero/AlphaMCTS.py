@@ -147,7 +147,7 @@ class MCTS:
         s_0, v_0 = self.initialize_root(state, trajectory)
 
         # Aggregate root state value over MCTS back-propagated values
-        v_search = sum([self._search(state, trajectory) for _ in range(self.args.num_MCTS_sims) - 1])
+        v_search = sum([self._search(state, trajectory) for _ in range(self.args.num_MCTS_sims - 1)])
         v = (v_0 + (v_search if self.single_player else -v_search)) / self.args.num_MCTS_sims
 
         # MCTS Visit count array for each edge 'a' from root node 's_0'.
