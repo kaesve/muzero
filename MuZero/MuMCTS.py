@@ -112,7 +112,7 @@ class MuZeroMCTS:
         :return: float Upper confidence bound with neural network prior
         """
         if s in self.Vs and not self.Vs[s][a]:
-            return 0  # Illegal move masked at a root state.
+            return -np.inf  # Illegal move masked at a root state.
 
         visit_count = self.Nsa[(s, a)] if (s, a) in self.Nsa else 0
         q_value = self.minmax.normalize(self.Qsa[(s, a)]) if (s, a) in self.Qsa else 0
