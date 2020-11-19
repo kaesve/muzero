@@ -22,14 +22,17 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="MuMCTS illegal moves masked at root state">
-      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroAtari.json" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Atari Net for AlphaZero">
+      <change afterPath="$PROJECT_DIR$/Games/gym/ImageGymGame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/AtariNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/AtariNetwork.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroHex.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/format.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole_2iterations.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Games/atari/AtariGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/atari/AtariGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/hex/HexGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/HexGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/selfplay_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/selfplay_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -92,7 +95,7 @@
       <updated>1605486086989</updated>
       <workItem from="1605486088036" duration="611000" />
       <workItem from="1605486701874" duration="9318000" />
-      <workItem from="1605545725643" duration="34108000" />
+      <workItem from="1605545725643" duration="52531000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -143,7 +146,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605707619808</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Atari Net for AlphaZero">
+      <created>1605711577179</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1605711577179</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,13 +179,15 @@
     <MESSAGE value="Max moves option and rework of reward functionality in Coach and Game" />
     <MESSAGE value="AlphaMCTS UCB fix for illegal moves." />
     <MESSAGE value="MuMCTS illegal moves masked at root state" />
-    <option name="LAST_COMMIT_MESSAGE" value="MuMCTS illegal moves masked at root state" />
+    <MESSAGE value="Atari Net for AlphaZero" />
+    <option name="LAST_COMMIT_MESSAGE" value="Atari Net for AlphaZero" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605701101200">
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605770835599">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605701101200" />
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605724265868" />
+    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605770835599" />
     <state x="558" y="83" key="CommitChangelistDialog2" timestamp="1605494205585">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -197,10 +209,10 @@
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605707622559">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605711578868">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605703971169" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605711578868" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605707622559" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />

@@ -67,7 +67,8 @@ class HexGame(Game):
 
         next_state = GameState(canonical_state=b.board, observation=None, action=action,
                                player=-state.player, done=False)
-        z = self.getGameEnded(next_state)
+
+        z = -self.getGameEnded(next_state)  # Negated as this function is called from the adversary's perspective.
         next_state.observation = self.buildObservation(state)
         next_state.done = bool(z)
 

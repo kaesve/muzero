@@ -3,6 +3,7 @@ Initialization module to define the available Game implementations in the 'Games
 """
 from .atari.AtariGame import AtariGame
 from .gym.GymGame import GymGame
+from .gym.ImageGymGame import ImageGymGame
 from .hex.HexGame import HexGame
 
 
@@ -10,5 +11,6 @@ from .hex.HexGame import HexGame
 Games = {
     "HEX": HexGame,
     "GYM": GymGame,
-    "ATARI": AtariGame
+    "ATARI": AtariGame,
+    "IMAGEGYM": ImageGymGame
 }

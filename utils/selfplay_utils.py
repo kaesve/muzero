@@ -55,7 +55,7 @@ class GameHistory:
         if n is None:
             # Boardgames
             self.observed_returns.append(self.rewards[-2])  # Append values to list in order T, T-1, ..., 2, 1
-            for i in range(1, len(self.rewards)):
+            for i in range(1, len(self)):
                 self.observed_returns.append(-self.observed_returns[i - 1])
             self.observed_returns = self.observed_returns[::-1] + [0]  # Reverse back to chronological order
         else:

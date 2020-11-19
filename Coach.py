@@ -98,9 +98,9 @@ class Coach(ABC):
         """
         history = GameHistory()
         state = self.game.getInitialState()  # Always from perspective of player 1 for boardgames.
-        step = 1
+        step = 0
 
-        while not state.done and step <= self.args.max_episode_moves:
+        while not state.done and step < self.args.max_episode_moves:
             if debugging.RENDER:  # Display visualization of the environment if specified.
                 self.game.render(state)
 
@@ -118,6 +118,7 @@ class Coach(ABC):
             # Update state of control
             state = next_state
             step += 1
+            print(step)
 
         # Cleanup environment and GameHistory
         self.game.close(state)

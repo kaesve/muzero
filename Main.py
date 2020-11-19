@@ -98,7 +98,7 @@ if __name__ == "__main__":
     train_parser = mode_parsers.add_parser("train")
     train_parser.set_defaults(mode="train")
     train_parser.add_argument("--game", default="gym")
-    train_parser.add_argument("--boardsize", "-s", type=int, default=5, help="Board size (if relevant)")
+    train_parser.add_argument("--boardsize", "-s", type=int, default=6, help="Board size (if relevant)")
 
     # Common arguments
     for p in [experiment_parser, train_parser]:

@@ -1,12 +1,13 @@
 from __future__ import print_function
 import typing
 import sys
+from copy import deepcopy
 
 import numpy as np
 import gym
 
 from Games.gym.GymGame import GymGame
-from utils.game_utils import AtariState
+from utils.game_utils import AtariState, GymState
 
 sys.path.append('../../..')
 
@@ -24,6 +25,7 @@ class AtariGame(GymGame):
 
     def __init__(self, env_name: str) -> None:
         super().__init__(env_name)
+        self.x, self.y, self.d = 96, 96, 4
 
     def getInitialState(self) -> AtariState:
         """
@@ -53,7 +55,7 @@ class AtariGame(GymGame):
             (x,y,z): a tuple of the state dimensions
         """
 
-        return 96, 96, 4
+        return self.x, self.y, self.d
 
     def getActionSize(self) -> int:
         """ Return the number of possible actions """
@@ -72,8 +74,21 @@ class AtariGame(GymGame):
             reward: Immediate observed reward (default should be 0 for most boardgames)
             nextPlayer: player who plays in the next turn
         """
+
         def nextEnv(old_state: AtariState, clone: bool = False):  # Macro for cloning the state
-            return old_state.env.clone_full_state() if clone else old_state.env
+            if clone:
+                cloned_state = old_state.env.unwrapped.clone_state()
+
+                cloned_env = gym.make(self.env_name)
+                cloned_env = gym.wrappers.AtariPreprocessing(cloned_env, screen_size=self.x, scale_obs=True,
+                                                             grayscale_obs=False, terminal_on_life_loss=True,
+                                                             noop_max=10)
+
+                cloned_env.reset()
+                cloned_env.unwrapped.restore_state(cloned_state)
+
+                return cloned_env  # Actually not recommended to clone Atari states as it is very slow.
+            return old_state.env
 
         env = nextEnv(state, **kwargs)
 
@@ -103,7 +118,10 @@ class AtariGame(GymGame):
     def buildObservation(self, state: AtariState, **kwargs) -> np.ndarray:
         action_plane = np.ones(state.canonical_state.shape[:2]) * state.action / self.getActionSize()
         action_plane = action_plane.reshape((*action_plane.shape, 1))
-        return np.concatenate((state.canonical_state, action_plane), axis=-1)
+        return np.concatenate((state.canonical_state, action_plane), axis=-1) + np.random.randn() * 1e-8
+
+    def getHash(self, state: GymState) -> bytes:
+        return state.observation.tobytes()
 
     def render(self, state: AtariState):
         state.env.render()

@@ -50,11 +50,10 @@ class Arena:
         :return: int Either 1 if player 1 won, -1 if player 2 won, or 0 if the game was a draw.
         """
         players = [second_player, None, first_player]
-        step = 1
         state = self.game.getInitialState()
-        r = 0
+        r = step = 0
 
-        while not state.done and step <= self.max_trial_length:
+        while not state.done and step < self.max_trial_length:
             if verbose:
                 print(f"Turn {step} Player {state.player}")
 
@@ -78,9 +77,9 @@ class Arena:
         self.game.close(state)
 
         if verbose:
-            print(f"Game over: Turn {step} Result {z}")
+            print(f"Game over: Turn {step} Result {r}")
 
-        return r
+        return -state.player * r
 
     def playGame(self, player, verbose: bool = False) -> float:
         """
@@ -91,9 +90,9 @@ class Arena:
         :return: float The cumulative reward that the player managed to gather.
         """
         state = self.game.getInitialState()
-        step, score = 1, 0
+        step = score = 0
 
-        while not state.done and step <= self.max_trial_length:
+        while not state.done and step < self.max_trial_length:
             if verbose:
                 print(f"Turn {step} Current score {score}")
 
