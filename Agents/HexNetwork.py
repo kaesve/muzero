@@ -37,9 +37,9 @@ class AlphaZeroHexNetwork:
         print(self.model.summary())
 
     def build_model(self, x_image):
-        conv = self.crafter.conv_tower(self.args.num_convs, x_image)
+        conv = self.crafter.conv_tower(self.args.num_convs, x_image, use_bn=False)
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
-                                               self.args.residual_left, self.args.residual_right)
+                                               self.args.residual_left, self.args.residual_right, use_bn=False)
 
         small = self.crafter.activation()(BatchNormalization()(Conv2D(32, 3, padding='same', use_bias=False)(res)))
 
@@ -87,18 +87,24 @@ class MuZeroHexNetwork:
         self.forward = Model(inputs=self.observation_history, outputs=[self.s, *self.predictor(self.s)])
         self.recurrent = Model(inputs=[self.encoded_state, self.action_plane],
                                outputs=[self.r, self.s_next, *self.predictor(self.s_next)])
+
+        # Decoder functionality.
+        self.decoded_observations = self.build_decoder(self.encoded_state)
+        self.decoder = Model(inputs=self.encoded_state, outputs=self.decoded_observations, name='decoder')
+
         print(self.encoder.summary())
         print(self.dynamics.summary())
         print(self.predictor.summary())
+        print(self.decoder.summary())
 
     def build_encoder(self, observations):
-        conv = self.crafter.conv_tower(self.args.num_convs, observations)
+        conv = self.crafter.conv_tower(self.args.num_convs, observations, use_bn=False)
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
-                                               self.args.residual_left, self.args.residual_right)
+                                               self.args.residual_left, self.args.residual_right, use_bn=False)
 
         latent_state = self.crafter.activation()((
             Conv2D(self.args.latent_depth, 3, padding='same', use_bias=False)(res)))
-        # latent_state = MinMaxScaler()(latent_state)
+        latent_state = MinMaxScaler()(latent_state)
 
         return latent_state
 
@@ -106,9 +112,9 @@ class MuZeroHexNetwork:
         stacked = Concatenate(axis=-1)([encoded_state, action_plane])
         reshaped = Reshape((self.board_x, self.board_y, 1 + self.args.latent_depth))(stacked)
 
-        conv = self.crafter.conv_tower(self.args.num_convs, reshaped)
+        conv = self.crafter.conv_tower(self.args.num_convs, reshaped, use_bn=False)
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
-                                               self.args.residual_left, self.args.residual_right)
+                                               self.args.residual_left, self.args.residual_right, use_bn=False)
 
         latent_state = self.crafter.activation()((
             Conv2D(self.args.latent_depth, 3, padding='same')(res)))
@@ -123,7 +129,7 @@ class MuZeroHexNetwork:
         return r, latent_state
 
     def build_predictor(self, latent_state):
-        out_tensor = self.crafter.conv_tower(self.args.num_convs, latent_state)
+        out_tensor = self.crafter.conv_tower(self.args.num_convs, latent_state, use_bn=False)
 
         small = self.crafter.activation()((
             Conv2D(32, 3, padding='same', use_bias=False)(out_tensor)))
@@ -138,3 +144,15 @@ class MuZeroHexNetwork:
             Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(fc)
 
         return pi, v
+
+    def build_decoder(self, latent_state):
+        conv = self.crafter.conv_tower(self.args.num_convs, latent_state, use_bn=False)
+        res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
+                                               self.args.residual_left, self.args.residual_right, use_bn=False)
+
+        flat = Flatten()(res)
+
+        fc_sequence = self.crafter.dense_sequence(self.args.num_dense, flat)
+        o = Reshape((self.board_x, self.board_y, self.planes))(fc_sequence)
+
+        return o

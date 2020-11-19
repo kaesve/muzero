@@ -101,40 +101,43 @@ class MuZeroAtariNetwork:
                                outputs=[self.r, self.s_next, *self.predictor(self.s_next)])
 
     def build_encoder(self, observations):
-        down_sampled = Activation('relu')(BatchNormalization()(Conv2D(64, 3, 2)(observations)))
-        down_sampled = Activation('relu')(BatchNormalization()(Conv2D(128, 3, 2)(down_sampled)))
+        down_sampled = self.crafter.activation()(Conv2D(self.args.num_channels, 3, 2)(observations))
+        down_sampled = self.crafter.conv_residual_tower(self.args.num_towers, down_sampled,
+                                                        self.args.residual_left, self.args.residual_right, use_bn=False)
+        down_sampled = self.crafter.activation()(Conv2D(self.args.num_channels, 3, 2)(down_sampled))
         down_sampled = AveragePooling2D(3, 2)(down_sampled)
+        down_sampled = self.crafter.conv_residual_tower(self.args.num_towers, down_sampled,
+                                                        self.args.residual_left, self.args.residual_right, use_bn=False)
         down_sampled = AveragePooling2D(3, 2)(down_sampled)
 
-        out_tensor = self.crafter.build_conv_block(down_sampled)
-
-        s_fc_latent = Dense(self.latent_x * self.latent_y, activation='linear', name='s_0')(out_tensor)
-        latent_state = MinMaxScaler()(s_fc_latent)
-        latent_state = Reshape((self.latent_x, self.latent_y, 1))(latent_state)
+        latent_state = self.crafter.activation()((
+            Conv2D(self.args.latent_depth, 3, padding='same', use_bias=False)(down_sampled)))
+        latent_state = MinMaxScaler()(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
 
     def build_dynamics(self, encoded_state, action_plane):
         stacked = Concatenate(axis=-1)([encoded_state, action_plane])
         reshaped = Reshape((self.latent_x, self.latent_y, -1))(stacked)
-        out_tensor = self.crafter.build_conv_block(reshaped)
+        down_sampled = self.crafter.conv_residual_tower(2 * self.args.num_towers, reshaped,
+                                                        self.args.residual_left, self.args.residual_right, use_bn=False)
 
-        s_fc_latent = Dense(self.latent_x * self.latent_y, activation='linear', name='s_next')(out_tensor)
-        latent_state = Reshape((self.latent_x, self.latent_y, 1))(s_fc_latent)
+        latent_state = self.crafter.activation()((
+            Conv2D(self.args.latent_depth, 3, padding='same', use_bias=False)(down_sampled)))
+        flat = Flatten()(latent_state)
         latent_state = MinMaxScaler()(latent_state)
 
-        r = Dense(1, activation='linear', name='r')(out_tensor) \
-            if self.args.support_size == 0 else \
-            Dense(self.args.support_size * 2 + 1, activation='softmax', name='r')(out_tensor)
+        r = Dense(self.args.support_size * 2 + 1, name='r')(flat)
+        if not self.args.support_size:
+            r = Activation('softmax')(r)
 
         return r, latent_state
 
     def build_predictor(self, latent_state):
-        out_tensor = self.crafter.build_conv_block(latent_state)
+        out_tensor = self.crafter.build_conv_block(latent_state, use_bn=False)
 
         pi = Dense(self.action_size, activation='softmax', name='pi')(out_tensor)
-        v = Dense(1, activation='tanh', name='v')(out_tensor) \
-            if self.args.support_size == 0 else \
-            Dense(self.args.support_size * 2 + 1, activation='softmax', name='v')(out_tensor)
+        v = Dense(self.args.support_size * 2 + 1, name='v')(out_tensor)
+        v = Activation('softmax')(v) if self.args.support_size else Activation('tanh')(v)
 
         return pi, v

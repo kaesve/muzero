@@ -118,7 +118,6 @@ class Coach(ABC):
             # Update state of control
             state = next_state
             step += 1
-            print(step)
 
         # Cleanup environment and GameHistory
         self.game.close(state)

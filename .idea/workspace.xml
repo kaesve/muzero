@@ -22,18 +22,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Atari Net for AlphaZero">
-      <change afterPath="$PROJECT_DIR$/Games/gym/ImageGymGame.py" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Image gym game">
+      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHexDecode.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHexStable.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/AtariNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/AtariNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/HexNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/HexNetwork.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroCartpole_2iterations.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/atari/AtariGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/atari/AtariGame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/hex/HexGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/hex/HexGame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/selfplay_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/selfplay_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/network_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/network_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,13 +73,13 @@
     </option>
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Agents" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\JobConfigs" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Agents" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -95,7 +92,8 @@
       <updated>1605486086989</updated>
       <workItem from="1605486088036" duration="611000" />
       <workItem from="1605486701874" duration="9318000" />
-      <workItem from="1605545725643" duration="52531000" />
+      <workItem from="1605545725643" duration="57680000" />
+      <workItem from="1605792286923" duration="4746000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -153,7 +151,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605711577179</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Image gym game">
+      <created>1605773207053</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1605773207053</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,7 +185,8 @@
     <MESSAGE value="AlphaMCTS UCB fix for illegal moves." />
     <MESSAGE value="MuMCTS illegal moves masked at root state" />
     <MESSAGE value="Atari Net for AlphaZero" />
-    <option name="LAST_COMMIT_MESSAGE" value="Atari Net for AlphaZero" />
+    <MESSAGE value="Image gym game" />
+    <option name="LAST_COMMIT_MESSAGE" value="Image gym game" />
   </component>
   <component name="WindowStateProjectService">
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605770835599">
@@ -209,11 +215,11 @@
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605711578868">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605773208633">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605711578868" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605707622559" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605773208633" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

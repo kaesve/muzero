@@ -50,19 +50,19 @@ class Crafter:
         self.activation = lambda: (Activation(args.activation)
                                    if args.activation != "leakyrelu" else LeakyReLU(alpha=0.2))
 
-    def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0, use_bn=False):
+    def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0, use_bn: bool = True):
         assert left_n > 0, "Residual network must have at least a conv block larger than 0."
 
         if n > 0:
             left = self.conv_tower(left_n - 1, x, use_bn)
             if left_n - 1 > 0:
-                left = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(left))
+                left = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=(not use_bn))(left))
                 if use_bn:
                     left = BatchNormalization()(left)
 
             right = self.conv_tower(right_n - 1, x, use_bn)
             if right_n - 1 > 0:
-                right = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(right))
+                right = (Conv2D(self.args.num_channels, 3, padding='same', use_bias=(not use_bn))(right))
                 if use_bn:
                     right = BatchNormalization()(right)
 
@@ -74,10 +74,10 @@ class Crafter:
 
         return x
 
-    def conv_tower(self, n: int, x, use_bn=False):
+    def conv_tower(self, n: int, x, use_bn: bool = True):
         """ Recursively builds a convolutional tower of height n. """
         if n > 0:
-            tensor = Conv2D(self.args.num_channels, 3, padding='same', use_bias=False)(x)
+            tensor = Conv2D(self.args.num_channels, 3, padding='same', use_bias=(not use_bn))(x)
             if use_bn:
                 tensor = BatchNormalization()(tensor)
             return self.conv_tower(n - 1, self.activation()(tensor))
@@ -90,7 +90,7 @@ class Crafter:
                 Dense(self.args.size_dense)(x))))
         return x
 
-    def build_conv_block(self, tensor_in, use_bn=False):
+    def build_conv_block(self, tensor_in, use_bn: bool = True):
         conv_block = self.conv_tower(self.args.num_towers, tensor_in, use_bn)
         flattened = Flatten()(conv_block)
         fc_sequence = self.dense_sequence(self.args.num_dense, flattened)
