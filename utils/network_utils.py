@@ -70,7 +70,7 @@ class Crafter:
             merged = Lambda(lambda var: k.sum(var, axis=0))([left, right])
             out_tensor = self.activation()(merged)
 
-            return self.conv_residual_tower(n - 1, out_tensor, left_n, right_n)
+            return self.conv_residual_tower(n - 1, out_tensor, left_n, right_n, use_bn)
 
         return x
 
@@ -80,7 +80,7 @@ class Crafter:
             tensor = Conv2D(self.args.num_channels, 3, padding='same', use_bias=(not use_bn))(x)
             if use_bn:
                 tensor = BatchNormalization()(tensor)
-            return self.conv_tower(n - 1, self.activation()(tensor))
+            return self.conv_tower(n - 1, self.activation()(tensor), use_bn)
         return x
 
     def dense_sequence(self, n: int, x):

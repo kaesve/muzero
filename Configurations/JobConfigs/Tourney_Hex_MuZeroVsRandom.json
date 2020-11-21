@@ -1,6 +1,7 @@
 {
   "name": "Hex_MuZeroVsRandom",
-  "output_dir": "./Results/",
+  "experiment": "TOURNEY",
+  "output_dir": "Results",
 
   "num_repeat": 5,
   "num_trials": 5,

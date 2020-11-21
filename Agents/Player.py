@@ -8,19 +8,19 @@ from utils.selfplay_utils import GameHistory
 from utils import DotDict
 
 from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero
-from AlphaZero.AlphaMCTS import MCTS as AlphaMCTS
+from AlphaZero.AlphaMCTS import MCTS as AlphaZeroMCTS
 from MuZero.models.DefaultMuZero import DefaultMuZero
 from MuZero.MuMCTS import MuZeroMCTS
 
 
 class Player(ABC):
+    name: str = ""
 
     def __init__(self, game, arg_file: typing.Optional[str] = None, parametric: bool = False) -> None:
         self.game = game
         self.player_args = arg_file
         self.parametric = parametric
         self.history = GameHistory()
-        self.name = ""
 
     def bind_history(self, history: GameHistory) -> None:
         self.history = history
@@ -30,6 +30,9 @@ class Player(ABC):
 
     def observe(self, state: GameState) -> None:
         self.history.capture(state, np.array([]), 0, 0)
+
+    def clone(self):
+        return self.__class__(self.game, self.player_args)
 
     @abstractmethod
     def act(self, state: GameState) -> int:
@@ -48,7 +51,7 @@ class DefaultAlphaZeroPlayer(Player):
             self.args = DotDict.from_json(self.player_args)
 
             self.model = DefaultAlphaZero(self.game, self.args.net_args, self.args.architecture)
-            self.search_engine = AlphaMCTS(self.game, self.model, self.args.args)
+            self.search_engine = AlphaZeroMCTS(self.game, self.model, self.args.args)
             self.name = self.args.name
 
     def set_variables(self, model, search_engine, name):
@@ -65,7 +68,7 @@ class DefaultAlphaZeroPlayer(Player):
         return np.argmax(pi).item()
 
 
-class MuZeroPlayer(Player):
+class DefaultMuZeroPlayer(Player):
 
     def __init__(self, game, arg_file: typing.Optional[str] = None) -> None:
         super().__init__(game, arg_file, parametric=True)

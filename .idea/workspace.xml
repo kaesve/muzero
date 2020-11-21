@@ -22,14 +22,24 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Image gym game">
-      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHexDecode.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHexStable.json" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Hex decoder, crafter use_bn correction, and Atari hex network">
+      <change afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CheckpointTourney_AlphaZeroHex.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/muzero.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/muzero.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/AtariNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/AtariNetwork.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Agents/HexNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/HexNetwork.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/Player.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/Player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Gym_MuZeroVsRandom.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Gym_MuZeroVsRandom.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/Arena.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Arena.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/experimenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/experimenter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/main_experimentRLA4.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/main_experimentRLA4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/MuCoach.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/MuCoach.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/network_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/network_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -61,7 +71,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Configurations/ModelConfigs" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Configurations/JobConfigs" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -74,8 +84,8 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\JobConfigs" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
@@ -93,7 +103,7 @@
       <workItem from="1605486088036" duration="611000" />
       <workItem from="1605486701874" duration="9318000" />
       <workItem from="1605545725643" duration="57680000" />
-      <workItem from="1605792286923" duration="4746000" />
+      <workItem from="1605792286923" duration="41514000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -158,7 +168,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605773207053</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Hex decoder, crafter use_bn correction, and Atari hex network">
+      <created>1605807039849</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1605807039849</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -186,9 +203,14 @@
     <MESSAGE value="MuMCTS illegal moves masked at root state" />
     <MESSAGE value="Atari Net for AlphaZero" />
     <MESSAGE value="Image gym game" />
-    <option name="LAST_COMMIT_MESSAGE" value="Image gym game" />
+    <MESSAGE value="Hex decoder, crafter use_bn correction, and Atari hex network" />
+    <option name="LAST_COMMIT_MESSAGE" value="Hex decoder, crafter use_bn correction, and Atari hex network" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1605953987305">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605953987305" />
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605770835599">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -215,11 +237,11 @@
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605773208633">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605807041058">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605711578868" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605773208633" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605807041058" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

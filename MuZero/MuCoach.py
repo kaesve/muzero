@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 
 from Coach import Coach
-from Agents import MuZeroPlayer
+from Agents import DefaultMuZeroPlayer
 from MuZero.MuMCTS import MuZeroMCTS
 from utils import DotDict
 from utils.selfplay_utils import GameHistory, sample_batch
@@ -35,7 +35,7 @@ class MuZeroCoach(Coach):
         :param args: DotDict Data structure containing parameters for self-play.
         :param run_name: str Optionally provide a run-name for the TensorBoard log-files. Default is current datetime.
         """
-        super().__init__(game, neural_net, args, MuZeroMCTS, MuZeroPlayer)
+        super().__init__(game, neural_net, args, MuZeroMCTS, DefaultMuZeroPlayer)
 
         # Initialize tensorboard logging.
         if run_name is None:

@@ -1,7 +1,6 @@
-/out/MuZeroOut/*
-/out/AlphaZeroOut/*
-/out/logs/*
+/out/*
 
 __pycache__
 temp
 logs
+out

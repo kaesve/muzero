@@ -1,6 +1,7 @@
 {
   "name": "Gym_MuZeroVsRandom",
-  "output_dir": "./Results/",
+  "experiment": "TOURNEY",
+  "output_dir": "Results",
 
   "num_repeat": 3,
   "num_trials": 10,

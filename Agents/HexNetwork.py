@@ -37,9 +37,9 @@ class AlphaZeroHexNetwork:
         print(self.model.summary())
 
     def build_model(self, x_image):
-        conv = self.crafter.conv_tower(self.args.num_convs, x_image, use_bn=False)
+        conv = self.crafter.conv_tower(self.args.num_convs, x_image, use_bn=True)
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
-                                               self.args.residual_left, self.args.residual_right, use_bn=False)
+                                               self.args.residual_left, self.args.residual_right, use_bn=True)
 
         small = self.crafter.activation()(BatchNormalization()(Conv2D(32, 3, padding='same', use_bias=False)(res)))
 
@@ -150,9 +150,6 @@ class MuZeroHexNetwork:
         res = self.crafter.conv_residual_tower(self.args.num_towers, conv,
                                                self.args.residual_left, self.args.residual_right, use_bn=False)
 
-        flat = Flatten()(res)
-
-        fc_sequence = self.crafter.dense_sequence(self.args.num_dense, flat)
-        o = Reshape((self.board_x, self.board_y, self.planes))(fc_sequence)
+        o = Conv2D(self.planes * self.args.observation_length, 3, padding='same')(res)
 
         return o

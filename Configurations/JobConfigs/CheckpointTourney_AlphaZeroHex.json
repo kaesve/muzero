@@ -1,8 +1,9 @@
 {
-  "name": "Hex_AlphaZeroVsRandom",
-  "experiment": "TOURNEY",
+  "name": "Hex_AlphaZero_MuZero_Random",
+  "experiment": "CHECKPOINT_TOURNEY",
   "output_dir": "Results",
 
+  "checkpoint_resolution": 20,
   "num_repeat": 2,
   "num_trials": 2,
 
@@ -20,6 +21,10 @@
     },
     {
       "name": "RANDOM",
+      "config": null
+    },
+    {
+      "name": "DETERMINISTIC",
       "config": null
     }
   ]

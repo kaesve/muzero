@@ -117,23 +117,21 @@ class Arena:
 
         return score
 
-    def playGames(self, num_trials: int, verbose: bool = False) -> typing.Tuple[np.ndarray, np.ndarray]:
+    def playGames(self, num_trials: int, player, verbose: bool = False) -> np.ndarray:
         """
-        Perform a series of games for both player 1 and 2 and return their accumulated scores.
-        :param num_trials: int Number of trials to play for both player 1 and 2.
+        Perform a series of games for the given player and return the cumulative score.
+        :param num_trials: int Number of trials to play.
+        :param player: Player interface for selecting actions.
         :param verbose: bool Whether to print out intermediary state information during play.
-        :return: tuple (np.ndarray, np.ndarray) Accumulated scores for player 1 and 2, respectively.
+        :return: np.ndarray Accumulated scores for player 1.
         """
-        p1_scores, p2_scores = list(), list()
+        scores = list()
 
-        for _ in trange(num_trials, desc="Pitting", file=sys.stdout):
+        for _ in trange(num_trials, desc=f"Pitting {player.name}", file=sys.stdout):
             self.player1.refresh()
-            self.player2.refresh()
+            scores.append(self.playGame(player, verbose=verbose))
 
-            p1_scores.append(self.playGame(self.player1, verbose=verbose))
-            p2_scores.append(self.playGame(self.player2, verbose=verbose))
-
-        return np.array(p1_scores), np.array(p2_scores)
+        return np.array(scores)
 
     def playTurnGames(self, num_games: int, verbose: bool = False) -> typing.Tuple[int, int, int]:
         """
@@ -175,7 +173,8 @@ class Arena:
         print("Pitting players...")
 
         if self.game.n_players == 1:
-            p1_score, p2_score = self.playGames(args.pitting_trials)
+            p1_score = self.playGames(args.pitting_trials, self.player1)
+            p2_score = self.playGames(args.pitting_trials, self.player2)
 
             wins, draws = np.sum(p1_score > p2_score), np.sum(p1_score == p2_score)
             losses = args.pitting_trials - (wins + draws)

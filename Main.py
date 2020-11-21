@@ -20,7 +20,7 @@ from Games.othello.OthelloGame import OthelloGame
 from Games.gym.GymGame import GymGame
 from Games.atari.AtariGame import AtariGame
 
-from Experimenter.experimenter import ExperimentConfig, tournament_final
+import Experimenter
 
 
 def learnA0(g, content, run_name):
@@ -145,12 +145,11 @@ if __name__ == "__main__":
             raise NotImplementedError(f"Cannot train on algorithm '{content.algorithm}'")
 
     elif args.mode == "experiment":
-        b = ExperimentConfig(args.config[0])
+        b = Experimenter.ExperimentConfig(args.config[0])
         b.construct()
-        print(b.game_config)
-        print(b.player_configs)
 
-        tournament_final(experiment=b)
+        print(f"Starting {b.type} experiment {b.name}, storing results in {b.output_directory}.")
+        Experimenter.experiments[b.type](b)
 
     else:
         # Ad hoc code path. Use for quick tests
