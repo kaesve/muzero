@@ -1,0 +1,33 @@
+{
+  "name": "CartpoleAblationAnalysis",
+  "experiment": "TRAIN_GRID",
+  "output_dir": "Results",
+
+  "num_repeat": 10,
+
+  "environment": {
+    "name": "GYM",
+    "args": {
+      "env_name": "CartPole-v1"
+    }
+  },
+
+  "ablations": {
+    "base": {
+      "name": "MUZERO",
+      "config": "Configurations/ModelConfigs/MuzeroCartpole.json"
+    },
+
+    "content": {
+      "args": {
+        "K": [1, 5, 10],
+        "latent_decoder": [true, false]
+      },
+
+      "net_args": {
+        "dynamics_penalty": [1, 0, 0.1, 0.01],
+        "latent_depth": [4, 8]
+      }
+    }
+  }
+}

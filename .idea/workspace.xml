@@ -22,8 +22,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Tourney functionality done.">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="tourney .json doc">
+      <change afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblationsDynamics.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/experimenter_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/format.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/experimenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/experimenter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/main_experimentRLA4.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,9 +75,12 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\JobConfigs" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ExperimentConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\TourneyConfigs" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ExperimentConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Agents" />
     </key>
@@ -86,7 +96,7 @@
       <workItem from="1605486088036" duration="611000" />
       <workItem from="1605486701874" duration="9318000" />
       <workItem from="1605545725643" duration="57680000" />
-      <workItem from="1605792286923" duration="42027000" />
+      <workItem from="1605792286923" duration="49558000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -165,7 +175,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605967775447</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="tourney .json doc">
+      <created>1605968090803</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1605968090803</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -195,13 +212,15 @@
     <MESSAGE value="Image gym game" />
     <MESSAGE value="Hex decoder, crafter use_bn correction, and Atari hex network" />
     <MESSAGE value="Tourney functionality done." />
-    <option name="LAST_COMMIT_MESSAGE" value="Tourney functionality done." />
+    <MESSAGE value="tourney .json doc" />
+    <option name="LAST_COMMIT_MESSAGE" value="tourney .json doc" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1605953987305">
+    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1605988004236">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605953987305" />
+    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605988004236" />
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1605770835599">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -228,11 +247,11 @@
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605967777232">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605968092042">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605711578868" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605967777232" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605968092042" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

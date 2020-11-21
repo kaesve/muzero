@@ -12,9 +12,10 @@ from tqdm import trange
 from Experimenter import Arena
 import Agents
 import Games
-import Coach
 
 from utils import DotDict
+from utils.experimenter_utils import create_parameter_grid, get_player_pool
+
 
 
 @dataclass
@@ -36,15 +37,20 @@ class ExperimentConfig(object):
         self.experiment_args = DotDict.from_json(experiment_file)
         self.type = self.experiment_args.experiment
         self.name = self.experiment_args.name
+
         self.output_directory = self.output_directory = f'./out/{self.experiment_args.output_dir}/'
         self.game_config = None
         self.game = None
+        self.ablation_base = None
+        self.ablation_grid = None
         self.player_configs = list()
 
     def construct(self) -> None:
         """
-        Parse provided arguments to this data-container by initializing player and environment interfaces and
-        preparing an output path.
+        Parse provided arguments to this data-container by the environment interface and preparing an output path.
+
+        Dependent on the content of the experiment argument file, also initialize player interface and/ or
+        unpack a given ablation configuration into a parameter-grid.
         """
         env = self.experiment_args.environment
 
@@ -55,17 +61,26 @@ class ExperimentConfig(object):
 
         self.game = self.game_config(**env.args)
 
-        player_configs = self.experiment_args.players
-        for config in player_configs:
+        if 'players' in self.experiment_args:
+            player_configs = self.experiment_args.players
+            for config in player_configs:
 
-            if config.name not in Agents.Players:
-                raise NotImplementedError(f"Did not specify a valid player: {config.name}")
+                if config.name not in Agents.Players:
+                    raise NotImplementedError(f"Did not specify a valid player: {config.name}")
 
-            self.player_configs.append(Agents.Players[config.name](self.game, config.config))
+                self.player_configs.append(Agents.Players[config.name](self.game, config.config))
+
+        if 'ablations' in self.experiment_args:
+            self.ablation_base = self.experiment_args.ablations.base
+            self.ablation_grid = create_parameter_grid(self.experiment_args.ablations.content)
 
         # Create output directory if note exists.
         if not os.path.exists(self.output_directory):
             os.makedirs(self.output_directory)
+
+
+def run_ablations(experiment: ExperimentConfig) -> None:
+    pass
 
 
 def tournament_final(experiment: ExperimentConfig) -> None:
@@ -74,15 +89,7 @@ def tournament_final(experiment: ExperimentConfig) -> None:
     tuples that is given to the tourney function. The resulting data from the tourney is stored by this function.
     :param experiment: ExperimentConfig Contains the players to be pitted against each other.
     """
-    player_pool = list()
-
-    # Initialize parametric players.
-    for p in experiment.player_configs:
-        if p.parametric:  # Load in best/ final model.
-            player_pool.append((p, *p.args.args.load_folder_file))
-        else:
-            player_pool.append((p, None))
-
+    player_pool = get_player_pool(experiment.player_configs)
     results = tourney(experiment, player_pool)
 
     # Save results along with program arguments.
@@ -110,23 +117,8 @@ def tournament_pool(experiment: ExperimentConfig) -> None:
     :param experiment: ExperimentConfig Contains the players to be pitted against each other.
     """
     # Collect player configurations of the form
-    player_checkpoint_pool = list()
-
-    # Get paths/ files to each checkpoint file players.
-    for p in experiment.player_configs:
-        if p.parametric:  # Load in best/ final model.
-            path, _ = p.args.args.load_folder_file
-
-            # Get all checkpoint files in folder by int, and create new accessing filenames.
-            model_files = [s for s in os.listdir(path) if s.endswith('.pth.tar') and 'checkpoint' in s]
-            checkpoint_ints = {int(s.split('_')[-1].split('.')[0]) for s in model_files}
-            checkpoints = [(p, path, Coach.Coach.getCheckpointFile(int(s))) for s in checkpoint_ints
-                           if not int(s) % experiment.experiment_args.checkpoint_resolution]
-
-            player_checkpoint_pool += checkpoints
-        else:
-            player_checkpoint_pool.append((p, None))
-
+    player_checkpoint_pool = get_player_pool(experiment.player_configs, by_checkpoint=True,
+                                             resolution=experiment.experiment_args.checkpoint_resolution)
     results = tourney(experiment, player_checkpoint_pool)
 
     # Save results along with program arguments.
@@ -139,7 +131,9 @@ def tournament_pool(experiment: ExperimentConfig) -> None:
 
 
 def tourney(experiment: ExperimentConfig, player_pool: typing.List) -> typing.Tuple[typing.Dict]:
+
     def prepare(contestant: typing.Tuple[Agents.Player, str, str]) -> Agents.Player:
+
         player_object, *content = contestant
         if player_object.parametric:
             player_object.model.load_checkpoint(*content)

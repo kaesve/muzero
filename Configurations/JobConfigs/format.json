@@ -3,7 +3,7 @@
   "experiment": "(str) Choice of experiment @see Experimenter.experiments for all available implementations",
   "output_dir": "(str) Name/ path of an output directory",
 
-  "checkpoint_resolution": "(int > 0) Number indicating: take each 'x' models from my 'X' model checkpoints for an evaluation tournament",
+  "checkpoint_resolution": "(int > 0) Number indicating: evaluate each 'x' models from my 'N' model checkpoints for an evaluation tournament",
   "num_repeat": "(int > 0) Repetition factor for repeating an experiment",
   "num_trials": "(int > 0) Number of evaluation runs to perform when testing a model/ performing an evaluation tournament",
 
@@ -17,5 +17,15 @@
       "name": "(str) Choice of agent to test @see Agents.players for all available implementations",
       "config": "(str) Path to .json configuration file for the given agent"
     }
-  ]
+  ],
+
+  "ablations": {
+    "base": {
+      "name": "(str) Choice of the model to train over all ablations",
+      "config": "(str) Path to .json configuration file for the given agent"
+    },
+    "content": {
+      "(param_name)": "(list of values to override in the base json), an example is: 'example_key': ['value1', 'value2']"
+    }
+  }
 }
