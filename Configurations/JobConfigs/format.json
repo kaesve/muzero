@@ -1,31 +1,21 @@
 {
-  "name": "Hex_AlphaZero_MuZero_Random",
-  "experiment": "CHECKPOINT_TOURNEY",
-  "output_dir": "Results",
+  "name": "(str) Name of your experiment.",
+  "experiment": "(str) Choice of experiment @see Experimenter.experiments for all available implementations",
+  "output_dir": "(str) Name/ path of an output directory",
 
-  "checkpoint_resolution": 20,
-  "num_repeat": 2,
-  "num_trials": 2,
+  "checkpoint_resolution": "(int > 0) Number indicating: take each 'x' models from my 'X' model checkpoints for an evaluation tournament",
+  "num_repeat": "(int > 0) Repetition factor for repeating an experiment",
+  "num_trials": "(int > 0) Number of evaluation runs to perform when testing a model/ performing an evaluation tournament",
 
   "environment": {
-    "name": "HEX",
-    "args": {
-      "n": 6
-    }
+    "name": "(str) Choice of environment to test on @see Games.games for all available implementations",
+    "args": "(dict) Environment specific arguments"
   },
 
   "players": [
     {
-      "name": "ALPHAZERO",
-      "config": "Configurations/ModelConfigs/AlphazeroHex.json"
-    },
-    {
-      "name": "RANDOM",
-      "config": null
-    },
-    {
-      "name": "DETERMINISTIC",
-      "config": null
+      "name": "(str) Choice of agent to test @see Agents.players for all available implementations",
+      "config": "(str) Path to .json configuration file for the given agent"
     }
   ]
 }
