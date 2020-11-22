@@ -1,6 +1,11 @@
 /out/*
+*.tar
+*.tar.examples
+*.prof
 
 __pycache__
+.vscode
+.ipynb_checkpoints
 temp
 logs
 out
