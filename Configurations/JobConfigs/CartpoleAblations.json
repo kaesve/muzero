@@ -3,10 +3,13 @@
   "experiment": "TRAIN_GRID",
   "output_dir": "Results",
 
-  "num_repeat": 10,
+  "num_repeat": 2,
+  "n_jobs": 2,
+  "flags": "--debug",
 
   "environment": {
     "name": "GYM",
+    "console": "--game gym",
     "args": {
       "env_name": "CartPole-v1"
     }

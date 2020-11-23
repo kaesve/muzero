@@ -40,7 +40,7 @@ def learnA0(g, content, run_name):
         print("Load trainExamples from file")
         c.loadTrainExamples()
 
-    content.to_json(f'out/AlphaZeroOut/{run_name}.json')
+    content.to_json(f'{args.checkpoint}/{run_name}.json')
 
     c.learn()
 
@@ -60,7 +60,7 @@ def learnM0(g, content, run_name):
 
     c = MuZeroCoach(g, net, args, run_name)
 
-    content.to_json(f'out/MuZeroOut/{run_name}.json')
+    content.to_json(f'{args.checkpoint}/{run_name}.json')
 
     c.learn()
 

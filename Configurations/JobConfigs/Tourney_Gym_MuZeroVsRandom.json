@@ -5,6 +5,7 @@
 
   "num_repeat": 3,
   "num_trials": 10,
+  "num_opponents": null,
 
   "environment": {
     "name": "GYM",

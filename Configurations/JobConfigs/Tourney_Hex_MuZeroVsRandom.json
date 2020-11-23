@@ -5,6 +5,7 @@
 
   "num_repeat": 5,
   "num_trials": 5,
+  "num_opponents": null,
 
   "environment": {
     "name": "HEX",

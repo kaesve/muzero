@@ -2,15 +2,22 @@
 Simple extension to a dictionary to access keys with a '.key' syntax instead of a ['key'] syntax.
 """
 from __future__ import annotations
+import typing
 
 
 class DotDict(dict):
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: typing.Generic) -> typing.Generic:
         return self[name]
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: typing.Generic, value: typing.Generic) -> None:
         self[key] = value
+
+    def copy(self) -> DotDict:
+        new = DotDict()
+        for k, v in self.items():
+            new[k] = v.copy() if isinstance(v, DotDict) else v
+        return new
 
     def to_json(self, file: str) -> None:
         import json
@@ -18,11 +25,11 @@ class DotDict(dict):
             json.dump(self, f)
 
     def recursive_update(self, other: DotDict) -> None:
-        for (key, value) in other.items():
-            if isinstance(value, DotDict) and isinstance(self[key], DotDict):
-                self[key].recursive_update(value)
+        for k, v in other.items():
+            if isinstance(v, DotDict) and isinstance(self[k], DotDict):
+                self[k].recursive_update(v)
             else:
-                self[key] = value
+                self[k] = v
 
     @staticmethod
     def from_json(file: str) -> DotDict:

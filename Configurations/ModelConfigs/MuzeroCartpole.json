@@ -4,7 +4,7 @@
   "architecture": "Gym",
 
   "args": {
-    "num_selfplay_iterations": 100,
+    "num_selfplay_iterations": 1,
     "num_episodes": 20,
     "num_gradient_steps": 40,
     "max_episode_moves": 500,
