@@ -1,9 +1,9 @@
 from __future__ import annotations
 import os
 import typing
-import signal
+import time
+from concurrent.futures.thread import ThreadPoolExecutor
 import subprocess as sp
-from multiprocessing.pool import ThreadPool as Pool
 from datetime import datetime
 
 import numpy as np
@@ -56,35 +56,40 @@ class AblationAnalysis:
         return self
 
     def run(self):
+        execute = True
+
         def start_run(config: str, flags: str) -> None:
-            gpu_memory = get_gpu_memory()
-            gpu = np.argmax(gpu_memory)  # Select GPU with most available VRAM.
+            if execute:
+                gpu_memory = get_gpu_memory()
+                gpu = np.argmax(gpu_memory)  # Select GPU with most available VRAM.
 
-            cmd = f'python Main.py train -c {config} {flags} '
-            if '--gpu' not in cmd:
-                cmd += f'--gpu {gpu}'
+                cmd = f'python Main.py train -c {config} {flags} '
+                if '--gpu' not in cmd:
+                    cmd += f'--gpu {gpu}'
 
-            sp.call(cmd.split())
+                sp.call(cmd.split())
 
         num_threads = self.experiment.experiment_args.n_jobs
         print(f'Constructing ThreadPool. Queue size: {len(self.files)} jobs, using {num_threads} threads')
 
-        # Work around to
-        original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-        pool = Pool(num_threads)
-        signal.signal(signal.SIGINT, original_sigint_handler)
-
         try:
+            tp = ThreadPoolExecutor(max_workers=num_threads)
+            job = list()
             for file in self.files:
-                pool.apply_async(start_run, (file, self.experiment.experiment_args.flags, ))
-            pool.close()
+                job.append(tp.submit(start_run, file, self.experiment.experiment_args.flags))
+
+            while not all(j.done() for j in job):
+                time.sleep(1)
+
         except KeyboardInterrupt:
-            # Outer exception handle for Ctrl + C
-            pool.terminate()
-            pool.join()
-        finally:
-            # Wait for all processes to finish.
-            pool.join()
+            print("Keyboard Interrupt. Giving workers time to terminate.")
+            execute = False
+
+            time.sleep(1)
+            print("Workers have exited.")
+
+        print('All processes have exited.')
+
 
     def __exit__(self, exc_type: typing.Any, exc_val: typing.Any, exc_tb: typing.Any) -> None:
         # Remove every used temporary file.
