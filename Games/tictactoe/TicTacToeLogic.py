@@ -61,9 +61,9 @@ class TicTacToeBoard:
             diags += [ self.board[i, i], self.board[ -i - 1, i ] ]
 
         concat = [ *cols, *rows, *diags ]
-        if np.min(concat) == -self.n:
+        if np.min(concat) == -self.size:
             return TicTacToeBoard.O
-        elif np.max(concat) == self.n:
+        elif np.max(concat) == self.size:
             return TicTacToeBoard.X
         else:
             return TicTacToeBoard.EMPTY
@@ -73,9 +73,9 @@ class TicTacToeBoard:
         for y in range(self.size):
             print(chr(y + ord('a')), "", end="")
         print("")
-        print("-" * self.n)
+        print("  --" + "--" * self.size + "-")
         for y in range(self.size):
-            print(y, "|", end="")
+            print(y, "| ", end="")
             for x in range(self.size):
                 piece = self.board[x, y]
                 if piece == TicTacToeBoard.O:
@@ -88,4 +88,4 @@ class TicTacToeBoard:
                     else:
                         print("- ", end="")
             print("|")
-        print("-" * self.n)
+        print("  --" + "--" * self.size + "-")

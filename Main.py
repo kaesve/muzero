@@ -16,11 +16,13 @@ from MuZero.models.DefaultMuZero import DefaultMuZero as MNet
 from MuZero.models.AEMuZero import DecoderMuZero as DMNet
 
 from Games.hex.HexGame import HexGame
+from Games.tictactoe.TicTacToeGame import TicTacToeGame
 from Games.othello.OthelloGame import OthelloGame
 from Games.gym.GymGame import GymGame
 from Games.atari.AtariGame import AtariGame
 
 import Experimenter
+import Agents
 
 
 def learnA0(g, content, run_name):
@@ -73,6 +75,8 @@ def game_from_name(name):
 
     if match_name == "hex":
         return HexGame(BOARD_SIZE)
+    elif match_name == "tictactoe":
+        return TicTacToeGame(BOARD_SIZE)
     elif match_name == "othello":
         return OthelloGame(BOARD_SIZE)
     elif match_name == "gym":
@@ -87,7 +91,6 @@ def game_from_name(name):
 
 if __name__ == "__main__":
     # Handle console arguments
-
     parser = argparse.ArgumentParser(description="A MuZero and AlphaZero implementation in Tensorflow.")
 
     mode_parsers = parser.add_subparsers(title="Modes")
@@ -97,8 +100,20 @@ if __name__ == "__main__":
 
     train_parser = mode_parsers.add_parser("train")
     train_parser.set_defaults(mode="train")
-    train_parser.add_argument("--game", default="gym")
-    train_parser.add_argument("--boardsize", "-s", type=int, default=6, help="Board size (if relevant)")
+    
+    player_choices = [ "manual", "random", "deterministic", "muzero", "alphazero" ]
+    play_parser = mode_parsers.add_parser("play")
+    play_parser.set_defaults(mode="play", debug=True, render=True, lograte=0, gpu=0)
+    play_parser.add_argument("--p1", choices=player_choices, default="manual", help="Player one")
+    play_parser.add_argument("--p1_config", choices=player_choices, default=None, help="Config file for player one")
+    play_parser.add_argument("--p2", choices=player_choices, default="manual", help="Player two")
+    play_parser.add_argument("--p2_config", choices=player_choices, default=None, help="Config file for player two")
+
+    # Single game modes
+    for p in [train_parser, play_parser]:
+        p.add_argument("--game", default="gym")
+        p.add_argument("--boardsize", "-s", type=int, default=6, help="Board size (if relevant)")
+
 
     # Common arguments
     for p in [experiment_parser, train_parser]:
@@ -133,8 +148,8 @@ if __name__ == "__main__":
                 content.recursive_update(override)
 
         BOARD_SIZE = args.boardsize
-
         game = game_from_name(args.game)
+
         run_name = args.run_name if args.run_name else get_run_name(content.name, content.architecture, args.game)
 
         if content.algorithm == "ALPHAZERO":
@@ -150,6 +165,29 @@ if __name__ == "__main__":
 
         print(f"Starting {b.type} experiment {b.name}, storing results in {b.output_directory}.")
         Experimenter.experiments[b.type](b)
+    
+    elif args.mode == "play":
+        BOARD_SIZE = args.boardsize
+        game = game_from_name(args.game)
+
+
+        if args.p1.upper() not in Agents.Players:
+            raise NotImplementedError(f"Did not specify a valid player one: {args.p1}")
+        p1 = Agents.Players[args.p1.upper()](game, args.p1_config)
+
+
+        if game.n_players == 1:
+            arena = Experimenter.Arena(game, p1)
+            arena.playGame(p1, True)
+        elif game.n_players == 2:
+            if args.p2.upper() not in Agents.Players:
+                raise NotImplementedError(f"Did not specify a valid player two: {args.p2}")
+            p2 = Agents.Players[args.p2.upper()](game)
+
+            arena = Experimenter.Arena(game, p1, p2)
+            arena.playTurnGame(p1, p2, True)
+
+        
 
     else:
         # Ad hoc code path. Use for quick tests

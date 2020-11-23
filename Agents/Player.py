@@ -116,20 +116,20 @@ class DeterministicPlayer(Player):
 class ManualPlayer(Player):
     name: str = "Manual"
 
-    def __init__(self, game, config) -> None:
+    def __init__(self, game, config: typing.Optional[str] = None) -> None:
         super().__init__(game, config)
         self.name = input("Input a player name: ")
 
     def act(self, state: GameState) -> int:
         mass_valid = self.game.getLegalMoves(state)
-        indices = np.where(mass_valid == 1)
+        indices = np.ravel(np.where(mass_valid == 1))
 
         move = None
         while move is None:
+            print("Available actions:", indices)
             move_str = input("Input an integer indicating a move:")
-            if move_str.isdigit():
-                if int(move_str) in indices:
-                    move = int(move_str)
+            if move_str.isdigit() and int(move_str) in indices:
+                move = int(move_str)
 
         return move
 
