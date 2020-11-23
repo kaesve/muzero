@@ -6,9 +6,13 @@
   "checkpoint_resolution": "(int > 0) Number indicating: evaluate each 'x' models from my 'N' model checkpoints for an evaluation tournament",
   "num_repeat": "(int > 0) Repetition factor for repeating an experiment",
   "num_trials": "(int > 0) Number of evaluation runs to perform when testing a model/ performing an evaluation tournament",
+  "num_opponents": "(int > 0 or null) Number of games to play per player in adversarial games, null is exhaustive",
+  "n_jobs": "(int > 0) Number of threads to use if experiment runs asynchronously",
+  "flags": "(str) console flags like '--debug' or '--render' to add when running ablations",
 
   "environment": {
     "name": "(str) Choice of environment to test on @see Games.games for all available implementations",
+    "console": "(str) Console argument to this environment, e.g., '--game hex' or '--game atari_breakout'",
     "args": "(dict) Environment specific arguments"
   },
 

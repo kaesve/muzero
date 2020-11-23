@@ -1,6 +1,7 @@
 """
 Initialization module to define the available Game implementations in the 'Games' scope.
 """
+from .Game import Game
 from .atari.AtariGame import AtariGame
 from .gym.GymGame import GymGame
 from .gym.ImageGymGame import ImageGymGame

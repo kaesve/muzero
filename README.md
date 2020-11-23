@@ -24,7 +24,6 @@ Our interface also provides sufficient abstraction to extend the MuZero or Alpha
  
 ## TODOs
  - Running a large number of empirical tests. Including comparing AlphaZero against MuZero on Atari and Hex.
- - Experiment function for testing models over multiple checkpoints
  - Multiprocessing for self-play and pitting (no concurrency of weight-updates and self-play!).
  - Minimal user/ developer documentation for adapting our code.
  - (Continuous Alpha/ MuZero)

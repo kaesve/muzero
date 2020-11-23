@@ -1,5 +1,6 @@
 from itertools import product
 from os import listdir
+import subprocess as sp
 import typing
 
 import Coach
@@ -28,6 +29,16 @@ def create_parameter_grid(content: DotDict) -> typing.List:
         grid.append(DotDict(zip(keys, v)))
 
     return grid
+
+
+def get_gpu_memory():
+    cmd = "nvidia-smi --query-gpu=memory.free --format=csv"
+    output = sp.check_output(cmd.split())
+    memory_free_info = (output.decode('ascii').split('\n')[:-1])[1:]
+
+    memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+
+    return memory_free_values
 
 
 def get_player_pool(player_configs: typing.List, by_checkpoint: bool = False, resolution: int = 1) -> typing.List:
