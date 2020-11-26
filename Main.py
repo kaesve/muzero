@@ -86,10 +86,11 @@ def game_from_name(name):
     elif match_name == "pendulum":
         def time_limit_wrapper(env):
             return TimeLimit(env, 200)
+
         def discretize_wrapper(env):
             return DiscretizeAction(env, 3)
 
-        return GymGame("Pendulum-v0", [ time_limit_wrapper, discretize_wrapper ])
+        return GymGame("Pendulum-v0", [time_limit_wrapper, discretize_wrapper])
     elif match_name.startswith("gym_"):
         return GymGame(name[len("gym_"):])
     elif match_name.startswith("atari_"):
@@ -109,8 +110,8 @@ if __name__ == "__main__":
 
     train_parser = mode_parsers.add_parser("train")
     train_parser.set_defaults(mode="train")
-    
-    player_choices = [ "manual", "random", "deterministic", "muzero", "alphazero" ]
+
+    player_choices = ["manual", "random", "deterministic", "muzero", "alphazero"]
     play_parser = mode_parsers.add_parser("play")
     play_parser.set_defaults(mode="play", debug=True, render=True, lograte=0, gpu=0)
     play_parser.add_argument("--p1", choices=player_choices, default="manual", help="Player one")
@@ -122,7 +123,6 @@ if __name__ == "__main__":
     for p in [train_parser, play_parser]:
         p.add_argument("--game", default="gym")
         p.add_argument("--boardsize", "-s", type=int, default=6, help="Board size (if relevant)")
-
 
     # Common arguments
     for p in [experiment_parser, train_parser]:
@@ -149,11 +149,7 @@ if __name__ == "__main__":
         content = DotDict.from_json(args.config[0])
         for override in args.config[1:]:
             sub_config = DotDict.from_json(override)
-            if 'ablations' in sub_config:
-                content.recursive_update(sub_config.ablations[int(args.config[2])])
-                break
-            else:
-                content.recursive_update(override)
+            content.recursive_update(override)
 
         BOARD_SIZE = args.boardsize
         game = game_from_name(args.game)
@@ -173,16 +169,14 @@ if __name__ == "__main__":
 
         print(f"Starting {b.type} experiment {b.name}, storing results in {b.output_directory}.")
         Experimenter.experiments[b.type](b)
-    
+
     elif args.mode == "play":
         BOARD_SIZE = args.boardsize
         game = game_from_name(args.game)
 
-
         if args.p1.upper() not in Agents.Players:
             raise NotImplementedError(f"Did not specify a valid player one: {args.p1}")
         p1 = Agents.Players[args.p1.upper()](game, args.p1_config)
-
 
         if game.n_players == 1:
             arena = Experimenter.Arena(game, p1, None)
@@ -195,7 +189,7 @@ if __name__ == "__main__":
             arena = Experimenter.Arena(game, p1, p2)
             arena.playTurnGame(p1, p2, True)
 
-        
+
 
     else:
         # Ad hoc code path. Use for quick tests

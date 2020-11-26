@@ -14,7 +14,7 @@ sys.path.append('../../..')
 
 class GymGame(Game):
 
-    def __init__(self, env_name: str, wrappers: list = []) -> None:
+    def __init__(self, env_name: str, wrappers: typing.Tuple = ()) -> None:
         super().__init__(n_players=1)
         self.env_name = env_name
         self.wrappers = wrappers

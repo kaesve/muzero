@@ -22,16 +22,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Ctrl C now works with multithreading">
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="merge">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/Parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Parameters.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/tictactoe/TicTacToeGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/tictactoe/TicTacToeGame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/tictactoe/TicTacToeLogic.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/tictactoe/TicTacToeLogic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Games/gym/GymGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/gym/GymGame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/game_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/game_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,7 +95,7 @@
       <workItem from="1605792286923" duration="51284000" />
       <workItem from="1606058519236" duration="30291000" />
       <workItem from="1606306778862" duration="10000" />
-      <workItem from="1606380032595" duration="7307000" />
+      <workItem from="1606380032595" duration="9586000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -207,7 +202,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606135225063</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="merge">
+      <created>1606401514833</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1606401514833</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -241,7 +243,8 @@
     <MESSAGE value="Experimenter development. TODO Ablation execution logic. Parameter grid and tourneys done." />
     <MESSAGE value="Base Asynchronous Parameter grid evaluation tool." />
     <MESSAGE value="Ctrl C now works with multithreading" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ctrl C now works with multithreading" />
+    <MESSAGE value="merge" />
+    <option name="LAST_COMMIT_MESSAGE" value="merge" />
   </component>
   <component name="WindowStateProjectService">
     <state x="-1368" y="613" key="#Deployment" timestamp="1606058531219">
@@ -262,10 +265,11 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="558" y="83" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1605494205585" />
-    <state x="-1736" y="521" key="DiffContextDialog" timestamp="1605546318039">
-      <screen x="-1920" y="435" width="1920" height="1040" />
+    <state x="184" y="0" width="1548" height="960" key="DiffContextDialog" timestamp="1606401506607">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="-1736" y="521" key="DiffContextDialog/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546318039" />
+    <state x="184" y="0" width="1548" height="960" key="DiffContextDialog/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606401506607" />
     <state x="741" y="275" key="FileChooserDialogImpl" timestamp="1605486696665">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -280,10 +284,10 @@
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606138758680" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1606135231126">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1606401517639">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606135231126" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606401517639" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1606125953095" />
     <state x="846" y="251" key="ftp.server.browser" timestamp="1606138507333">
       <screen x="0" y="0" width="1920" height="1040" />
