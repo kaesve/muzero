@@ -22,24 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Experimenter development. TODO Ablation execution logic. Parameter grid and tourneys done.">
-      <change afterPath="$PROJECT_DIR$/Experimenter/Parameters.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Base Asynchronous Parameter grid evaluation tool.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/CheckpointTourney_AlphaZeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CheckpointTourney_AlphaZeroHex.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Gym_MuZeroVsRandom.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Gym_MuZeroVsRandom.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/format.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/experimenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/experimenter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/experimenter_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/experimenter_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/storage.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/storage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/Parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Parameters.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,7 +91,7 @@
       <workItem from="1605486701874" duration="9318000" />
       <workItem from="1605545725643" duration="57680000" />
       <workItem from="1605792286923" duration="51284000" />
-      <workItem from="1606058519236" duration="17806000" />
+      <workItem from="1606058519236" duration="21241000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -199,7 +184,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605989929424</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Base Asynchronous Parameter grid evaluation tool.">
+      <created>1606125951789</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1606125951789</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -231,7 +223,8 @@
     <MESSAGE value="Tourney functionality done." />
     <MESSAGE value="tourney .json doc" />
     <MESSAGE value="Experimenter development. TODO Ablation execution logic. Parameter grid and tourneys done." />
-    <option name="LAST_COMMIT_MESSAGE" value="Experimenter development. TODO Ablation execution logic. Parameter grid and tourneys done." />
+    <MESSAGE value="Base Asynchronous Parameter grid evaluation tool." />
+    <option name="LAST_COMMIT_MESSAGE" value="Base Asynchronous Parameter grid evaluation tool." />
   </component>
   <component name="WindowStateProjectService">
     <state x="-1368" y="613" key="#Deployment" timestamp="1606058531219">
@@ -269,11 +262,11 @@
     </state>
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1605989930982">
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1606125953095">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605711578868" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605989930982" />
+    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1606125953095" />
     <state x="624" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1605486504267">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
