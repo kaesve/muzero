@@ -27,7 +27,7 @@ class AtariState(GymState):
 
 
 class DiscretizeAction(gym.ActionWrapper):
-    r"""Discretize the continuous action space of the environment into n steps.
+    """ Factorizes the continuous action space of the environment into n steps.
     """
 
     def __init__(self, env, n):
@@ -49,3 +49,6 @@ class DiscretizeAction(gym.ActionWrapper):
         high = self.env.action_space.high
         action = low + (high - low) * action / (self.action_space.n - 1)
         return action
+
+    def reverse_action(self, action):
+        pass

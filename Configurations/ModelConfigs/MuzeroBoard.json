@@ -29,9 +29,9 @@
     "minimum_reward": -1,
     "maximum_reward": 1,
 
-    "checkpoint": "./out/MuZeroOut/",
+    "checkpoint": "./out/MuZeroOut/board",
     "load_model": false,
-    "load_folder_file": ["./out/MuZeroOut/", "latest.pth.tar"],
+    "load_folder_file": ["./out/MuZeroOut/board", "latest.pth.tar"],
     "selfplay_buffer_window": 20,
 
     "temperature_schedule": {

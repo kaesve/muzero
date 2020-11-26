@@ -22,10 +22,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="merge">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="DiscreteizeAction fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Games/gym/GymGame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Games/gym/GymGame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/GymNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/GymNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroBoard.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroBoard.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Testing/unit_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/Testing/unit_tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/game_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/game_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -95,7 +99,7 @@
       <workItem from="1605792286923" duration="51284000" />
       <workItem from="1606058519236" duration="30291000" />
       <workItem from="1606306778862" duration="10000" />
-      <workItem from="1606380032595" duration="9586000" />
+      <workItem from="1606380032595" duration="15006000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -209,7 +213,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606401514833</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="DiscreteizeAction fix">
+      <created>1606404155609</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1606404155609</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -244,7 +255,8 @@
     <MESSAGE value="Base Asynchronous Parameter grid evaluation tool." />
     <MESSAGE value="Ctrl C now works with multithreading" />
     <MESSAGE value="merge" />
-    <option name="LAST_COMMIT_MESSAGE" value="merge" />
+    <MESSAGE value="DiscreteizeAction fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="DiscreteizeAction fix" />
   </component>
   <component name="WindowStateProjectService">
     <state x="-1368" y="613" key="#Deployment" timestamp="1606058531219">
@@ -256,9 +268,10 @@
     </state>
     <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605953987305" />
     <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1605988004236" />
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1606113552746">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="-1154" y="671" key="#com.intellij.ide.util.MemberChooser" timestamp="1606404195634">
+      <screen x="-1920" y="435" width="1920" height="1040" />
     </state>
+    <state x="-1154" y="671" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606404195634" />
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605724265868" />
     <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1606113552746" />
     <state x="558" y="83" key="CommitChangelistDialog2" timestamp="1605494205585">
@@ -284,9 +297,10 @@
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606138758680" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605487235022" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2" timestamp="1606401517639">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2" timestamp="1606404157053">
+      <screen x="-1920" y="435" width="1920" height="1040" />
     </state>
+    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606404157053" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606401517639" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1606125953095" />
     <state x="846" y="251" key="ftp.server.browser" timestamp="1606138507333">

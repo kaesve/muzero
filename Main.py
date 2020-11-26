@@ -84,13 +84,10 @@ def game_from_name(name):
     elif match_name == "gym" or match_name == "cartpole":
         return GymGame("CartPole-v1")
     elif match_name == "pendulum":
-        def time_limit_wrapper(env):
-            return TimeLimit(env, 200)
-
         def discretize_wrapper(env):
-            return DiscretizeAction(env, 3)
+            return DiscretizeAction(env, 15)
 
-        return GymGame("Pendulum-v0", [time_limit_wrapper, discretize_wrapper])
+        return GymGame("Pendulum-v0", [discretize_wrapper])
     elif match_name.startswith("gym_"):
         return GymGame(name[len("gym_"):])
     elif match_name.startswith("atari_"):
