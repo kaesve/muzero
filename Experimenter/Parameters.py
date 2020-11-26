@@ -61,7 +61,8 @@ class AblationAnalysis:
         def start_run(config: str, flags: str) -> None:
             if execute:
                 gpu_memory = get_gpu_memory()
-                gpu = np.argmax(gpu_memory)  # Select GPU with most available VRAM.
+                gpu = np.argmax(gpu_memory)
+                print(f"Best GPU to use: {gpu} with {gpu_memory[gpu]} MiB available VRAM.")
 
                 cmd = f'python Main.py train -c {config} {flags} '
                 if '--gpu' not in cmd:
@@ -76,6 +77,7 @@ class AblationAnalysis:
             tp = ThreadPoolExecutor(max_workers=num_threads)
             job = list()
             for file in self.files:
+                time.sleep(1)  # Give threads some time to start up and select GPU.
                 job.append(tp.submit(start_run, file, self.experiment.experiment_args.flags))
 
             while not all(j.done() for j in job):
@@ -90,7 +92,6 @@ class AblationAnalysis:
 
         print('All processes have exited.')
 
-
     def __exit__(self, exc_type: typing.Any, exc_val: typing.Any, exc_tb: typing.Any) -> None:
         # Remove every used temporary file.
         for file in self.files:
@@ -104,5 +105,6 @@ class AblationAnalysis:
 def run_ablations(experiment: ExperimentConfig) -> None:
 
     with AblationAnalysis(experiment) as ab:
+
         ab.run()
 

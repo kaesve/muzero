@@ -52,7 +52,7 @@ class TicTacToeGame(Game):
     def getNextState(self, state: GameState, action: int, **kwargs) -> typing.Tuple[GameState, float]:
         # if player takes action on board, return next (board,player)
         # action must be a valid move
-        if action == self.n * self.n: # concede
+        if action == self.n * self.n:  # concede
             state.done = True
             state.player = -state.player
             return state, -1
@@ -122,13 +122,13 @@ class TicTacToeGame(Game):
 
         symmetries = [
             (board, pi),
-            
+
             # Mirrors
             (np.flip(board, 0), list(np.flip(pi_board, 0).ravel()) + [pi[-1]]),
             (np.flip(board, 1), list(np.flip(pi_board, 1).ravel()) + [pi[-1]]),
-            
+
             # Rotational symmetries
-            *[ (np.rot90(board, r), list(np.rot90(pi_board, r).ravel()) + [pi[-1]]) for r in range(4) ],
+            *[(np.rot90(board, r), list(np.rot90(pi_board, r).ravel()) + [pi[-1]]) for r in range(4)],
         ]
 
         return symmetries

@@ -5,8 +5,11 @@
       <paths name="phlogiston@6666">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/s2420384/muzero" local="$PROJECT_DIR$" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="out" />
+          </excludedPaths>
         </serverdata>
       </paths>
       <paths name="runite@6000">

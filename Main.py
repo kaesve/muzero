@@ -135,9 +135,8 @@ if __name__ == "__main__":
     debugger.RENDER = args.render
     debugger.LOG_RATE = args.lograte
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
-
     if args.mode == "train":
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
         content = DotDict.from_json(args.config[0])
         for override in args.config[1:]:
             sub_config = DotDict.from_json(override)

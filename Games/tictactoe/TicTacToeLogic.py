@@ -14,9 +14,9 @@ import numpy as np
 
 
 class TicTacToeBoard:
-    O = -1    # 1
-    X =  1    # 2
-    EMPTY = 0 # 3
+    O = -1  # 1
+    X = 1  # 2
+    EMPTY = 0  # 3
 
     def __init__(self, board_size):
         self.board = np.full((board_size, board_size), TicTacToeBoard.EMPTY)  # Used to be represented by a dict.
@@ -48,19 +48,18 @@ class TicTacToeBoard:
         return TicTacToeBoard.O
 
     def get_empty_coordinates(self):
-        return [ (i, j) for i in range(self.size) for j in range(self.size) if self.is_empty((i, j)) ]
+        return [(i, j) for i in range(self.size) for j in range(self.size) if self.is_empty((i, j))]
 
     def check_win(self):
         has_won = False
         cols = np.sum(self.board, axis=0)
         rows = np.sum(self.board, axis=1)
-        diags = np.array([ 0, 0 ])
-
+        diags = np.array([0, 0])
 
         for i in range(self.size):
-            diags += [ self.board[i, i], self.board[ -i - 1, i ] ]
+            diags += [self.board[i, i], self.board[-i - 1, i]]
 
-        concat = [ *cols, *rows, *diags ]
+        concat = [*cols, *rows, *diags]
         if np.min(concat) == -self.size:
             return TicTacToeBoard.O
         elif np.max(concat) == self.size:

@@ -3,8 +3,8 @@
   "experiment": "TRAIN_GRID",
   "output_dir": "Results",
 
-  "num_repeat": 2,
-  "n_jobs": 2,
+  "num_repeat": 10,
+  "n_jobs": 24,
   "flags": "--debug",
 
   "environment": {
@@ -28,7 +28,8 @@
       },
 
       "net_args": {
-        "latent_depth": [4, 8]
+        "latent_depth": [4, 8],
+        "dynamics_penalty": [1, 0.1, 0.01]
       }
     }
   }

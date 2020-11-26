@@ -5,13 +5,13 @@
 
   "args": {
     "num_selfplay_iterations": 100,
-    "num_episodes": 100,
-    "num_gradient_steps": 300,
+    "num_episodes": 50,
+    "num_gradient_steps": 100,
     "max_episode_moves": 500,
     "max_trial_moves": 500,
     "pitting": true,
-    "pitting_trials": 30,
-    "pit_acceptance_ratio": 0.55,
+    "pitting_trials": 10,
+    "pit_acceptance_ratio": 0.0,
     "dirichlet_alpha": 0.3,
     "exploration_fraction": 0.25,
     "max_buffer_size": 200000,
@@ -61,7 +61,7 @@
     "num_dense": 2,
     "size_dense": 256,
     "activation": "leakyrelu",
-    "support_size": 0,
+    "support_size": 3,
     "observation_length": 5
   }
 }
