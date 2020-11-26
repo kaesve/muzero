@@ -14,11 +14,14 @@ sys.path.append('../../..')
 
 class GymGame(Game):
 
-    def __init__(self, env_name: str) -> None:
+    def __init__(self, env_name: str, wrappers: list = []) -> None:
         super().__init__(n_players=1)
         self.env_name = env_name
+        self.wrappers = wrappers
 
         dummy = gym.make(env_name)
+        for w in wrappers:
+            dummy = w(dummy)
         self.dimensions = dummy.observation_space.shape
         self.actions = dummy.action_space.n
 
@@ -30,6 +33,8 @@ class GymGame(Game):
 
     def getInitialState(self) -> GymState:
         env = gym.make(self.env_name)
+        for w in self.wrappers:
+            env = w(env)
 
         next_state = GymState(canonical_state=env.reset(), observation=None, action=-1, done=False, player=1, env=env)
         next_state.observation = self.buildObservation(next_state)

@@ -7,6 +7,8 @@ import argparse
 import utils.debugging as debugger
 from utils.debugging import *
 from utils.storage import DotDict
+from utils.game_utils import DiscretizeAction
+from gym.wrappers import TimeLimit
 
 from AlphaZero.AlphaCoach import AlphaZeroCoach
 from MuZero.MuCoach import MuZeroCoach
@@ -79,10 +81,17 @@ def game_from_name(name):
         return TicTacToeGame(BOARD_SIZE)
     elif match_name == "othello":
         return OthelloGame(BOARD_SIZE)
-    elif match_name == "gym":
+    elif match_name == "gym" or match_name == "cartpole":
         return GymGame("CartPole-v1")
+    elif match_name == "pendulum":
+        def time_limit_wrapper(env):
+            return TimeLimit(env, 200)
+        def discretize_wrapper(env):
+            return DiscretizeAction(env, 3)
+
+        return GymGame("Pendulum-v0", [ time_limit_wrapper, discretize_wrapper ])
     elif match_name.startswith("gym_"):
-        return GymGame(name[len("gymS"):])
+        return GymGame(name[len("gym_"):])
     elif match_name.startswith("atari_"):
         game_name = match_name[len("atari_"):]
         game_name = game_name.capitalize() + "NoFrameskip-v4"
@@ -176,7 +185,7 @@ if __name__ == "__main__":
 
 
         if game.n_players == 1:
-            arena = Experimenter.Arena(game, p1)
+            arena = Experimenter.Arena(game, p1, None)
             arena.playGame(p1, True)
         elif game.n_players == 2:
             if args.p2.upper() not in Agents.Players:
