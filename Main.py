@@ -3,12 +3,12 @@ File to perform small test runs on the codebase for both AlphaZero and MuZero.
 """
 from datetime import datetime
 import argparse
+from tensorflow.python.client import device_lib
 
 import utils.debugging as debugger
 from utils.debugging import *
 from utils.storage import DotDict
 from utils.game_utils import DiscretizeAction
-from gym.wrappers import TimeLimit
 
 from AlphaZero.AlphaCoach import AlphaZeroCoach
 from MuZero.MuCoach import MuZeroCoach
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     debugger.LOG_RATE = args.lograte
 
     if args.mode == "train":
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
+
         content = DotDict.from_json(args.config[0])
         for override in args.config[1:]:
             sub_config = DotDict.from_json(override)
@@ -153,12 +153,20 @@ if __name__ == "__main__":
 
         run_name = args.run_name if args.run_name else get_run_name(content.name, content.architecture, args.game)
 
-        if content.algorithm == "ALPHAZERO":
-            learnA0(game, content, run_name)
-        elif content.algorithm == "MUZERO":
-            learnM0(game, content, run_name)
+        # Set up tensorflow backend.
+        if int(args.gpu) >= 0:
+            device = tf.DeviceSpec(device_type='GPU', device_index=int(args.gpu))
         else:
-            raise NotImplementedError(f"Cannot train on algorithm '{content.algorithm}'")
+            device = tf.DeviceSpec(device_type='CPU', device_index=0)
+
+        with tf.device(device.to_string()):
+
+            if content.algorithm == "ALPHAZERO":
+                learnA0(game, content, run_name)
+            elif content.algorithm == "MUZERO":
+                learnM0(game, content, run_name)
+            else:
+                raise NotImplementedError(f"Cannot train on algorithm '{content.algorithm}'")
 
     elif args.mode == "experiment":
         b = Experimenter.ExperimentConfig(args.config[0])

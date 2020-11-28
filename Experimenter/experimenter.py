@@ -159,6 +159,9 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
             player_object.model.load_checkpoint(*content)
         return player_object
 
+    if num_opponents is None:
+        num_opponents = len(player_pool)
+
     # We require a work around to copy player objects as we need to keep memory usage at a minimum
     # when testing multiple neural networks. We do this by reusing models and loading in weights.
     # The copy object is intended to prevent clashing of weights when agent class references are equal.

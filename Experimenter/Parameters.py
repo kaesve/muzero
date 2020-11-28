@@ -65,7 +65,7 @@ class AblationAnalysis:
                 print(f"Best GPU to use: {gpu} with {gpu_memory[gpu]} MiB available VRAM.")
 
                 cmd = f'python Main.py train -c {config} {flags} '
-                if '--gpu' not in cmd:
+                if '--gpu' not in cmd:  # If CUDA should not be used (CPU) --> set '--cpu -1' in config flags.
                     cmd += f'--gpu {gpu}'
 
                 sp.call(cmd.split())

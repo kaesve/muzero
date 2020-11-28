@@ -3,21 +3,22 @@
   "experiment": "TOURNEY",
   "output_dir": "Results",
 
-  "num_repeat": 5,
-  "num_trials": 5,
+  "num_repeat": 10,
+  "num_trials": 10,
+  "checkpoint_resolution": 1,
   "num_opponents": null,
 
   "environment": {
-    "name": "HEX",
+    "name": "TICTACTOE",
     "args": {
-      "n": 5
+      "n": 6
     }
   },
 
   "players": [
     {
       "name": "MUZERO",
-      "config": "Experimenter/MuZeroConfigs/default.json"
+      "config": "Configurations/ModelConfigs/MuzeroBoard.json"
     },
     {
       "name": "RANDOM",
