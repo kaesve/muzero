@@ -22,29 +22,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Fix CPU execution">
-      <change afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_d.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_kl.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MuZero/implementations/BlindMuZero.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="MDP Analysis">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/GymNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/GymNetwork.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/Player.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/Player.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Agents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AlphaZero/models/DefaultAlphaZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/AlphaZero/implementations/DefaultAlphaZero.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblations.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/CartpoleAblationsDynamics.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/experimenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/experimenter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MuZero/MuNeuralNet.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/MuNeuralNet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MuZero/models/AEMuZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/implementations/AEMuZero.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MuZero/models/DefaultMuZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/implementations/DefaultMuZero.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Testing/unit_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/Testing/unit_tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/experimenter_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/experimenter_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/loss_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/loss_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,7 +100,7 @@
       <workItem from="1605792286923" duration="51284000" />
       <workItem from="1606058519236" duration="30291000" />
       <workItem from="1606306778862" duration="10000" />
-      <workItem from="1606380032595" duration="110209000" />
+      <workItem from="1606380032595" duration="112090000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -255,7 +235,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606549460473</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="MDP Analysis">
+      <created>1606832992848</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1606832992848</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -294,7 +281,8 @@
     <MESSAGE value="DiscreteizeAction fix" />
     <MESSAGE value="Pendulum" />
     <MESSAGE value="Fix CPU execution" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix CPU execution" />
+    <MESSAGE value="MDP Analysis" />
+    <option name="LAST_COMMIT_MESSAGE" value="MDP Analysis" />
   </component>
   <component name="WindowStateProjectService">
     <state x="-1368" y="613" key="#Deployment" timestamp="1606058531219">
@@ -335,10 +323,10 @@
     <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606138758680" />
     <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1606587434784" />
-    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2" timestamp="1606411013182">
+    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2" timestamp="1606832996428">
       <screen x="-1920" y="435" width="1920" height="1040" />
     </state>
-    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606411013182" />
+    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606832996428" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606401517639" />
     <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1606125953095" />
     <state x="846" y="251" key="ftp.server.browser" timestamp="1606138507333">
