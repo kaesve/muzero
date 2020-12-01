@@ -1,5 +1,5 @@
 {
-  "name": "CartPole_Base",
+  "name": "MC_Base",
   "algorithm": "MUZERO",
   "architecture": "Gym",
 
@@ -29,9 +29,9 @@
     "minimum_reward": null,
     "maximum_reward": null,
 
-    "checkpoint": "./out/MuZeroOut/",
+    "checkpoint": "./out/mc_out/latent_3/",
     "load_model": false,
-    "load_folder_file": ["./out/MuZeroOut/", "latest.pth.tar"],
+    "load_folder_file": ["./out/mc_out/latent_3/", "latest.pth.tar"],
     "selfplay_buffer_window": 10,
 
     "temperature_schedule": {
@@ -52,7 +52,7 @@
     "dropout": 0.0,
     "batch_size": 128,
     "cuda": false,
-    "latent_depth": 8,
+    "latent_depth": 3,
     "num_channels": 256,
     "num_towers": 3,
     "num_dense": 2,

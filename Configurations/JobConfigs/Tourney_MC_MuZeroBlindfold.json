@@ -1,0 +1,41 @@
+{
+  "name": "MC_BlindfoldMuZero_l4",
+  "experiment": "TOURNEY",
+  "output_dir": "Results",
+
+  "num_repeat": 1,
+  "num_trials": 50,
+  "checkpoint_resolution": 1,
+  "num_opponents": null,
+  "return_data": true,
+
+  "environment": {
+    "name": "GYM",
+    "args": {
+      "env_name": "MountainCar-v0"
+    }
+  },
+
+  "players": [
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 1 }
+    },
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 5 }
+    },
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 10 }
+    },
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 50 }
+    },
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 200 }
+    }
+  ]
+}

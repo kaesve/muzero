@@ -93,7 +93,7 @@ class MuZeroGymNetwork:
         fc_sequence = self.crafter.dense_sequence(self.args.num_dense, observations)
 
         latent_state = Dense(self.latents, activation='linear', name='s_0')(fc_sequence)
-        latent_state = Activation('tanh')(latent_state) if self.latents <= 2 else MinMaxScaler()(latent_state)
+        latent_state = Activation('tanh')(latent_state) if self.latents <= 3 else MinMaxScaler()(latent_state)
         latent_state = Reshape((self.latents, 1))(latent_state)
 
         return latent_state  # 2-dimensional 1-time step latent state. (Encodes history of images into one state).
@@ -103,7 +103,7 @@ class MuZeroGymNetwork:
         fc_sequence = self.crafter.dense_sequence(self.args.num_dense, stacked)
 
         latent_state = Dense(self.latents, activation='linear', name='s_next')(fc_sequence)
-        latent_state = Activation('tanh')(latent_state) if self.latents <= 2 else MinMaxScaler()(latent_state)
+        latent_state = Activation('tanh')(latent_state) if self.latents <= 3 else MinMaxScaler()(latent_state)
         latent_state = Reshape((self.latents, 1))(latent_state)
 
         r = Dense(1, activation='linear', name='r')(fc_sequence) \

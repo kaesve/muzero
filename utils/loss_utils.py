@@ -105,7 +105,7 @@ def scalar_to_support(x: np.ndarray, support_size: int,
         return x
 
     # Reduce the scale
-    transformed = np.clip(reward_transformer(x, **kwargs), a_min=-support_size, a_max=support_size)
+    transformed = np.clip(reward_transformer(x, **kwargs), a_min=-support_size, a_max=support_size - 1e-8)
     floored = np.floor(transformed).astype(int)  # Lower-bound support integer
     prob = transformed - floored                 # Proportion between adjacent integers
 

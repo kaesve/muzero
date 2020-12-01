@@ -171,7 +171,7 @@ class MuZeroNeuralNet(ABC):
     @abstractmethod
     def initial_inference(self, observations: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray, float]:
         """
-        Combines the prediction and representation models into one call. This reduces
+        Combines the prediction and representation implementations into one call. This reduces
         overhead and results in a significant speed up.
 
         :param observations: A game specific (stacked) tensor of observations of the environment at step t: o_t.
@@ -185,7 +185,7 @@ class MuZeroNeuralNet(ABC):
     def recurrent_inference(self, latent_state: np.ndarray, action: int) -> typing.Tuple[float, np.ndarray,
                                                                                          np.ndarray, float]:
         """
-        Combines the prediction and dynamics models into one call. This reduces
+        Combines the prediction and dynamics implementations into one call. This reduces
         overhead and results in a significant speed up.
 
         :param latent_state: A neural encoding of the environment at step k: s_k.
@@ -230,7 +230,7 @@ class MuZeroNeuralNet(ABC):
 
         :param folder: str Path to model weight files
         :param filename: str Base name of model weight files
-        :raises: FileNotFoundError if one of the three models are missing or if path is incorrectly specified.
+        :raises: FileNotFoundError if one of the three implementations are missing or if path is incorrectly specified.
         """
         representation_path = os.path.join(folder, 'r_' + filename)
         dynamics_path = os.path.join(folder, 'd_' + filename)
@@ -246,3 +246,7 @@ class MuZeroNeuralNet(ABC):
         self.neural_net.encoder.load_weights(representation_path)
         self.neural_net.dynamics.load_weights(dynamics_path)
         self.neural_net.predictor.load_weights(predictor_path)
+
+        if hasattr(self.neural_net, 'decoder'):
+            decoder_path = os.path.join(folder, 'decoder_' + filename)
+            self.neural_net.decoder.load_weights(decoder_path)

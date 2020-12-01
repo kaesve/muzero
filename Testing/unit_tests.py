@@ -306,7 +306,7 @@ class TestHexMuZero(unittest.TestCase):
 
     def test_combined_model(self):
         # The prediction and dynamics model can be combined into one computation graph.
-        # This should be faster than calling the models separately. This test makes
+        # This should be faster than calling the implementations separately. This test makes
         # sure that the output is still the same, and also shows the time difference.
 
         batch = 128

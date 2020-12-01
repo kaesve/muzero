@@ -43,7 +43,7 @@ def get_gpu_memory():
 
 def get_player_pool(player_configs: typing.List, by_checkpoint: bool = False, resolution: int = 1) -> typing.List:
     """
-    Build up a player pool of the form (Player-Class, details) where details is either None for non parametric models
+    Build up a player pool of the form (Player-Class, details) where details is either None for non parametric implementations
     or an unpacked tuple of a model's configuration path and filename (i.e., where to find its data/ weights).
 
     If an agent is non-parametric, its player representation will look like: (PlayerClass, None)
@@ -55,7 +55,7 @@ def get_player_pool(player_configs: typing.List, by_checkpoint: bool = False, re
     player, otherwise we only use the latest one (specified in the player args).
 
     We do not make copy's of the Agent classes/ interface to cleverly reuse objects to save memory requirements
-    when using large models.
+    when using large implementations.
 
     :param player_configs: List of base player configs. This represents the base agent interface/ data structure.
     :param by_checkpoint: bool Whether to load in all available checkpoints as players.

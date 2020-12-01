@@ -8,7 +8,7 @@
             <mapping deploy="/home/s2420384/muzero" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="out" />
+            <excludedPath local="true" path="$PROJECT_DIR$/out" />
           </excludedPaths>
         </serverdata>
       </paths>

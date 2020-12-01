@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from itertools import combinations
 import sys
 import os
+import pickle
 import typing
 from datetime import datetime
 
@@ -23,7 +24,7 @@ from utils.experimenter_utils import create_parameter_grid, get_player_pool
 class ExperimentConfig(object):
     """
     Class to store and unpack data for performing experiments.
-    This data structure should only provide an interface for functions to use trained models
+    This data structure should only provide an interface for functions to use trained implementations
     or player and environment interfaces.
     """
 
@@ -31,7 +32,7 @@ class ExperimentConfig(object):
         """
         Initialize the experiment data container using a string path to a .json settings file.
         Not all variables are initialized directly (require an explicit call to construct) seeing as
-        this may bloat the memory with large models when performing a large number of experiments sequentially.
+        this may bloat the memory with large implementations when performing a large number of experiments sequentially.
 
         :param experiment_file: str Path to .json file containing experiment details.
         """
@@ -88,7 +89,7 @@ def perform_tournament(experiment: ExperimentConfig, by_checkpoint: bool = True)
     Otherwise we just take the (latest) model specified in the config.
 
     The experiment config must contain a 'checkpoint_resolution' integer argument to indicate a step to omit some of
-    the checkpoints to reduce computation time --- i.e., use every 'checkpoint_resolution's model of x models.
+    the checkpoints to reduce computation time --- i.e., use every 'checkpoint_resolution's model of x implementations.
 
     We expect model checkpoint files to be unaltered from the source code, meaning the format follows:
      - prefix_checkpoint_(int).pth.tar
@@ -100,7 +101,8 @@ def perform_tournament(experiment: ExperimentConfig, by_checkpoint: bool = True)
     # Collect player configurations
     player_checkpoint_pool = get_player_pool(experiment.player_configs, by_checkpoint=by_checkpoint,
                                              resolution=args.checkpoint_resolution)
-    results = tourney(player_checkpoint_pool, experiment.game, args.num_repeat, args.num_trials, args.num_opponents)
+    results, trajectories = tourney(player_checkpoint_pool, experiment.game, args.num_repeat,
+                                    args.num_trials, args.num_opponents, args.return_data)
 
     # Save results to output file.
     dt = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -110,9 +112,13 @@ def perform_tournament(experiment: ExperimentConfig, by_checkpoint: bool = True)
     })
     data.to_json(experiment.output_directory + f'{experiment.name}_{dt}.json')
 
+    if trajectories:
+        with open(experiment.output_directory + f'{experiment.name}_{dt}.out', 'wb') as f:
+            pickle.dump(trajectories, f)
 
-def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
-            num_trials: int, num_opponents: typing.Optional[int] = None) -> typing.List[typing.Dict]:
+
+def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int, num_trials: int,
+            num_opponents: typing.Optional[int] = None, return_data: bool = False) -> typing.List[typing.Dict]:
     """
     Function to execute an exhaustive/ randomized tournament for the given player pool.
     This function will run 'nCr(len(player_pool), env.n_players) x num_repeat x num_trials' games.
@@ -145,6 +151,7 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
     :param num_repeat: int Number of times to repeat the tourney
     :param num_trials: int Number of evaluation repetitions for each tourney.
     :param num_opponents: int If smaller than len(player_pool) we randomly (without replacement) select opponents.
+    :param return_data: bool Whether to save observation trajectories throughout the trial.
     :return: List of dictionaries containing the results in the described format
     """
 
@@ -163,7 +170,7 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
         num_opponents = len(player_pool)
 
     # We require a work around to copy player objects as we need to keep memory usage at a minimum
-    # when testing multiple neural networks. We do this by reusing models and loading in weights.
+    # when testing multiple neural networks. We do this by reusing implementations and loading in weights.
     # The copy object is intended to prevent clashing of weights when agent class references are equal.
     copy_objects = {}
     if env.n_players > 1:
@@ -173,8 +180,8 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
 
     schedule = list(combinations(player_pool, env.n_players))
 
-    results = list()
-    for _ in trange(num_repeat, desc="Tourney repetition", file=sys.stdout):
+    results, trajectories = list(), list()
+    for rep in trange(num_repeat, desc="Tourney repetition", file=sys.stdout):
         if num_opponents < len(player_pool) and env.n_players > 1:
             # Create a new randomized schedule based on non-replacement random sampling.
             schedule = list()
@@ -189,10 +196,13 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
                 player = prepare(*player_data)
 
                 arena = Arena(env, player, player)  # Duplicate players
-                trial_result = arena.playGames(num_trials, player)
+                trial_result = arena.playGames(num_trials, player).tolist()
+
+                trial_data = {f'r{rep}c{i}_{type(player).__name__}_{player.name}': player.histories}
+                player.refresh(hard_reset=True)
 
                 results.append({
-                    'player': f'{type(player).__name__}_{player.name}',  # TODO: Bug tracking, .name is always empty.
+                    'player': f'r{rep}c{i}_{type(player).__name__}_{player.name}',
                     'player_data': player_data[1:],
                     'trial_result': trial_result
                 })
@@ -208,9 +218,14 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
                 arena = Arena(env, player1, player2)
                 win, loss, draw = arena.playTurnGames(num_trials)
 
+                trial_data = {f'p1_r{rep}c{i}_{type(player1).__name__}_{player1.name}': player1.histories,
+                              f'p2_r{rep}c{i}_{type(player2).__name__}_{player2.name}': player2.histories}
+                player1.refresh(hard_reset=True)
+                player2.refresh(hard_reset=True)
+
                 results.append({
-                    'player1': f'{type(player1).__name__}_{player1.name}',
-                    'player2': f'{type(player2).__name__}_{player2.name}',
+                    'player1': f'p1_r{rep}c{i}_{type(player1).__name__}_{player1.name}',
+                    'player2': f'p2_r{rep}c{i}_{type(player2).__name__}_{player2.name}',
                     'player1_data': player1_data[1:],
                     'player2_data': player2_data[1:],
                     'trial_result': {
@@ -220,4 +235,7 @@ def tourney(player_pool: typing.List, env: Games.Game, num_repeat: int,
                     }
                 })
 
-    return results
+            if return_data:
+                trajectories.append(trial_data)
+
+    return results, trajectories

@@ -13,9 +13,9 @@ from utils.game_utils import DiscretizeAction
 from AlphaZero.AlphaCoach import AlphaZeroCoach
 from MuZero.MuCoach import MuZeroCoach
 
-from AlphaZero.models.DefaultAlphaZero import DefaultAlphaZero as ANet
-from MuZero.models.DefaultMuZero import DefaultMuZero as MNet
-from MuZero.models.AEMuZero import DecoderMuZero as DMNet
+from AlphaZero.implementations.DefaultAlphaZero import DefaultAlphaZero as ANet
+from MuZero.implementations.DefaultMuZero import DefaultMuZero as MNet
+from MuZero.implementations.AEMuZero import DecoderMuZero as DMNet
 
 from Games.hex.HexGame import HexGame
 from Games.tictactoe.TicTacToeGame import TicTacToeGame
