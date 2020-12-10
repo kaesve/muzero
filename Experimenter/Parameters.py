@@ -34,6 +34,10 @@ class AblationAnalysis:
             self.configs.append(config)
 
         dt = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+        schedule = DotDict({i: self.experiment.ablation_grid[i] for i in range(len(self.experiment.ablation_grid))})
+        schedule.to_json(os.path.join(self.experiment.output_directory, f'ablation_schedule_{dt}.json'))
+
         for run in range(self.experiment.experiment_args.num_repeat):
             for i, config in enumerate(self.configs):
                 c = config.copy()  # Note: shallow copy.

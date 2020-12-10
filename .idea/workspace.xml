@@ -22,8 +22,17 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="MDP Analysis">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="3D visualization of MDP">
+      <change afterPath="$PROJECT_DIR$/Ablation Analysis.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/abstract.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/embedding_01.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/real.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_d.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_d.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_kl.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_kl.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experimenter/Parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Parameters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -71,19 +80,19 @@
     </option>
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_8" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\out" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\TourneyConfigs" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ExperimentConfigs" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Games\hex" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_4" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\kl" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_8" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\out\cp_ablation" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_8" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\out" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\TourneyConfigs" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ExperimentConfigs" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -100,7 +109,13 @@
       <workItem from="1605792286923" duration="51284000" />
       <workItem from="1606058519236" duration="30291000" />
       <workItem from="1606306778862" duration="10000" />
-      <workItem from="1606380032595" duration="112090000" />
+      <workItem from="1606380032595" duration="114619000" />
+      <workItem from="1606899633014" duration="13000" />
+      <workItem from="1606974159864" duration="14375000" />
+      <workItem from="1607151584544" duration="616000" />
+      <workItem from="1607152632708" duration="599000" />
+      <workItem from="1607153561709" duration="256000" />
+      <workItem from="1607163829160" duration="9095000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -242,7 +257,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606832992848</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="3D visualization of MDP">
+      <created>1606842947370</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1606842947370</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -282,60 +304,7 @@
     <MESSAGE value="Pendulum" />
     <MESSAGE value="Fix CPU execution" />
     <MESSAGE value="MDP Analysis" />
-    <option name="LAST_COMMIT_MESSAGE" value="MDP Analysis" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="-1368" y="613" key="#Deployment" timestamp="1606058531219">
-      <screen x="-1920" y="435" width="1920" height="1040" />
-    </state>
-    <state x="-1368" y="613" key="#Deployment/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606058531219" />
-    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1606672759204">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605953987305" />
-    <state x="730" y="322" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1606672759204" />
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser" timestamp="1606639861182">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="-1154" y="671" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606404195634" />
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1605724265868" />
-    <state x="766" y="236" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1606639861182" />
-    <state x="558" y="83" key="CommitChangelistDialog2" timestamp="1605494205585">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="558" y="83" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1605494205585" />
-    <state x="184" y="0" width="1548" height="960" key="DiffContextDialog" timestamp="1606401506607">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="-1736" y="521" key="DiffContextDialog/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546318039" />
-    <state x="184" y="0" width="1548" height="960" key="DiffContextDialog/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606401506607" />
-    <state x="741" y="275" key="FileChooserDialogImpl" timestamp="1606587430487">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="741" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1606587430487" />
-    <state x="767" y="223" key="RollbackChangesDialog" timestamp="1605700311631">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="767" y="223" key="RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605700311631" />
-    <state x="462" y="165" key="SettingsEditor" timestamp="1606587434784">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="-1458" y="600" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1605546931058" />
-    <state x="462" y="165" key="SettingsEditor/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606138758680" />
-    <state x="462" y="165" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1606587434784" />
-    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2" timestamp="1606832996428">
-      <screen x="-1920" y="435" width="1920" height="1040" />
-    </state>
-    <state x="-1367" y="688" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@-1920.435.1920.1040" timestamp="1606832996428" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606401517639" />
-    <state x="553" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1606125953095" />
-    <state x="846" y="251" key="ftp.server.browser" timestamp="1606138507333">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="846" y="251" key="ftp.server.browser/0.0.1920.1040/-1920.435.1920.1040@0.0.1920.1040" timestamp="1606138507333" />
-    <state x="625" y="228" width="672" height="678" key="search.everywhere.popup" timestamp="1606547697042">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="625" y="228" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1606547697042" />
+    <MESSAGE value="3D visualization of MDP" />
+    <option name="LAST_COMMIT_MESSAGE" value="3D visualization of MDP" />
   </component>
 </project>

@@ -1,10 +1,10 @@
 {
   "name": "MC_BlindfoldMuZero_l4",
   "experiment": "TOURNEY",
-  "output_dir": "Results",
+  "output_dir": "mc_out/latent_4_kl",
 
   "num_repeat": 1,
-  "num_trials": 50,
+  "num_trials": 10,
   "checkpoint_resolution": 1,
   "num_opponents": null,
   "return_data": true,
@@ -19,23 +19,31 @@
   "players": [
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 1 }
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 1 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 5 }
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 5 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 10 }
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 10 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 50 }
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 25 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4/MC_Base_Gym_gym_MountainCar-v0_20201129-132609.json", "refresh_freq": 200 }
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 50 }
+    },
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 100 }
+    },
+    {
+      "name": "BLIND_MUZERO",
+      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 200 }
     }
   ]
 }
