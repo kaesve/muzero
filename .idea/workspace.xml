@@ -22,17 +22,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="3D visualization of MDP">
-      <change afterPath="$PROJECT_DIR$/Ablation Analysis.ipynb" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Interactive plot data generation pipeline and configs">
       <change afterPath="$PROJECT_DIR$/abstract.svg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/embedding_01.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/real.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_d.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_d.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_kl.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroMC_kl.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/Parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Parameters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -115,7 +110,7 @@
       <workItem from="1607151584544" duration="616000" />
       <workItem from="1607152632708" duration="599000" />
       <workItem from="1607153561709" duration="256000" />
-      <workItem from="1607163829160" duration="9095000" />
+      <workItem from="1607163829160" duration="15490000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -264,7 +259,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606842947370</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Interactive plot data generation pipeline and configs">
+      <created>1607601006599</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1607601006599</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -305,6 +307,7 @@
     <MESSAGE value="Fix CPU execution" />
     <MESSAGE value="MDP Analysis" />
     <MESSAGE value="3D visualization of MDP" />
-    <option name="LAST_COMMIT_MESSAGE" value="3D visualization of MDP" />
+    <MESSAGE value="Interactive plot data generation pipeline and configs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Interactive plot data generation pipeline and configs" />
   </component>
 </project>
