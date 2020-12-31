@@ -1,7 +1,7 @@
 {
-  "name": "MC_BlindfoldMuZero_l4",
+  "name": "MC_BlindfoldMuZero_dec",
   "experiment": "TOURNEY",
-  "output_dir": "mc_out/latent_4_kl",
+  "output_dir": "mc_out/latent_8_dec",
 
   "num_repeat": 1,
   "num_trials": 10,
@@ -19,31 +19,31 @@
   "players": [
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 1 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 1 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 5 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 5 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 10 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 10 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 25 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 25 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 50 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 50 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 100 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 100 }
     },
     {
       "name": "BLIND_MUZERO",
-      "config": { "file": "out/mc_out/latent_4_kl/MC_Base_kl_Gym_gym_MountainCar-v0_20201204-070332.json", "refresh_freq": 200 }
+      "config": { "file": "out/mc_out/latent_8_dec/MC_Base_d_Gym_gym_MountainCar-v0_20201211-155156.json", "refresh_freq": 200 }
     }
   ]
 }

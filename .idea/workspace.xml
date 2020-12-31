@@ -22,12 +22,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update visualization data construction.">
-      <change afterPath="$PROJECT_DIR$/abstract.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/embedding_01.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/real.svg" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="visualization notebook update">
+      <change afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/AlphazeroMC.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ablation Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Ablation Analysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_MC_MuZeroBlindfold.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/MDP Abstraction Analysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,9 +41,6 @@
         <option value="Python Script" />
       </list>
     </option>
-  </component>
-  <component name="Git.Pull.Settings">
-    <option name="BRANCH" value="master" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -60,9 +58,10 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/out/mc_out/latent_4" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Configurations/ModelConfigs" />
     <property name="settings.editor.selected.configurable" value="web.server" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -75,18 +74,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_4" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\kl" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_8" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ModelConfigs" />
       <recent name="C:\Users\joery\PycharmProjects\muzero" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\joery\PycharmProjects\muzero\out\cp_ablation" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_8_kl" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out\mc_out\latent_8" />
+      <recent name="C:\Users\joery\PycharmProjects\muzero\out\cp_ablation" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\out" />
       <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\TourneyConfigs" />
-      <recent name="C:\Users\joery\PycharmProjects\muzero\Configurations\ExperimentConfigs" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -109,7 +108,12 @@
       <workItem from="1607151584544" duration="616000" />
       <workItem from="1607152632708" duration="599000" />
       <workItem from="1607153561709" duration="256000" />
-      <workItem from="1607163829160" duration="17795000" />
+      <workItem from="1607163829160" duration="22893000" />
+      <workItem from="1608909399149" duration="173000" />
+      <workItem from="1609077816346" duration="19000" />
+      <workItem from="1609077889054" duration="581000" />
+      <workItem from="1609079202733" duration="8389000" />
+      <workItem from="1609429316660" duration="2722000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -272,7 +276,14 @@
       <option name="project" value="LOCAL" />
       <updated>1607939891099</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="visualization notebook update">
+      <created>1608050804185</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1608050804186</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -315,6 +326,7 @@
     <MESSAGE value="3D visualization of MDP" />
     <MESSAGE value="Interactive plot data generation pipeline and configs" />
     <MESSAGE value="Update visualization data construction." />
-    <option name="LAST_COMMIT_MESSAGE" value="Update visualization data construction." />
+    <MESSAGE value="visualization notebook update" />
+    <option name="LAST_COMMIT_MESSAGE" value="visualization notebook update" />
   </component>
 </project>
