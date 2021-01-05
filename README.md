@@ -13,11 +13,7 @@ We did this exclusively for MountainCar, the visualization tool can be viewed he
 Requisite data for viewing learned models can be accessed here TODO or generated using the jupyter notebook here TODO. 
 The figure below illustrates one of our learned models:
 
-<object data="https://github.com/kaesve/muzero/blob/master/publish/figures/MC_l4kl_MDPAbstractionCombined.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="https://github.com/kaesve/muzero/blob/master/publish/figures/MC_l4kl_MDPAbstractionCombined.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+<embed src="publish/figures/MC_l4kl_MDPAbstractionCombined.pdf" type="application/pdf">
 
 We quantified the efficacy of our MuZero and AlphaZero implementations also on the CartPole environment over numerous hyperparameters.
 
