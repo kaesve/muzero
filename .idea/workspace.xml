@@ -22,11 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="update format">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-    </list>
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update Readme" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,7 +115,7 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
-      <workItem from="1609920651263" duration="8323000" />
+      <workItem from="1609920651263" duration="8962000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -352,7 +348,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609932321493</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="Update Readme">
+      <created>1609935543422</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1609935543422</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -372,7 +375,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Atari Net for AlphaZero" />
     <MESSAGE value="Image gym game" />
     <MESSAGE value="Hex decoder, crafter use_bn correction, and Atari hex network" />
     <MESSAGE value="Tourney functionality done." />
@@ -397,6 +399,7 @@
     <MESSAGE value="Update Readme.md" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="update format" />
-    <option name="LAST_COMMIT_MESSAGE" value="update format" />
+    <MESSAGE value="Update Readme" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update Readme" />
   </component>
 </project>
