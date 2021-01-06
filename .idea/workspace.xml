@@ -22,9 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="add Data.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/publish/Ablation Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/publish/Ablation Analysis.ipynb" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Annotate Ablation Analysis Plot generation.">
+      <change beforePath="$PROJECT_DIR$/.idea/muzero.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/muzero.iml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,7 +117,7 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
-      <workItem from="1609920651263" duration="13803000" />
+      <workItem from="1609920651263" duration="13993000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -379,7 +378,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609954009161</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Annotate Ablation Analysis Plot generation.">
+      <created>1609956459921</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1609956459921</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -399,7 +405,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="tourney .json doc" />
     <MESSAGE value="Experimenter development. TODO Ablation execution logic. Parameter grid and tourneys done." />
     <MESSAGE value="Base Asynchronous Parameter grid evaluation tool." />
     <MESSAGE value="Ctrl C now works with multithreading" />
@@ -424,6 +429,7 @@
     <MESSAGE value="Add configs" />
     <MESSAGE value="Update MDP Abstraction notebook." />
     <MESSAGE value="add Data." />
-    <option name="LAST_COMMIT_MESSAGE" value="add Data." />
+    <MESSAGE value="Annotate Ablation Analysis Plot generation." />
+    <option name="LAST_COMMIT_MESSAGE" value="Annotate Ablation Analysis Plot generation." />
   </component>
 </project>

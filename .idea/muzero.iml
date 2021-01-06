@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/out" />
+      <excludeFolder url="file://$MODULE_DIR$/publish/.ipynb_checkpoints" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (tf)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
