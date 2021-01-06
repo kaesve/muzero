@@ -27,42 +27,42 @@ import Experimenter
 import Agents
 
 
-def learnA0(g, content, run_name):
-    net_args, args = content.net_args, content.args
+def learnA0(g, a0_content, a0_run_name):
+    net_args, args = a0_content.net_args, a0_content.args
 
-    print("Testing:", ", ".join(run_name.split("_")))
+    print("Testing:", ", ".join(a0_run_name.split("_")))
 
-    net = ANet(g, net_args, content.architecture)
+    net = ANet(g, net_args, a0_content.architecture)
 
     if args.load_model:
         net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    c = AlphaZeroCoach(g, net, args, run_name)
+    c = AlphaZeroCoach(g, net, args, a0_run_name)
     if args.load_model:
         print("Load trainExamples from file")
         c.loadTrainExamples()
 
-    content.to_json(f'{args.checkpoint}/{run_name}.json')
+    a0_content.to_json(f'{args.checkpoint}/{a0_run_name}.json')
 
     c.learn()
 
 
-def learnM0(g, content, run_name):
-    net_args, args = content.net_args, content.args
+def learnM0(g, m0_content, m0_run_name):
+    net_args, args = m0_content.net_args, m0_content.args
 
-    print("Testing:", ", ".join(run_name.split("_")))
+    print("Testing:", ", ".join(m0_run_name.split("_")))
 
     if args.latent_decoder:
-        net = DMNet(g, net_args, content.architecture)
+        net = DMNet(g, net_args, m0_content.architecture)
     else:
-        net = MNet(g, net_args, content.architecture)
+        net = MNet(g, net_args, m0_content.architecture)
 
     if args.load_model:
         net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
-    c = MuZeroCoach(g, net, args, run_name)
+    c = MuZeroCoach(g, net, args, m0_run_name)
 
-    content.to_json(f'{args.checkpoint}/{run_name}.json')
+    m0_content.to_json(f'{args.checkpoint}/{m0_run_name}.json')
 
     c.learn()
 
@@ -77,19 +77,24 @@ def game_from_name(name):
 
     if match_name == "hex":
         return HexGame(BOARD_SIZE)
+
     elif match_name == "tictactoe":
         return TicTacToeGame(BOARD_SIZE)
+
     elif match_name == "othello":
         return OthelloGame(BOARD_SIZE)
+
     elif match_name == "gym" or match_name == "cartpole":
         return GymGame("CartPole-v1")
+
     elif match_name == "pendulum":
         def discretize_wrapper(env):
             return DiscretizeAction(env, 15)
-
         return GymGame("Pendulum-v0", [discretize_wrapper])
+
     elif match_name.startswith("gym_"):
         return GymGame(name[len("gym_"):])
+
     elif match_name.startswith("atari_"):
         game_name = match_name[len("atari_"):]
         game_name = game_name.capitalize() + "NoFrameskip-v4"
@@ -193,30 +198,3 @@ if __name__ == "__main__":
 
             arena = Experimenter.Arena(game, p1, p2)
             arena.playTurnGame(p1, p2, True)
-
-
-
-    else:
-        # Ad hoc code path. Use for quick tests
-
-        # learnA0(GymGame("CartPole-v1"), ALPHAZERO_DEFAULTS)
-        # learnA0(HexGame(BOARD_SIZE), ALPHAZERO_BOARD)
-        #
-        debugger.DEBUG_MODE = True
-        content = DotDict.from_json('Configurations/ModelConfigs/MuzeroCartpole.json')
-
-        run_name = args.run_name if args.run_name else get_run_name(content.name, content.architecture, "gym")
-
-        # game = HexGame(BOARD_SIZE)
-        # learnM0(game, content)
-        learnM0(GymGame("CartPole-v1"), content, run_name)
-        # learnM0(AtariGame('BreakoutNoFrameskip-v4'), MUZERO_ATARI)
-
-        # b = ExperimentConfig(MUZERO_RANDOM)
-        # b = ExperimentConfig(ALPHAZERO_RANDOM)
-        # b = ExperimentConfig(args.config)
-        # b.construct()
-        # print(b.game_config)
-        # print(b.player_configs)
-
-        # tournament_final(experiment=b)
