@@ -31,7 +31,7 @@ Our paper can be read for more details *here* (TODO).
 
 ## How to run:
 In order to run experiments/ train agents, you first need a .json configuration file (see [Configurations/ModelConfigs](Configurations/ModelConfigs)) for specifying the agent's parameters.
-Secondly, you can either opt to choose one of the existing neural network architectures (see [Agents/__init__.py](Agents/__init__.py) for existing architectures).
+Within this .json file you also need to specify a neural network architectures (see [Agents/__init__.py](Agents/__init__.py) for existing architectures).
 Then run Main.py with the following flags to train an agent:
 ```shell
 python Main.py train -c my/config/file.json --game gym_Cartpole-v1 --gpu [INT]
