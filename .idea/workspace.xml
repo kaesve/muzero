@@ -22,8 +22,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="refactoring">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="update format">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +119,7 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
-      <workItem from="1609920651263" duration="5512000" />
+      <workItem from="1609920651263" duration="8323000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -343,7 +345,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609932041075</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="update format">
+      <created>1609932321493</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1609932321493</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -363,7 +372,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="MuMCTS illegal moves masked at root state" />
     <MESSAGE value="Atari Net for AlphaZero" />
     <MESSAGE value="Image gym game" />
     <MESSAGE value="Hex decoder, crafter use_bn correction, and Atari hex network" />
@@ -388,6 +396,7 @@
     <MESSAGE value="Update README" />
     <MESSAGE value="Update Readme.md" />
     <MESSAGE value="refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring" />
+    <MESSAGE value="update format" />
+    <option name="LAST_COMMIT_MESSAGE" value="update format" />
   </component>
 </project>

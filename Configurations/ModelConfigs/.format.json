@@ -29,10 +29,10 @@
     "minimum_reward": "(double) Lower bound on the cumulative reward of the environment (null if not known)",
     "maximum_reward": "(double) Upper bound on the cumulative reward of the environment (null if not known)",
 
-    "checkpoint": "(path: string) Directory to store sampled experiences and fitted parameters in",
-    "load_model": "(bool) Whether to load in a previously trained model from the checkpoint directory",
-    "load_folder_file": "(Array, ['directory', 'file']) Specify which model to load in",
-    "selfplay_buffer_window": "(int) Maximum number of self play iterations kept in the deque",
+    "checkpoint": "(path: string) Directory to store sampled experiences and fitted parameters in after every selfplay loop",
+    "load_model": "(bool) Whether to load in a previously trained model from the checkpoint directory when starting training.",
+    "load_folder_file": "(Array, ['directory', 'file']) Specify which model to load in/ store the best current model in.",
+    "selfplay_buffer_window": "(int) Maximum number of self play iterations kept in the deque.",
 
     "temperature_schedule": {
       "method": "(string) choice between 'stepwise' and 'linear'.",
@@ -51,7 +51,6 @@
     "dynamics_penalty": "(double) Penalty for MuZero dynamics model for diverging too far from the representation network/ true transition function",
     "dropout": "(double) DropOut regularization rate for the neural network",
     "batch_size": "(int) Stochastic gradient descent batch size",
-    "cuda": "(bool) Whether to make use of GPU accelerated computation (NVIDIA only)",
     "num_channels": "(int) Number of feature maps in the convolutional network",
     "num_towers": "(int) Number of convolutional towers to place in each network",
     "num_dense": "(int) Number of fully connected layers to use as the head of the CNN",

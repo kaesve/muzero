@@ -36,7 +36,7 @@ Then run Main.py with the following flags to train an agent:
 ```shell
 python Main.py train -c my/config/file.json --game gym_Cartpole-v1 --gpu [INT]
 ```
-See the wiki for a more elaborate overview of the hyperparameters and how to create new agents or games.
+See the [wiki](https://github.com/kaesve/muzero/wiki) for a more elaborate overview of the hyperparameters and how to create new agents or games.
 
 ### Minimal requirements
 * Python 3.7+
