@@ -9,17 +9,28 @@ Our interface also provides sufficient abstraction to extend the MuZero or Alpha
 
 ## Example Results
 This codebase was designed for a Masters Course at Leiden University, we utilized the code to create visualizations of the learned MDP model within MuZero. 
-We did this exclusively for MountainCar, the visualization tool can be viewed here: https://kaesve.nl/projects/cartpole-inspector/#/.
-Requisite data for viewing learned models can be accessed here TODO or generated using the jupyter notebook here TODO. 
-The figure below illustrates one of our learned models:
+We did this exclusively for MountainCar, the visualization tool can be viewed here: https://kaesve.nl/projects/cartpole-inspector/#/; an example illustration of this is shown below.
+This figure illustrates the entire state-space from the MountainCar being embedded by MuZero's encoding network projected to the 3-PC space of the embedding's neural activation values. 
 
-<embed src="publish/figures/MC_l4kl_MDPAbstractionCombined.pdf" type="application/pdf">
+![example](publish/figures/MC_l4kl_MDPAbstractionCombined.png)
 
-We quantified the efficacy of our MuZero and AlphaZero implementations also on the CartPole environment over numerous hyperparameters.
+We quantified the efficacy of our MuZero and AlphaZero implementations also on the CartPole environment over numerous hyperparameters. 
+The canonical MuZero can be quite unstable depending on the hyperparameters, the figure shows this through median and mean training rewards over 8 training runs.
 
-No boardgames were tested as computation time quickly became an issue for us, even on smaller boardsizes.
+![example2](publish/figures/CP_NumericalResultsSplit.png)
 
-Our paper can be read *here*. TODO
+The figure below illustrates the efficacy of learned models on MountainCar, when we only provide the MuZero agent observations every n'th environment step along with the agent's learning progress with dense observations.
+
+![example3](publish/figures/MC_NumericalResultsCombined.png)
+
+No boardgames were tested for MuZero as computation time quickly became an issue for us, even on smaller boardsizes.
+We did find that AlphaZero could learn good policies on boardgames, we found that it depends on the observation encoding. 
+Heuristic encoding as used in AlphaZero seemed less effective to the canonicalBoard representation used in AlphaZero-General.
+
+Our paper can be read for more details *here* (TODO).
+
+### Reproduce:
+
 
 ### Minimal requirements
 * Python 3.7+
