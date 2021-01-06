@@ -22,11 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Add configs">
-      <change afterPath="$PROJECT_DIR$/publish/configs/Tourney_MC_MuZeroBlindfold.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/publish/MDP Abstraction Analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/publish/MDP Abstraction Analysis.ipynb" afterDir="false" />
-    </list>
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update MDP Abstraction notebook." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,7 +115,7 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
-      <workItem from="1609920651263" duration="11625000" />
+      <workItem from="1609920651263" duration="12257000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -366,7 +362,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609936428091</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Update MDP Abstraction notebook.">
+      <created>1609945225239</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1609945225239</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -386,7 +389,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Hex decoder, crafter use_bn correction, and Atari hex network" />
     <MESSAGE value="Tourney functionality done." />
     <MESSAGE value="tourney .json doc" />
     <MESSAGE value="Experimenter development. TODO Ablation execution logic. Parameter grid and tourneys done." />
@@ -411,6 +413,7 @@
     <MESSAGE value="update format" />
     <MESSAGE value="Update Readme" />
     <MESSAGE value="Add configs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add configs" />
+    <MESSAGE value="Update MDP Abstraction notebook." />
+    <option name="LAST_COMMIT_MESSAGE" value="Update MDP Abstraction notebook." />
   </component>
 </project>

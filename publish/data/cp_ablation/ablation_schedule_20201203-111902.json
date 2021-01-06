@@ -1,0 +1,362 @@
+{
+  "0": {
+    "args": {
+      "K": 1,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 1
+    }
+  },
+  "1": {
+    "args": {
+      "K": 1,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "2": {
+    "args": {
+      "K": 1,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "3": {
+    "args": {
+      "K": 1,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 1
+    }
+  },
+  "4": {
+    "args": {
+      "K": 1,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "5": {
+    "args": {
+      "K": 1,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "6": {
+    "args": {
+      "K": 1,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 1
+    }
+  },
+  "7": {
+    "args": {
+      "K": 1,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "8": {
+    "args": {
+      "K": 1,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "9": {
+    "args": {
+      "K": 1,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 1
+    }
+  },
+  "10": {
+    "args": {
+      "K": 1,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "11": {
+    "args": {
+      "K": 1,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "12": {
+    "args": {
+      "K": 5,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 1
+    }
+  },
+  "13": {
+    "args": {
+      "K": 5,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "14": {
+    "args": {
+      "K": 5,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "15": {
+    "args": {
+      "K": 5,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 1
+    }
+  },
+  "16": {
+    "args": {
+      "K": 5,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "17": {
+    "args": {
+      "K": 5,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "18": {
+    "args": {
+      "K": 5,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 1
+    }
+  },
+  "19": {
+    "args": {
+      "K": 5,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "20": {
+    "args": {
+      "K": 5,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "21": {
+    "args": {
+      "K": 5,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 1
+    }
+  },
+  "22": {
+    "args": {
+      "K": 5,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "23": {
+    "args": {
+      "K": 5,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "24": {
+    "args": {
+      "K": 10,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 1
+    }
+  },
+  "25": {
+    "args": {
+      "K": 10,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "26": {
+    "args": {
+      "K": 10,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "27": {
+    "args": {
+      "K": 10,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 1
+    }
+  },
+  "28": {
+    "args": {
+      "K": 10,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "29": {
+    "args": {
+      "K": 10,
+      "latent_decoder": true
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "30": {
+    "args": {
+      "K": 10,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 1
+    }
+  },
+  "31": {
+    "args": {
+      "K": 10,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "32": {
+    "args": {
+      "K": 10,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 4,
+      "dynamics_penalty": 0.01
+    }
+  },
+  "33": {
+    "args": {
+      "K": 10,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 1
+    }
+  },
+  "34": {
+    "args": {
+      "K": 10,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.1
+    }
+  },
+  "35": {
+    "args": {
+      "K": 10,
+      "latent_decoder": false
+    },
+    "net_args": {
+      "latent_depth": 8,
+      "dynamics_penalty": 0.01
+    }
+  }
+}
