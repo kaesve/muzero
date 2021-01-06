@@ -1,7 +1,7 @@
 {
   "name": "format",
-  "algorithm": "Algorithm name @see experimenter Enum",
-  "architecture": "What neural architecture to use. For the currently implemented ones @see DefaultMuZero",
+  "algorithm": "Algorithm name @see Agents/__init__.py",
+  "architecture": "What neural architecture to use. For the currently implemented ones @see Agents/__init__.py",
 
   "args": {
     "num_selfplay_iterations": "(int) Number of iterations to repeat the training loop (self play - training - pitting)",

@@ -22,18 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update Readme.md">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/CheckpointTourney_AlphaZeroHex.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/CheckpointTourney_AlphaZeroHex.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_AlphaZeroVsRandom.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/Tourney_Hex_MuZeroVsRandom.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/JobConfigs/format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/JobConfigs/.format.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpoleAblations.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroCartpole_debug.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHexDecode.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/MuzeroHexStable.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="refactoring">
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,7 +117,7 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
-      <workItem from="1609920651263" duration="5155000" />
+      <workItem from="1609920651263" duration="5512000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -346,7 +336,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609928755427</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="refactoring">
+      <created>1609932041075</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1609932041075</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -366,7 +363,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="AlphaMCTS UCB fix for illegal moves." />
     <MESSAGE value="MuMCTS illegal moves masked at root state" />
     <MESSAGE value="Atari Net for AlphaZero" />
     <MESSAGE value="Image gym game" />
@@ -391,6 +387,7 @@
     <MESSAGE value="embed pdf" />
     <MESSAGE value="Update README" />
     <MESSAGE value="Update Readme.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update Readme.md" />
+    <MESSAGE value="refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactoring" />
   </component>
 </project>

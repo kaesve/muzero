@@ -1,6 +1,6 @@
 {
   "name": "(str) Name of your experiment.",
-  "experiment": "(str) Choice of experiment @see Experimenter.experiments for all available implementations",
+  "experiment": "(str) Choice of experiment @see Experimenter/__init__.py for all available implementations",
   "output_dir": "(str) Name/ path of an output directory",
 
   "checkpoint_resolution": "(int > 0) Number indicating: evaluate each 'x' models from my 'N' model checkpoints for an evaluation tournament",
@@ -11,14 +11,14 @@
   "flags": "(str) console flags like '--debug' or '--render' to add when running ablations",
 
   "environment": {
-    "name": "(str) Choice of environment to test on @see Games.games for all available implementations",
+    "name": "(str) Choice of environment to test on @see Games/__init__.py for all available implementations",
     "console": "(str) Console argument to this environment, e.g., '--game hex' or '--game atari_breakout'",
     "args": "(dict) Environment specific arguments"
   },
 
   "players": [
     {
-      "name": "(str) Choice of agent to test @see Agents.players for all available implementations",
+      "name": "(str) Choice of agent to test @see Agents/__init__.py for all available implementations",
       "config": "(str) Path to .json configuration file for the given agent"
     }
   ],
