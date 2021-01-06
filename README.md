@@ -29,8 +29,14 @@ Heuristic encoding as used in AlphaZero seemed less effective to the canonicalBo
 
 Our paper can be read for more details *here* (TODO).
 
-### Reproduce:
-
+## How to run:
+In order to run experiments/ train agents, you first need a .json configuration file (see [Configurations/ModelConfigs](Configurations/ModelConfigs)) for specifying the agent's parameters.
+Secondly, you can either opt to choose one of the existing neural network architectures (see [Agents/__init__.py](Agents/__init__.py) for existing architectures).
+Then run Main.py with the following flags to train an agent:
+```shell
+python Main.py train -c my/config/file.json --game gym_Cartpole-v1 --gpu [INT]
+```
+See the wiki for a more elaborate overview of the hyperparameters and how to create new agents or games.
 
 ### Minimal requirements
 * Python 3.7+
@@ -44,13 +50,15 @@ Our paper can be read for more details *here* (TODO).
  
 ## Our Contributions
 There are already a variety of MuZero and AlphaZero implementations available:
+
 - AlphaZero-General (any framework; sequential): https://github.com/suragnair/alpha-zero-general
 - MuZero-General (Pytorch; parallelized): https://github.com/werner-duvaud/muzero-general
 - MuZero in Tensorflow (Tensorflow; sequential): https://github.com/johan-gras/MuZero
 
 Our implementation is intended to be both pedagogical and functional. 
-This means that we focus on documentation, elegance, and clarity of the code.
-For this exact reason have we omitted parallelization during training of the agents.
+So, we focussed on documentation, elegance, and clarity of the code. 
+Ours also provides functionality for masking observations during trials and regularizing transition dynamics for fitting the MDP model.
+We omitted parallelization as used in the original MuZero paper due to this reason; but it can be implemented in the future.
 
 ## References
 - Schrittwieser, Julian et al. (Feb. 21, 2020). “Mastering Atari, Go, Chess and Shogi by Planning with a Learned Model”. [cs, stat]. arXiv:1911.08265

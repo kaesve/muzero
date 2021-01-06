@@ -22,14 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="embed pdf">
-      <change afterPath="$PROJECT_DIR$/publish/figures/CP_NumericalResultsCombined.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/publish/figures/CP_NumericalResultsCombined.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/publish/figures/MC_NumericalResultsCombined.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/publish/figures/MC_NumericalResultsCombined.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/publish/figures/MC_l4_MDPAbstractionCombined.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/publish/figures/MC_l4_MDPAbstractionCombined.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/publish/figures/MC_l4kl_MDPAbstractionCombined.png" afterDir="false" />
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update README">
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
@@ -125,6 +119,7 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
+      <workItem from="1609920651263" duration="1424000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -322,7 +317,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609874796625</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="Update README">
+      <created>1609920838009</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1609920838009</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -342,7 +344,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Arena fix and ablations" />
     <MESSAGE value="Max moves option and rework of reward functionality in Coach and Game" />
     <MESSAGE value="AlphaMCTS UCB fix for illegal moves." />
     <MESSAGE value="MuMCTS illegal moves masked at root state" />
@@ -367,6 +368,7 @@
     <MESSAGE value="refactor" />
     <MESSAGE value="test" />
     <MESSAGE value="embed pdf" />
-    <option name="LAST_COMMIT_MESSAGE" value="embed pdf" />
+    <MESSAGE value="Update README" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update README" />
   </component>
 </project>
