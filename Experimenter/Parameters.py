@@ -1,3 +1,7 @@
+"""
+This file provides functionality to train multiple unique agents over varying hyperparameter configurations.
+All agents are trained asynchronously using a thread pool with the allocated number of threads.
+"""
 from __future__ import annotations
 import os
 import typing
@@ -16,6 +20,11 @@ from .experimenter import ExperimentConfig
 class AblationAnalysis:
 
     def __init__(self, experiment: ExperimentConfig, config_dir: str = './temp/') -> None:
+        """
+        Initialize experiment by assigning dependent variables.
+        :param experiment: ExperimentConfig Contains the grid of hyperparameters to test out.
+        :param config_dir: str Specifies destination of temporary files specifying ModelConfig JSONs.
+        """
         self.experiment = experiment
         self.config_dir = config_dir
 
@@ -23,9 +32,15 @@ class AblationAnalysis:
         self.files = list()
 
     def __enter__(self) -> AblationAnalysis:
+        """
+        Initialize experiment by generating all ModelConfigs as specified by the hyperparameter grid,
+        and storing them in a temporary folder. All config files will be assigned an unique name, which will later
+        be accessed for training agents asynchronously.
+        """
         if not os.path.exists(self.config_dir):
             os.makedirs(self.config_dir)
 
+        # First construct all possible hyperparameter configuration JSON contents.
         self.configs = list()
         base_config = DotDict.from_json(self.experiment.ablation_base.config)
         for param in self.experiment.ablation_grid:
@@ -33,11 +48,12 @@ class AblationAnalysis:
             config.recursive_update(param)
             self.configs.append(config)
 
+        # Save ablation analysis configuration using time annotation.
         dt = datetime.now().strftime("%Y%m%d-%H%M%S")
-
         schedule = DotDict({i: self.experiment.ablation_grid[i] for i in range(len(self.experiment.ablation_grid))})
         schedule.to_json(os.path.join(self.experiment.output_directory, f'ablation_schedule_{dt}.json'))
 
+        # Store/ generate all unique JSON config files annotated by time and repetition number.
         for run in range(self.experiment.experiment_args.num_repeat):
             for i, config in enumerate(self.configs):
                 c = config.copy()  # Note: shallow copy.
@@ -60,9 +76,11 @@ class AblationAnalysis:
         return self
 
     def run(self):
+        """ Start training runs for all generated ModelConfig JSON files asynchronously through shell commands. """
         execute = True
 
         def start_run(config: str, flags: str) -> None:
+            """ Wrapper function to start training session from a console command. """
             if execute:
                 gpu_memory = get_gpu_memory()
                 gpu = np.argmax(gpu_memory)
@@ -97,6 +115,7 @@ class AblationAnalysis:
         print('All processes have exited.')
 
     def __exit__(self, exc_type: typing.Any, exc_val: typing.Any, exc_tb: typing.Any) -> None:
+        """ When exiting the context manager, remove all temporary files and (optionally) the temporary folder. """
         # Remove every used temporary file.
         for file in self.files:
             os.remove(file)
@@ -107,8 +126,7 @@ class AblationAnalysis:
 
 
 def run_ablations(experiment: ExperimentConfig) -> None:
-
+    """ Run Ablation Analysis experiment as specified in the Config. """
     with AblationAnalysis(experiment) as ab:
-
         ab.run()
 
