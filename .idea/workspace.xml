@@ -22,10 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Update README.md and Documentation of classes.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experimenter/Parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experimenter/Parameters.py" afterDir="false" />
-    </list>
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="Final documentation" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,7 +116,7 @@
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
       <workItem from="1609920651263" duration="16072000" />
-      <workItem from="1610033934039" duration="12724000" />
+      <workItem from="1610033934039" duration="12760000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -408,7 +405,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610105812702</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="Final documentation">
+      <created>1610107151960</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1610107151960</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -428,7 +432,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="merge" />
     <MESSAGE value="DiscreteizeAction fix" />
     <MESSAGE value="Pendulum" />
     <MESSAGE value="Fix CPU execution" />
@@ -453,6 +456,7 @@
     <MESSAGE value="update gitignore" />
     <MESSAGE value="update README.md" />
     <MESSAGE value="Update README.md and Documentation of classes." />
-    <option name="LAST_COMMIT_MESSAGE" value="Update README.md and Documentation of classes." />
+    <MESSAGE value="Final documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Final documentation" />
   </component>
 </project>
