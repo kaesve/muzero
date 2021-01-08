@@ -1,5 +1,6 @@
 """
-
+This file defines two neural network construction classes for convolutional residual networks.
+These networks can be used on Atari, however AlphaZero is limited by the environment cloning step for MCTS.
 """
 
 import sys
@@ -34,8 +35,6 @@ class AlphaZeroAtariNetwork:
             self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=opt)
         else:
             self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=opt)
-
-        print(self.model.summary())
 
     def build_model(self, x_image):
         conv = Conv2D(self.args.num_channels, kernel_size=3, strides=(2, 2))(x_image)

@@ -46,7 +46,7 @@ No boardgames were tested for MuZero as computation time quickly became an issue
 We did find that AlphaZero could learn good policies on boardgames, we found that it depends on the observation encoding. 
 Heuristic encoding as used in AlphaZero seemed less effective to the canonicalBoard representation used in AlphaZero-General.
 
-Our paper can be read for more details *here* (TODO).
+Our paper can be read for more details *here* (Will be added later).
  
 ## Our Contributions
 There are already a variety of MuZero and AlphaZero implementations available:
@@ -59,8 +59,6 @@ Our implementation is intended to be both pedagogical and functional.
 So, we focussed on documentation, elegance, and clarity of the code. 
 Ours also provides functionality for masking observations during trials and regularizing transition dynamics for fitting the MDP model.
 We omitted parallelization as used in the original MuZero paper due to this reason; but it can be implemented in the future.
-
-### Individual Contributions
 
 ## References
 - Schrittwieser, Julian et al. (Feb. 21, 2020). “Mastering Atari, Go, Chess and Shogi by Planning with a Learned Model”. [cs, stat]. arXiv:1911.08265

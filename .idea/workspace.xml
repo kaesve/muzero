@@ -22,9 +22,27 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="update gitignore">
+    <list default="true" id="4e87424d-99d4-4772-8d5b-10b396c6d33c" name="Default Changelist" comment="update README.md">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/AtariNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/AtariNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/GymNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/GymNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/HexNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/HexNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/Player.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/Player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Agents/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Coach.py" beforeDir="false" afterPath="$PROJECT_DIR$/Coach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" beforeDir="false" afterPath="$PROJECT_DIR$/Configurations/ModelConfigs/.format.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MuZero/implementations/BlindMuZero.py" beforeDir="false" afterPath="$PROJECT_DIR$/MuZero/implementations/BlindMuZero.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Testing/unit_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/Testing/unit_tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/debugging.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/debugging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/experimenter_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/experimenter_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/game_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/game_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/loss_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/loss_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/network_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/network_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/selfplay_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/selfplay_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/storage.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/storage.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,7 +136,8 @@
       <workItem from="1609077889054" duration="581000" />
       <workItem from="1609079202733" duration="8389000" />
       <workItem from="1609429316660" duration="2722000" />
-      <workItem from="1609920651263" duration="14858000" />
+      <workItem from="1609920651263" duration="16072000" />
+      <workItem from="1610033934039" duration="11368000" />
     </task>
     <task id="LOCAL-00001" summary="Large refactoring. Documentation and single-player experiment functionality.">
       <created>1605494161753</created>
@@ -393,7 +412,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609956648997</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="update README.md">
+      <created>1609957510440</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1609957510440</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -413,7 +439,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="Base Asynchronous Parameter grid evaluation tool." />
     <MESSAGE value="Ctrl C now works with multithreading" />
     <MESSAGE value="merge" />
     <MESSAGE value="DiscreteizeAction fix" />
@@ -438,6 +463,7 @@
     <MESSAGE value="add Data." />
     <MESSAGE value="Annotate Ablation Analysis Plot generation." />
     <MESSAGE value="update gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="update gitignore" />
+    <MESSAGE value="update README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="update README.md" />
   </component>
 </project>

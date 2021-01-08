@@ -1,6 +1,6 @@
 {
   "name": "format",
-  "algorithm": "Algorithm name @see Agents/__init__.py",
+  "algorithm": "Algorithm name (Currently only 'MUZERO' or 'ALPHAZERO' implemented)",
   "architecture": "What neural architecture to use. For the currently implemented ones @see Agents/__init__.py",
 
   "args": {

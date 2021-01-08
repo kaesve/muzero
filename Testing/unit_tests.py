@@ -1,3 +1,9 @@
+"""
+@Deprecated
+
+Python code to test parts of our code. This was used at an early stage of development. The current code is outdated.
+TODO: Update Code to current repository or remove.
+"""
 import typing
 import unittest
 import os
@@ -94,7 +100,7 @@ class TestStaticFunctions(unittest.TestCase):
         h = GameHistory()
         for r, v in zip(dummy_rewards, search_results):
             h.capture(np.array([0]), -1, 1, np.array([0]), r, v)
-        h.terminate(np.array([]), 1, z)
+        h.terminate(np.asarray([]), 1, z)
 
         # Check if algorithm computes z_t's correctly
         h.compute_returns(gamma, horizon)
@@ -419,12 +425,6 @@ class TestTreeSearch(unittest.TestCase):
         # Undo class variables swap
         self.net = memory_net
         self.mcts = memory_search
-
-
-class TestSelfPlay(unittest.TestCase):
-
-    def test_history_building(self):
-        pass
 
 
 if __name__ == '__main__':

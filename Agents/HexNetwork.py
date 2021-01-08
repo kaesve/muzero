@@ -1,5 +1,5 @@
 """
-
+Defines two convolutional residual neural networks for AlphaZero and MuZero to play generic boardgames.
 """
 
 import sys
@@ -34,7 +34,6 @@ class AlphaZeroHexNetwork:
             self.model.compile(loss=['categorical_crossentropy'] * 2, optimizer=opt)
         else:
             self.model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=opt)
-        print(self.model.summary())
 
     def build_model(self, x_image):
         conv = self.crafter.conv_tower(self.args.num_convs, x_image, use_bn=True)
@@ -91,11 +90,6 @@ class MuZeroHexNetwork:
         # Decoder functionality.
         self.decoded_observations = self.build_decoder(self.encoded_state)
         self.decoder = Model(inputs=self.encoded_state, outputs=self.decoded_observations, name='decoder')
-
-        print(self.encoder.summary())
-        print(self.dynamics.summary())
-        print(self.predictor.summary())
-        print(self.decoder.summary())
 
     def build_encoder(self, observations):
         conv = self.crafter.conv_tower(self.args.num_convs, observations, use_bn=False)

@@ -1,5 +1,6 @@
 """
-
+This file defines a Keras Layer to min-max normalize neuron activations sample-wise.
+Additionally, this file defines a helper class for constructing neural network substructures.
 """
 import typing
 
@@ -26,16 +27,15 @@ class MinMaxScaler(Layer):
         self.shape = tuple()
 
     def build(self, input_shape: np.ndarray) -> None:
-        """Initialize shapes within the computation graph"""
+        """ Initialize shapes within the computation graph """
         self.shape = input_shape
 
     def call(self, inputs, **kwargs) -> typing.Callable:
         """
         MinMax normalize the given inputs with minimum value 1 / dimensions.
         Normalization is performed strictly over one example (not a batch).
-        :param inputs:
-        :param kwargs:
-        :return:
+        :param inputs: Data tensor.
+        :return: Sample-wise MinMax normalized tensor.
         """
         tensor_min = k.min(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
         tensor_max = k.max(inputs, axis=np.arange(1, len(self.shape)), keepdims=True)
@@ -44,6 +44,9 @@ class MinMaxScaler(Layer):
 
 
 class Crafter:
+    """
+    Convenience wrapper for commonly reused neural network substructures.
+    """
 
     def __init__(self, args):
         self.args = args
@@ -51,6 +54,7 @@ class Crafter:
                                    if args.activation != "leakyrelu" else LeakyReLU(alpha=0.2))
 
     def conv_residual_tower(self, n: int, x, left_n: int = 2, right_n: int = 0, use_bn: bool = True):
+        """ Recursively build a (convolutional) residual tower of height n, with branches left_n and right_n. """
         assert left_n > 0, "Residual network must have at least a conv block larger than 0."
 
         if n > 0:
@@ -91,6 +95,7 @@ class Crafter:
         return x
 
     def build_conv_block(self, tensor_in, use_bn: bool = True):
+        """ Wrapper function to stack a convolutional tower flattened onto a sequence of fully connected layers. """
         conv_block = self.conv_tower(self.args.num_towers, tensor_in, use_bn)
         flattened = Flatten()(conv_block)
         fc_sequence = self.dense_sequence(self.args.num_dense, flattened)

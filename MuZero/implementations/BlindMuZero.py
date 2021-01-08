@@ -41,7 +41,7 @@ class BlindMuZero(DefaultMuZero):
         self.refresh_freq = refresh_freq
 
         self.action_reference = list()
-        self.memory = None
+        self.memory = None  # Most recent RNN neural activations (parallel to time with the agent's real environment).
         self.steps = 0
 
     def bind(self, action_reference: GameHistory) -> None:

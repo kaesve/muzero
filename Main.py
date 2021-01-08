@@ -1,5 +1,7 @@
 """
-File to perform small test runs on the codebase for both AlphaZero and MuZero.
+Main function of the codebase. This file is intended to call different parts of our pipeline based on console arguments.
+
+To add new games to the pipeline, add your string_query-class constructor to the 'game_from_name' function.
 """
 from datetime import datetime
 import argparse
@@ -27,52 +29,75 @@ import Experimenter
 import Agents
 
 
-def learnA0(g, a0_content, a0_run_name):
-    net_args, args = a0_content.net_args, a0_content.args
-
+def learnA0(g, a0_content: DotDict, a0_run_name: str) -> None:
+    """
+    Train an AlphaZero agent on the given environment with the specified configuration. If specified within the
+    configuration file, the function will load in a previous model along with previously generated data.
+    :param g: Game Instance of a Game class that implements environment logic. Train agent on this environment.
+    :param a0_content: DotDict Data container with hyperparameters for AlphaZero
+    :param a0_run_name: str Run name to store data by and annotate results.
+    """
     print("Testing:", ", ".join(a0_run_name.split("_")))
 
+    # Extract neural network and algorithm arguments separately
+    net_args, alg_args = a0_content.net_args, a0_content.args
     net = ANet(g, net_args, a0_content.architecture)
 
-    if args.load_model:
-        net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
+    if alg_args.load_model:
+        net.load_checkpoint(alg_args.load_folder_file[0], alg_args.load_folder_file[1])
 
-    c = AlphaZeroCoach(g, net, args, a0_run_name)
-    if args.load_model:
+    c = AlphaZeroCoach(g, net, alg_args, a0_run_name)
+    if alg_args.load_model:
         print("Load trainExamples from file")
         c.loadTrainExamples()
 
-    a0_content.to_json(f'{args.checkpoint}/{a0_run_name}.json')
+    a0_content.to_json(f'{alg_args.checkpoint}/{a0_run_name}.json')
 
     c.learn()
 
 
-def learnM0(g, m0_content, m0_run_name):
-    net_args, args = m0_content.net_args, m0_content.args
-
+def learnM0(g, m0_content: DotDict, m0_run_name: str) -> None:
+    """
+    Train an MuZero agent on the given environment with the specified configuration. If specified within the
+    configuration file, the function will load in a previous model along with previously generated data.
+    If specified, then the MuZero agent will also jointly train a state-transition decoder h^-1.
+    :param g: Game Instance of a Game class that implements environment logic. Train agent on this environment.
+    :param m0_content:
+    :param m0_run_name:
+    :return:
+    """
     print("Testing:", ", ".join(m0_run_name.split("_")))
 
-    if args.latent_decoder:
+    # Extract neural network and algorithm arguments separately
+    net_args, alg_args = m0_content.net_args, m0_content.args
+
+    if alg_args.latent_decoder:  # This option for MuZero jointly trains a state-transition function decoder h^-1.
         net = DMNet(g, net_args, m0_content.architecture)
     else:
         net = MNet(g, net_args, m0_content.architecture)
 
-    if args.load_model:
-        net.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
+    if alg_args.load_model:
+        print("Load trainExamples from file")
+        net.load_checkpoint(alg_args.load_folder_file[0], alg_args.load_folder_file[1])
 
-    c = MuZeroCoach(g, net, args, m0_run_name)
+    m0_content.to_json(f'{alg_args.checkpoint}/{m0_run_name}.json')
 
-    m0_content.to_json(f'{args.checkpoint}/{m0_run_name}.json')
-
+    c = MuZeroCoach(g, net, alg_args, m0_run_name)
     c.learn()
 
 
-def get_run_name(config_name, architecture, game):
+def get_run_name(config_name: str, architecture: str, game_name: str) -> None:
+    """ Macro function to wrap various ModelConfig properties into a run name. """
     time = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return f"{config_name}_{architecture}_{game}_{time}"
+    return f"{config_name}_{architecture}_{game_name}_{time}"
 
 
-def game_from_name(name):
+def game_from_name(name: str):
+    """
+    Constructor function to yield a Game class by a query string.
+    :param name: str Represents the name/ key of the environment to train on.
+    :return: Game Instance of Game that contains the environment logic.
+    """
     match_name = name.lower()
 
     if match_name == "hex":
@@ -99,6 +124,10 @@ def game_from_name(name):
         game_name = match_name[len("atari_"):]
         game_name = game_name.capitalize() + "NoFrameskip-v4"
         return AtariGame(game_name)
+
+    # Add new environments here after defining them in Games.__init__.py
+    # elif match_name.startswith("myenv"):
+    #     return GymGame("myEnv")
 
 
 if __name__ == "__main__":
@@ -141,13 +170,17 @@ if __name__ == "__main__":
         p.add_argument("--run_name", default=False, help="Override the run name (will not be timestamped!)")
 
     args = parser.parse_args()
+    # END Console arguments handling.
 
+    # Set global debugging settings for monitoring purposes (can produce large tensorboard files!).
     debugger.DEBUG_MODE = args.debug
     debugger.RENDER = args.render
     debugger.LOG_RATE = args.lograte
 
+    # Split up pipeline based on arguments
     if args.mode == "train":
 
+        # Functionality to override parameters from within the console line. Use -c my_config.json override_config.json
         content = DotDict.from_json(args.config[0])
         for override in args.config[1:]:
             sub_config = DotDict.from_json(override)
@@ -155,7 +188,6 @@ if __name__ == "__main__":
 
         BOARD_SIZE = args.boardsize
         game = game_from_name(args.game)
-
         run_name = args.run_name if args.run_name else get_run_name(content.name, content.architecture, args.game)
 
         # Set up tensorflow backend.
@@ -165,11 +197,9 @@ if __name__ == "__main__":
             device = tf.DeviceSpec(device_type='CPU', device_index=0)
 
         with tf.device(device.to_string()):
-
-            if content.algorithm == "ALPHAZERO":
-                learnA0(game, content, run_name)
-            elif content.algorithm == "MUZERO":
-                learnM0(game, content, run_name)
+            switch = {'ALPHAZERO': learnA0, 'MUZERO': learnM0}
+            if content.algorithm in switch:
+                switch[content.algorithm](game, content, run_name)
             else:
                 raise NotImplementedError(f"Cannot train on algorithm '{content.algorithm}'")
 

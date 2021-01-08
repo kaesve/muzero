@@ -1,3 +1,10 @@
+"""
+Defines utility functions for the experimenter class.
+This includes:
+ - a function to generate a hyperparameter grid based on a list of parameter values.
+ - a function to get available VRAM of all GPUs in a local system.
+ - a function to construct agent-player tuples to represent a pool of players for a tournament.
+"""
 from itertools import product
 from os import listdir
 import subprocess as sp
@@ -31,7 +38,8 @@ def create_parameter_grid(content: DotDict) -> typing.List:
     return grid
 
 
-def get_gpu_memory():
+def get_gpu_memory() -> typing.List:
+    """ Get available VRAM using the nvidia-smi interface. Returns a list of integers indicating available Bytes. """
     cmd = "nvidia-smi --query-gpu=memory.free --format=csv"
     output = sp.check_output(cmd.split())
     memory_free_info = (output.decode('ascii').split('\n')[:-1])[1:]

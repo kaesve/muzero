@@ -21,7 +21,7 @@ from tqdm import trange
 
 from Experimenter import Arena
 from utils import DotDict
-from utils.selfplay_utils import GameHistory, TemperatureScheduler
+from utils.selfplay_utils import GameHistory, ParameterScheduler
 from utils import debugging
 
 
@@ -63,7 +63,7 @@ class Coach(ABC):
             self.arena_opponent.set_variables(self.opponent_net, self.opponent_mcts, 'p2')
 
         # Initialize MCTS visit count exponentiation factor schedule.
-        self.temp_schedule = TemperatureScheduler(self.args.temperature_schedule)
+        self.temp_schedule = ParameterScheduler(self.args.temperature_schedule)
         self.update_temperature = self.temp_schedule.build()
 
     @staticmethod

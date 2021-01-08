@@ -1,5 +1,6 @@
 """
-
+Defines default MLP neural networks for both AlphaZero and MuZero that can be used on simple classical control
+environments, such as those from OpenAI Gym.
 """
 
 import sys

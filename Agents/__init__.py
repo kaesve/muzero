@@ -1,5 +1,8 @@
 """
 Initialization module to define constructor classes/ agent implementations in the 'Agents' scope.
+
+To add a new neural network, add a key-argument to the AlphaZeroNetworks or MuZeroNetworks dictionary with as
+value the class reference that constructs the neural network.
 """
 from .GymNetwork import AlphaZeroGymNetwork, MuZeroGymNetwork
 from .AtariNetwork import AlphaZeroAtariNetwork, MuZeroAtariNetwork

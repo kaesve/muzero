@@ -1,5 +1,5 @@
 """
-
+Defines the functionality for prioritized sampling, the replay-buffer, min-max normalization, and parameter scheduling.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
@@ -7,6 +7,7 @@ import typing
 
 import numpy as np
 
+from utils import DotDict
 from utils.game_utils import GameState
 
 
@@ -107,7 +108,8 @@ class GameHistory:
 
     @staticmethod
     def print_statistics(histories: typing.List[typing.List[GameHistory]]) -> None:
-        flat = [item for sublist in histories for item in sublist]
+        """ Print generic statistics over a nested list of GameHistories (the entire Replay-Buffer). """
+        flat = GameHistory.flatten(histories)
 
         n_self_play_iterations = len(histories)
         n_episodes = len(flat)
@@ -118,45 +120,44 @@ class GameHistory:
         print(f"In total {n_episodes} episodes have been played amounting to {n_samples} data samples")
 
     @staticmethod
-    def flatten(nested_histories):
+    def flatten(nested_histories: typing.List[typing.List[GameHistory]]) -> typing.List[GameHistory]:
+        """ Flatten doubly nested list to a normal list of objects. """
         return [subitem for item in nested_histories for subitem in item]
 
 
 class MinMaxStats(object):
-    """A class that holds the min-max values of the tree."""
+    """A class that keeps track of min-max statistics. """
 
-    def __init__(self, minimum_reward: typing.Optional[float] = None,
-                 maximum_reward: typing.Optional[float] = None) -> None:
+    def __init__(self, minimum: typing.Optional[float] = None,
+                 maximum: typing.Optional[float] = None) -> None:
         """
-
-        :param minimum_reward:
-        :param maximum_reward:
+        Optionally initialize MinMax statistics using boundaries.
+        :param minimum: float Lower bound for values.
+        :param maximum: float Upper bound for values.
         """
-        self.default_max = self.maximum = maximum_reward if maximum_reward is not None else -np.inf
-        self.default_min = self.minimum = minimum_reward if minimum_reward is not None else np.inf
+        self.default_max = self.maximum = maximum if maximum is not None else -np.inf
+        self.default_min = self.minimum = minimum if minimum is not None else np.inf
 
     def refresh(self) -> None:
         """
-
-        :return:
+        Reset the adjusted min-max bounds (by 'update') to the default bounds.
         """
         self.maximum = self.default_max
         self.minimum = self.default_min
 
     def update(self, value: float) -> None:
         """
-
-        :param value:
-        :return:
+        Update current min-max statistics.
+        :param value: float Real value to adjust the current min-max statistics to (or not if within the boundaries).
         """
         self.maximum = np.max([self.maximum, value])
         self.minimum = np.min([self.minimum, value])
 
     def normalize(self, value: float) -> float:
         """
-
-        :param value:
-        :return:
+        Linearly scale the given value within [0, 1] proportionally to the current min-max statistics.
+        :param value: float Some value within [self.minimum, self.maximum].
+        :return: Linearly normalized value within [0, 1].
         """
         if self.maximum >= self.minimum:
             # We normalize only when we have set the maximum and minimum values.
@@ -164,12 +165,28 @@ class MinMaxStats(object):
         return value
 
 
-class TemperatureScheduler:
+class ParameterScheduler:
+    """
+    Class to handle a linear annealing or stepwise schedule for some hyperparameter.
+    Can be used for, e.g., MCTS temperature parameter or learning rate.
 
-    def __init__(self, args):
+    Schedule configuration format (as also illustrated in ModelConfigs/.format.json):
+    "my_schedule": {
+      "method": "(string) choice between 'stepwise' and 'linear'.",
+      "by_weight_update": "(bool) Whether to adjust the parameter according to weight updates OR episode steps",
+      "schedule_points": "[[step, value], [step, value]]: Array to govern the parameter schedule"
+    }
+    """
+
+    def __init__(self, args: DotDict):
+        """
+        Initialize schedule with schedule configuration.
+        :param args: DotDict
+        """
         self.args = args
 
     def build(self):
+        """ Initialize the parameter schedule based on the given configuration. Call this function before using it! """
         indices, values = list(zip(*self.args.schedule_points))
 
         schedulers = {
@@ -179,14 +196,16 @@ class TemperatureScheduler:
         return schedulers[self.args.method](np.array(indices), np.array(values))
 
     @staticmethod
-    def linear_schedule(indices: np.ndarray, values: np.ndarray):
+    def linear_schedule(indices: np.ndarray, values: np.ndarray) -> typing.Callable:
+        """ Linearly anneal value within the specified ranges. """
         def scheduler(training_steps):
             return np.interp(training_steps, indices, values)
 
         return scheduler
 
     @staticmethod
-    def step_wise_decrease(indices: np.ndarray, values: np.ndarray):
+    def step_wise_decrease(indices: np.ndarray, values: np.ndarray) -> typing.Callable:
+        """ Alter a parameter step-wise within the specified ranges. """
         def scheduler(training_steps):
             current_pos = np.sum(np.cumsum(training_steps > indices))
             return values[current_pos] if current_pos < len(values) else values[-1]
