@@ -28,7 +28,7 @@ See the [wiki](https://github.com/kaesve/muzero/wiki) for a more elaborate overv
 
 ## Example Results
 This codebase was designed for a Masters Course at Leiden University, we utilized the code to create visualizations of the learned MDP model within MuZero. 
-We did this exclusively for MountainCar, the visualization tool can be viewed here: https://kaesve.nl/projects/cartpole-inspector/#/; an example illustration of this is shown below.
+We did this exclusively for MountainCar, the visualization tool can be viewed here: https://kaesve.nl/projects/muzero-model-inspector/#/; an example illustration of this is shown below.
 This figure illustrates the entire state-space from the MountainCar being embedded by MuZero's encoding network projected to the 3-PC space of the embedding's neural activation values. 
 
 ![example](publish/figures/MC_l4kl_MDPAbstractionCombined.png)
