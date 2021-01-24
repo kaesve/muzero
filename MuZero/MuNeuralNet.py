@@ -139,8 +139,8 @@ class MuZeroNeuralNet(ABC):
                 encoded_states = self.neural_net.encoder(target_observations[:, (k - 1), ...])
                 encoded_states = tf.stop_gradient(encoded_states)
 
-                contrastive_loss = tf.reduce_sum(tf.keras.losses.mean_squared_error(states, encoded_states),
-                                                 axis=-1)
+                contrastive_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(states, encoded_states),
+                                                  axis=-1)
                 contrastive_loss = scale_gradient(contrastive_loss, loss_scale * sample_weights)
 
                 total_loss += self.net_args.dynamics_penalty * tf.reduce_sum(contrastive_loss)
