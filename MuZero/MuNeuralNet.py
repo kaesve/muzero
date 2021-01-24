@@ -131,7 +131,7 @@ class MuZeroNeuralNet(ABC):
             step_loss = scale_gradient(r_loss + v_loss + pi_loss, loss_scale * sample_weights)
             total_loss += tf.reduce_sum(step_loss)  # Actually averages over batch : see sample_weights.
 
-            # If specified, slightly regularize the dynamics model using the KL Divergence between the latent state
+            # If specified, slightly regularize the dynamics model using the discrepancy between the abstract state
             # predicted by the dynamics model with the encoder. This penalty should be low to emphasize
             # value prediction, but may aid stability of learning.
             if self.net_args.dynamics_penalty > 0 and k > 0:
@@ -139,8 +139,11 @@ class MuZeroNeuralNet(ABC):
                 encoded_states = self.neural_net.encoder(target_observations[:, (k - 1), ...])
                 encoded_states = tf.stop_gradient(encoded_states)
 
-                kl_divergence = tf.reduce_mean(tf.losses.kullback_leibler_divergence(states, encoded_states))
-                total_loss += loss_scale * self.net_args.dynamics_penalty * kl_divergence
+                contrastive_loss = tf.reduce_sum(tf.keras.losses.mean_squared_error(states, encoded_states),
+                                                 axis=-1)
+                contrastive_loss = scale_gradient(contrastive_loss, loss_scale * sample_weights)
+
+                total_loss += self.net_args.dynamics_penalty * tf.reduce_sum(contrastive_loss)
 
             # Logging
             loss_monitor.append((v_loss, r_loss, pi_loss, absorb))
