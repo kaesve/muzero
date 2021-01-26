@@ -1,0 +1,35 @@
+{
+  "name": "MountainCarAblationAnalysis",
+  "experiment": "TRAIN_GRID",
+  "output_dir": "Results/MC_ablationDec",
+
+  "num_repeat": 10,
+  "n_jobs": 8,
+  "flags": "--gpu -1 --game gym_MountainCar-v0",
+
+  "environment": {
+    "name": "GYM",
+    "console": "--game gym_MountainCar-v0",
+    "args": {
+      "env_name": "MountainCar-v0"
+    }
+  },
+
+  "ablations": {
+    "base": {
+      "name": "MUZERO",
+      "config": "Configurations/ModelConfigs/MuzeroMC.json"
+    },
+
+    "content": {
+      "args": {
+        "latent_decoder": [true]
+      },
+
+      "net_args": {
+        "latent_depth": [4, 8],
+        "dynamics_penalty": [1]
+      }
+    }
+  }
+}

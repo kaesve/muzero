@@ -90,6 +90,7 @@ class AblationAnalysis:
                 if '--gpu' not in cmd:  # If CUDA should not be used (CPU) --> set '--cpu -1' in config flags.
                     cmd += f'--gpu {gpu}'
 
+                print(f"Starting a run: {cmd}")
                 sp.call(cmd.split())
 
         num_threads = self.experiment.experiment_args.n_jobs
