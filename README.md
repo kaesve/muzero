@@ -42,7 +42,7 @@ The canonical MuZero can be quite unstable depending on the hyperparameters, the
 
 The figure below illustrates the efficacy of learned models on MountainCar, when we only provide the MuZero agent observations every n'th environment step along with the agent's learning progress with dense observations.
 
-![example3](publish/figures/MC_NumericalResultsCombined.png)
+![example3](publish/figures/MC_NumericalResultsCombinedUpdated.png)
 
 No boardgames were tested for MuZero as computation time quickly became an issue for us, even on smaller boardsizes.
 We did find that AlphaZero could learn good policies on boardgames, we found that it depends on the observation encoding. 
