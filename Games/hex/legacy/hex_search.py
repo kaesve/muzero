@@ -5,8 +5,8 @@ Negamax alpha-beta method is implemented along with Monte-Carlo Tree Search.
 
 :version: FINAL
 :date: 07-02-2020
-:author: Joery de Vries
-:edited by: Joery de Vries, Oliver Konig, Siyuan Dong
+:author: Joery de Vries and Ken Voskuil
+:edited by: Joery de Vries and Ken Voskuil
 
 :bibliography:
 1. Stuart Russell and Peter Norvig. 2009. Artificial Intelligence: A Modern

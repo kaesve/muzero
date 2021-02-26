@@ -14,8 +14,8 @@ The currently implemented Policies are:
 
 :version: FINAL
 :date: 15-05-2020
-:author: Joery de Vries
-:edited by: Joery de Vries, Oliver Konig, Siyuan Dong
+:author: Joery de Vries and Ken Voskuil
+:edited by: Joery de Vries and Ken Voskuil
 """
 
 from ast import literal_eval

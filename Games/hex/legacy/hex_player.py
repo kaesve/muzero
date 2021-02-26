@@ -7,8 +7,8 @@ an action a = pi(s).
 
 :version: FINAL
 :date: 07-02-2020
-:author: Joery de Vries
-:edited by: Joery de Vries, Oliver Konig, Siyuan Dong
+:author: Joery de Vries and Ken Voskuil
+:edited by: Joery de Vries and Ken Voskuil
 """
 
 

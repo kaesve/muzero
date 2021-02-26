@@ -7,7 +7,7 @@ EDIT: Changed numbers for the player-color indicators.
 :version: FINAL
 :date:
 :author: Aske Plaat
-:edited by: Joery de Vries
+:edited by: Joery de Vries and Ken Voskuil
 """
 import numpy as np
 

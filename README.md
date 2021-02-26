@@ -5,7 +5,8 @@ The codebase provides a modular framework to design your own AlphaZero and MuZer
 This API also allows MuZero agents to more strongly rely on their learned model during interaction with the environment; the programmer can e.g., specify the sparsity of observations to a *learned* MuZero agent during a trial. 
 Our interface also provides sufficient abstraction to extend the MuZero or AlphaZero algorithm for research purposes.
 
-**beta phase**: Most of the codebase is done regarding development, we are currently working on finishing up this project and making it easily available for other users.
+Note that we did not perform extensive testing on the boardgames, we experienced that this was very time intensive and difficult to tune. 
+Well tested environments include the Gym environments: CartPole-v1, MountainCar-v0, Pendulum-v0
 
 ## How to run:
 In order to run experiments/ train agents, you first need a .json configuration file (see [Configurations/ModelConfigs](Configurations/ModelConfigs)) for specifying the agent's parameters.
@@ -20,6 +21,7 @@ See the [wiki](https://github.com/kaesve/muzero/wiki) for a more elaborate overv
 * Python 3.7+
  - tensorflow
  - keras standalone (until tensorflow 2.3 is available on anaconda windows)
+ - tqdm
 
 #### Tested Versions (Windows and Linux)
 * Python 3.7.9
@@ -31,12 +33,12 @@ This codebase was designed for a Masters Course at Leiden University, we utilize
 We did this exclusively for MountainCar, the visualization tool can be viewed here: https://kaesve.nl/projects/muzero-model-inspector/#/; an example illustration of this is shown below.
 This figure illustrates the entire state-space from the MountainCar being embedded by MuZero's encoding network projected to the 3-PC space of the embedding's neural activation values. 
 
-![example](publish/figures/MC_l4kl_MDPAbstractionCombined.png)
+![example](publish/figures/MC_MDP_l8_illustration.png)
 
 We quantified the efficacy of our MuZero and AlphaZero implementations also on the CartPole environment over numerous hyperparameters. 
 The canonical MuZero can be quite unstable depending on the hyperparameters, the figure shows this through median and mean training rewards over 8 training runs.
 
-![example2](publish/figures/CP_NumericalResultsSplit.png)
+![example2](publish/figures/CP_NumericalResults.png)
 
 The figure below illustrates the efficacy of learned models on MountainCar, when we only provide the MuZero agent observations every n'th environment step along with the agent's learning progress with dense observations.
 
@@ -46,7 +48,7 @@ No boardgames were tested for MuZero as computation time quickly became an issue
 We did find that AlphaZero could learn good policies on boardgames, we found that it depends on the observation encoding. 
 Heuristic encoding as used in AlphaZero seemed less effective to the canonicalBoard representation used in AlphaZero-General.
 
-Our paper can be read for more details *here* (Will be added later).
+Our paper can be read for more details here: [arxiv:2102.12924](https://arxiv.org/abs/2102.12924).
  
 ## Our Contributions
 There are already a variety of MuZero and AlphaZero implementations available:

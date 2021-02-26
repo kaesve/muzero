@@ -11,8 +11,8 @@ The currently implemented heuristic scoring functions of the hex-game are:
 
 :version: FINAL
 :date: 07-02-2020
-:author: Joery de Vries
-:edited by: Joery de Vries, Oliver Konig, Siyuan Dong
+:author: Joery de Vries and Ken Voskuil
+:edited by: Joery de Vries and Ken Voskuil
 """
 
 import numpy as np
