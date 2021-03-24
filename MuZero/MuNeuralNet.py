@@ -239,16 +239,18 @@ class MuZeroNeuralNet(ABC):
         dynamics_path = os.path.join(folder, 'd_' + filename)
         predictor_path = os.path.join(folder, 'p_' + filename)
 
-        if not os.path.exists(representation_path):
+        try:
+            self.neural_net.encoder.load_weights(representation_path)
+        except:
             raise FileNotFoundError(f"No MuZero Representation Model in path {representation_path}")
-        if not os.path.exists(dynamics_path):
+        try:
+            self.neural_net.dynamics.load_weights(dynamics_path)
+        except:
             raise FileNotFoundError(f"No MuZero Dynamics Model in path {dynamics_path}")
-        if not os.path.exists(predictor_path):
+        try:
+            self.neural_net.predictor.load_weights(predictor_path)
+        except:
             raise FileNotFoundError(f"No MuZero Predictor Model in path {predictor_path}")
-
-        self.neural_net.encoder.load_weights(representation_path)
-        self.neural_net.dynamics.load_weights(dynamics_path)
-        self.neural_net.predictor.load_weights(predictor_path)
 
         if hasattr(self.neural_net, 'decoder'):
             decoder_path = os.path.join(folder, 'decoder_' + filename)
