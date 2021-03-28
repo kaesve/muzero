@@ -241,15 +241,15 @@ class MuZeroNeuralNet(ABC):
 
         try:
             self.neural_net.encoder.load_weights(representation_path)
-        except:
+        except FileNotFoundError:
             raise FileNotFoundError(f"No MuZero Representation Model in path {representation_path}")
         try:
             self.neural_net.dynamics.load_weights(dynamics_path)
-        except:
+        except FileNotFoundError:
             raise FileNotFoundError(f"No MuZero Dynamics Model in path {dynamics_path}")
         try:
             self.neural_net.predictor.load_weights(predictor_path)
-        except:
+        except FileNotFoundError:
             raise FileNotFoundError(f"No MuZero Predictor Model in path {predictor_path}")
 
         if hasattr(self.neural_net, 'decoder'):

@@ -81,7 +81,7 @@ class AlphaZeroNeuralNet(ABC):
         :raises: FileNotFoundError if path is incorrectly specified.
         """
         filepath = os.path.join(folder, filename)
-        if not os.path.exists(filepath):
-            raise FileNotFoundError(f"No AlphaZeroModel in path {filepath}")
-        self.neural_net.model.load_weights(filepath)
-
+        try:
+            self.neural_net.model.load_weights(filepath)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"No AlphaZero Model in path {filepath}")
